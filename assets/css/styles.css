@@ -1,0 +1,83 @@
+/* assets/css/styles.css */
+
+/* --- Animations --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* --- UI Utilities --- */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* --- Toast Notifications --- */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.toast {
+    transition: all 0.3s ease;
+    transform: translateX(100%);
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+/* --- Schema Builder (Draggable Nodes) --- */
+.schema-node {
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+    transition: box-shadow 0.2s;
+}
+
+.schema-node:active {
+    cursor: grabbing;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+}
+
+/* --- Wizard Specifics --- */
+.wizard-step {
+    display: none;
+}
+
+.wizard-step.active {
+    display: block;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.file-drop-active {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+    transform: scale(1.02);
+}
+
+/* --- Scrollbar Customization --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
