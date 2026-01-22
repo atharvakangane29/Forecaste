@@ -4,11 +4,15 @@ const ChartManager = {
     mainChart: null,
     donutChart: null,
     ingestionChart: null,
+    capacityChart: null,
+    programChart: null,
 
     init() {
         this.initMainChart();
         this.initDonutChart();
         this.initIngestionChart();
+        this.initCapacityChart();
+        this.initProgramChart();
     },
 
     initMainChart() {
@@ -154,10 +158,92 @@ const ChartManager = {
     });
 },
 
+            initCapacityChart() {
+                const ctx = document.getElementById('capacityChart');
+                if (!ctx) return;
+
+                if (this.capacityChart instanceof Chart) {
+                    this.capacityChart.destroy();
+                }
+
+                this.capacityChart = new Chart(ctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [
+                            {
+                                label: 'Bed Utilization (%)',
+                                data: [70, 75, 72, 80, 85, 90],
+                                backgroundColor: '#2563eb'
+                            },
+                            {
+                                label: 'Infusion Chair Utilization (%)',
+                                data: [55, 60, 58, 62, 65, 68],
+                                backgroundColor: '#22c55e'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: value => value + '%'
+                                },
+                                grid: { borderDash: [2, 4] }
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            },
+
+        initProgramChart() {
+        const ctx = document.getElementById('programChart');
+        if (!ctx) return;
+
+        if (this.programChart instanceof Chart) {
+            this.programChart.destroy();
+        }
+
+        this.programChart = new Chart(ctx.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: ['Chemotherapy', 'Radiation', 'Immunotherapy', 'Surgery'],
+                datasets: [{
+                    data: [420, 310, 520, 170],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#f59e0b',
+                        '#10b981',
+                        '#ef4444'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    },
+
     updateData(period) {
         if (!this.mainChart) return;
         const newData = period == '7' ? [65, 59, 80, 81, 56, 55, 40] : [120, 190, 300, 50, 20, 30, 45];
         this.mainChart.data.datasets[0].data = newData;
         this.mainChart.update();
     }
+    
 };
