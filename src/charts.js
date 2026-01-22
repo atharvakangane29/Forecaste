@@ -3,10 +3,12 @@
 const ChartManager = {
     mainChart: null,
     donutChart: null,
+    ingestionChart: null,
 
     init() {
         this.initMainChart();
         this.initDonutChart();
+        this.initIngestionChart();
     },
 
     initMainChart() {
@@ -21,7 +23,7 @@ const ChartManager = {
                     {
                         label: 'Outpatient Visits',
                         data: [65, 59, 80, 81, 56, 55, 40],
-                        borderColor: '#2563eb', // Blue-600
+                        borderColor: '#2563eb', 
                         backgroundColor: (context) => {
                             const ctx = context.chart.ctx;
                             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -35,7 +37,7 @@ const ChartManager = {
                     {
                         label: 'Inpatient Admits',
                         data: [28, 48, 40, 19, 26, 27, 30],
-                        borderColor: '#94a3b8', // Slate-400
+                        borderColor: '#94a3b8',
                         borderDash: [5, 5],
                         tension: 0.4
                     }
@@ -77,15 +79,66 @@ const ChartManager = {
         });
     },
 
-    // Called by main App when filters change
+    initIngestionChart() {
+        const ctx = document.getElementById('ingestionChart');
+        if(!ctx) return;
+        
+        // Destroy existing instance if it exists to prevent canvas errors
+        if (this.ingestionChart instanceof Chart) {
+            this.ingestionChart.destroy();
+        }
+        
+        this.ingestionChart = new Chart(ctx.getContext('2d'), {
+            type: 'line', // CHANGE: Line chart
+            data: {
+                labels: ['2024-02-01', '2024-02-08', '2024-02-15', '2024-02-22'], // CHANGE: Dates
+                datasets: [
+                    { 
+                        label: 'Completeness Score (%)', 
+                        data: [92.5, 94.2, 93.8, 98.5], // CHANGE: Random % values
+                        borderColor: '#0ea5e9', // Medical Blue
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            gradient.addColorStop(0, 'rgba(14, 165, 233, 0.2)');
+                            gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
+                            return gradient;
+                        },
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#0ea5e9',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { 
+                        callbacks: { label: (context) => ` ${context.raw}% Completeness` }
+                    }
+                },
+                scales: { 
+                    y: { 
+                        min: 80, 
+                        max: 100,
+                        grid: { borderDash: [2, 4] } 
+                    }, 
+                    x: { 
+                        grid: { display: false } 
+                    }
+                }
+            }
+        });
+    },
+
     updateData(period) {
         if (!this.mainChart) return;
-        
-        // Mock Data Simulation
-        const newData = period == '7' 
-            ? [65, 59, 80, 81, 56, 55, 40] 
-            : [120, 190, 300, 50, 20, 30, 45];
-        
+        const newData = period == '7' ? [65, 59, 80, 81, 56, 55, 40] : [120, 190, 300, 50, 20, 30, 45];
         this.mainChart.data.datasets[0].data = newData;
         this.mainChart.update();
     }

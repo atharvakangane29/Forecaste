@@ -10,7 +10,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <link rel="stylesheet" href="assets/css/styles.css">
 
     <script>
@@ -22,13 +21,7 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        medical: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            900: '#0c4a6e',
-                        }
+                        medical: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' }
                     }
                 }
             }
@@ -82,7 +75,7 @@
                             <i data-lucide="upload-cloud" class="w-10"></i>
                         </div>
                         <h3 class="text-xl font-bold text-slate-800">Drag & Drop files here</h3>
-                        <p class="text-slate-500 mt-2">or <span class="text-blue-600 font-bold cursor-pointer hover:underline">browse computer</span></p>
+                        <p class="text-slate-500 mt-2">or <span class="text-blue-600 font-bold cursor-pointer hover:underline" onclick="Wizard.handleFileBrowse()">browse computer</span></p>
                     </div>
                 </div>
 
@@ -90,17 +83,36 @@
                     <button class="text-sm text-slate-400 hover:text-slate-800 mb-6 flex items-center gap-1" onclick="Wizard.goToStep(1)"><i data-lucide="arrow-left" class="w-4"></i> Back</button>
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
                         <div id="cloud-form" class="space-y-4">
-                            <h2 class="text-xl font-bold mb-6">Secure Connection</h2>
-                            <button onclick="Wizard.simulateConnection()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 flex justify-center items-center gap-2">
+                            <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><i data-lucide="lock" class="w-5 text-purple-500"></i> Secure Connection</h2>
+                            
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Provider</label>
+                                <select class="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-purple-500 outline-none text-sm">
+                                    <option>Databricks Lakehouse</option>
+                                    <option>Snowflake Data Cloud</option>
+                                    <option>Google BigQuery</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Host URL / Account ID</label>
+                                <input type="text" value="dbc-xxxx-xxxx.cloud.databricks.com" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm font-mono text-slate-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Personal Access Token</label>
+                                <input type="password" value="dapi123456789" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm font-mono text-slate-600">
+                            </div>
+
+                            <button onclick="Wizard.simulateConnection()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg mt-4 flex justify-center items-center gap-2 transition-colors">
                                 Authenticate & Scan <i data-lucide="arrow-right" class="w-4"></i>
                             </button>
                         </div>
+                        
                         <div id="cloud-selection" class="hidden space-y-4 animate-fade-in">
-                            <div class="flex items-center gap-2 text-emerald-600 bg-emerald-50 p-3 rounded-lg mb-4">
+                            <div class="flex items-center gap-2 text-emerald-600 bg-emerald-50 p-3 rounded-lg mb-4 border border-emerald-100">
                                 <i data-lucide="check-circle-2" class="w-5"></i>
                                 <span class="text-sm font-bold">Connection Established</span>
                             </div>
-                            <button onclick="Wizard.finishWizard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg mt-4">
+                            <button onclick="Wizard.finishWizard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg mt-4 transition-colors">
                                 Import Selected Data
                             </button>
                         </div>
@@ -126,7 +138,7 @@
                     </a>
                     <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="pipeline">
                         <i data-lucide="database" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Pipeline View</span>
+                        <span class="ml-3 font-medium hidden lg:block">Data Pipeline</span>
                     </a>
                 </nav>
             </div>
@@ -145,56 +157,57 @@
 
         <main class="flex-1 flex flex-col h-full overflow-hidden relative">
             <header class="h-16 bg-white border-b flex items-center justify-between px-8 z-10">
-                <h2 id="page-title" class="text-xl font-bold text-slate-800">Clinical Dashboard</h2>
+                <h2 id="page-title" class="text-xl font-bold text-slate-800">Clinical Command Center</h2>
                 <div class="flex items-center gap-4">
                     <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="bell" class="w-5 h-5"></i></button>
                     <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="settings" class="w-5 h-5"></i></button>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth">
+            <div class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth bg-slate-50">
                 
                 <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto animate-fade-in">
-                    <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
-                        <div class="flex gap-2">
-                            <button class="px-3 py-1 text-xs font-bold rounded-md bg-blue-100 text-blue-700 filter-btn" data-period="7">7 Days</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded-md bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn" data-period="30">30 Days</button>
-                        </div>
-                        <div class="text-xs text-slate-400">Real-time Data</div>
+                    <div class="flex gap-2">
+                        <button class="px-4 py-1.5 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn" data-period="7">7 Days</button>
+                        <button class="px-4 py-1.5 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn" data-period="30">30 Days</button>
+                        <button class="px-4 py-1.5 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn" data-period="90">YTD</button>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div class="flex justify-between items-start mb-2">
+                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
                                 <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="users" class="w-5 h-5"></i></div>
                                 <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+12.5%</span>
                             </div>
                             <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">NDCC Patients</h4>
-                            <p class="text-2xl font-bold text-slate-800 mt-1">1,284</p>
+                            <p class="text-3xl font-bold text-slate-800 mt-2">1,284</p>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div class="flex justify-between items-start mb-2">
+
+                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
                                 <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i data-lucide="timer" class="w-5 h-5"></i></div>
                                 <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">-2.1 Days</span>
                             </div>
                             <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Avg TTI (Days)</h4>
-                            <p class="text-2xl font-bold text-slate-800 mt-1">14.2</p>
+                            <p class="text-3xl font-bold text-slate-800 mt-2">14.2</p>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div class="flex justify-between items-start mb-2">
+
+                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
                                 <div class="p-2 bg-orange-50 text-orange-600 rounded-lg"><i data-lucide="armchair" class="w-5 h-5"></i></div>
                                 <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">High Load</span>
                             </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Chair Util</h4>
-                            <p class="text-2xl font-bold text-slate-800 mt-1">88%</p>
+                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Infusion Chair Util</h4>
+                            <p class="text-3xl font-bold text-slate-800 mt-2">88%</p>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div class="flex justify-between items-start mb-2">
+
+                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
                                 <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="dollar-sign" class="w-5 h-5"></i></div>
                                 <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+4%</span>
                             </div>
                             <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Gross Margin</h4>
-                            <p class="text-2xl font-bold text-slate-800 mt-1">22.4%</p>
+                            <p class="text-3xl font-bold text-slate-800 mt-2">22.4%</p>
                         </div>
                     </div>
 
@@ -207,31 +220,131 @@
                         </div>
                         <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-6">Program Mix</h3>
-                            <div class="h-48 relative">
+                            <div class="h-64 relative flex items-center justify-center">
                                 <canvas id="donutChart"></canvas>
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div class="text-center mt-2">
+                                        <span class="block text-3xl font-bold text-slate-800">1.2K</span>
+                                        <span class="text-[10px] text-slate-400 uppercase tracking-widest">Total Pts</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 space-y-2 px-4">
+                                <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-600"></span> MedOnc</span> <span class="font-bold">55%</span></div>
+                                <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-600"></span> SurgOnc</span> <span class="font-bold">25%</span></div>
+                                <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> RadOnc</span> <span class="font-bold">20%</span></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="view-pipeline" class="hidden space-y-6 max-w-7xl mx-auto">
-                    <div class="bg-slate-900 rounded-xl overflow-hidden shadow-2xl relative h-[500px]" id="schema-container">
+                <div id="view-pipeline" class="hidden space-y-8 max-w-7xl mx-auto">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Completeness</p>
+                                <h3 class="text-3xl font-bold text-slate-800 mt-1">94.2%</h3>
+                            </div>
+                            <span class="bg-emerald-50 text-emerald-600 text-xs font-bold px-2 py-1 rounded border border-emerald-100">+1.2%</span>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Accuracy</p>
+                                <h3 class="text-3xl font-bold text-slate-800 mt-1">97.8%</h3>
+                            </div>
+                            <span class="bg-emerald-50 text-emerald-600 text-xs font-bold px-2 py-1 rounded border border-emerald-100">+0.5%</span>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Timeliness</p>
+                                <h3 class="text-3xl font-bold text-slate-800 mt-1">98.5%</h3>
+                            </div>
+                            <span class="bg-red-50 text-red-500 text-xs font-bold px-2 py-1 rounded border border-red-100">-0.3%</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                                <h3 class="font-bold text-slate-800 text-sm">Active Data Sources</h3>
+                                <button class="text-xs text-blue-600 font-bold hover:underline">Refresh</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-3 font-semibold">Source System</th>
+                                            <th class="px-6 py-3 font-semibold">Data Type</th>
+                                            <th class="px-6 py-3 font-semibold">Status</th>
+                                            <th class="px-6 py-3 font-semibold">Last Sync</th>
+                                            <th class="px-6 py-3 font-semibold text-right">Records</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-4 font-medium text-slate-900">Hospital EMR</td>
+                                            <td class="px-6 py-4 text-slate-500">Inpatient/Outpatient</td>
+                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
+                                            <td class="px-6 py-4 text-slate-500">2024-01-15</td>
+                                            <td class="px-6 py-4 text-right font-mono">2.4M</td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-4 font-medium text-slate-900">Cancer Registry</td>
+                                            <td class="px-6 py-4 text-slate-500">Diagnosis/Stage</td>
+                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
+                                            <td class="px-6 py-4 text-slate-500">2024-01-14</td>
+                                            <td class="px-6 py-4 text-right font-mono">856K</td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-4 font-medium text-slate-900">Referral System</td>
+                                            <td class="px-6 py-4 text-slate-500">Physician Referrals</td>
+                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
+                                            <td class="px-6 py-4 text-slate-500">2024-01-15</td>
+                                            <td class="px-6 py-4 text-right font-mono">423K</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4 text-sm">Data Completeness Trend</h3>
+                            <div class="h-64">
+                                <canvas id="ingestionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#0f172a] rounded-xl overflow-hidden shadow-2xl relative h-[450px]" id="schema-container">
                         <div class="absolute top-4 left-4 z-10 bg-slate-800/80 backdrop-blur px-3 py-1 rounded border border-slate-700 text-xs font-bold text-slate-400">
-                            SCHEMA BUILDER
+                            SCHEMA BUILDER (DRAG NODES)
                         </div>
                         <svg class="absolute inset-0 w-full h-full pointer-events-none" id="schema-lines"></svg>
-                        <div class="schema-node bg-white p-3 rounded shadow-lg w-40 text-center top-20 left-20" id="node-1">
+                        
+                        <div class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-24 left-24" id="node-1">
                             <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Source</div>
-                            <div class="font-bold text-xs flex items-center justify-center gap-2"><i data-lucide="database" class="w-3"></i> EMR_Raw</div>
+                            <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="database" class="w-4"></i> EMR_Raw</div>
                         </div>
-                        <div class="schema-node bg-blue-600 text-white p-4 rounded shadow-lg w-48 text-center top-32 left-[40%]" id="node-2">
+
+                        <div class="schema-node bg-blue-600 text-white p-5 rounded-lg shadow-xl w-48 text-center top-40 left-[40%]" id="node-2">
                             <div class="text-[10px] text-blue-200 font-bold uppercase mb-1">Process</div>
                             <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="cpu" class="w-4"></i> Spark_Cleaner</div>
                         </div>
-                        <div class="schema-node bg-white p-3 rounded shadow-lg w-40 text-center top-20 right-20" id="node-3">
+
+                        <div class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-24 right-32" id="node-3">
                             <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
-                            <div class="font-bold text-xs flex items-center justify-center gap-2"><i data-lucide="table" class="w-3"></i> Fact_Patients</div>
+                            <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Fact_Patients</div>
                         </div>
+
+                        <div class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-64 right-32" id="node-4">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
+                            <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Dim_Diagnosis</div>
+                        </div>
+
+                        <button class="absolute bottom-6 right-6 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg transition-transform active:scale-95 z-20 flex items-center gap-2" onclick="App.showToast('Pipeline Deployed!');">
+                            Deploy Pipeline <i data-lucide="arrow-right" class="w-4"></i>
+                        </button>
                     </div>
                 </div>
 

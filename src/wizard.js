@@ -5,20 +5,17 @@ const Wizard = {
     
     // --- Step Navigation ---
     goToStep(step, type = null) {
-        // Hide all steps first
         document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
         
-        // Determine target ID based on selection (Cloud vs File)
         let targetId = `wizard-step-${step}`;
         if(step === 2) {
             targetId = type === 'file' ? 'wizard-step-file' : 'wizard-step-cloud';
         }
         
-        // Show target
         const targetEl = document.getElementById(targetId);
         if(targetEl) targetEl.classList.add('active');
         
-        // Update Progress Bar UI
+        // Progress UI
         const prog = document.getElementById('wizard-progress');
         const text = document.getElementById('wizard-step-text');
         
@@ -31,28 +28,41 @@ const Wizard = {
         }
     },
 
-    // --- Interaction Simulation ---
+    // --- File Upload Logic ---
+    handleFileBrowse() {
+        App.showToast('Uploading: oncology_data_v2.xlsx...', 'info');
+        
+        // Simulate upload delay then move to finish
+        setTimeout(() => {
+            App.showToast('File Uploaded Successfully', 'success');
+            
+            document.getElementById('wizard-progress').style.width = '100%';
+            document.getElementById('wizard-step-text').innerText = 'Step 3 of 3';
+            
+            setTimeout(() => this.finishWizard(), 500);
+        }, 1500);
+    },
+
+    // --- Cloud Connection Simulation ---
     simulateConnection() {
         const btn = document.querySelector('#cloud-form button');
         const originalText = btn.innerHTML;
         
-        // 1. Loading State
+        // Loading State
         btn.innerHTML = `<i data-lucide="loader-2" class="w-4 animate-spin"></i> Connecting...`;
         btn.disabled = true;
-        lucide.createIcons(); // Re-render icons for the loader
+        lucide.createIcons();
 
-        // 2. Mock API Call Delay
+        // Mock Delay
         setTimeout(() => {
             btn.innerHTML = originalText;
             btn.disabled = false;
             
-            // Hide Form, Show Success Selection
             document.getElementById('cloud-form').classList.add('hidden');
             document.getElementById('cloud-selection').classList.remove('hidden');
             
             App.showToast('Connected to Databricks Lakehouse', 'success');
             
-            // Update Progress
             document.getElementById('wizard-progress').style.width = '100%'; 
             document.getElementById('wizard-step-text').innerText = 'Step 3 of 3';
         }, 1500);
@@ -63,25 +73,29 @@ const Wizard = {
         const wizardOverlay = document.getElementById('view-wizard');
         const mainApp = document.getElementById('app-shell');
         
-        // Visual transition
         wizardOverlay.style.opacity = '0';
         wizardOverlay.style.transform = 'scale(0.95)';
         wizardOverlay.style.transition = 'all 0.5s ease';
         
         setTimeout(() => {
-            // Remove Wizard from DOM flow
             wizardOverlay.classList.add('hidden');
-            
-            // Reveal Main App
             mainApp.classList.remove('hidden');
-            // Force reflow to enable transition
             void mainApp.offsetWidth; 
             mainApp.style.opacity = '1';
             
             App.showToast('Pipeline Configured Successfully', 'success');
             
-            // Start charts now that they are visible
+            // Initialize Charts
             ChartManager.init();
+
+            // CHANGE: Force switch to Pipeline view immediately
+            App.switchView('pipeline'); 
+            
+            // Update the sidebar navigation styling manually if needed
+            document.querySelectorAll('[data-view]').forEach(l => l.classList.remove('active-nav', 'bg-slate-800', 'text-white'));
+            const pipelineNav = document.querySelector('[data-view="pipeline"]');
+            if(pipelineNav) pipelineNav.classList.add('active-nav', 'bg-slate-800', 'text-white');
+
         }, 500);
     }
 };
