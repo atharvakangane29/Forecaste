@@ -88,53 +88,71 @@ const ChartManager = {
             this.ingestionChart.destroy();
         }
         
+        
         this.ingestionChart = new Chart(ctx.getContext('2d'), {
-            type: 'line', // CHANGE: Line chart
-            data: {
-                labels: ['2024-02-01', '2024-02-08', '2024-02-15', '2024-02-22'], // CHANGE: Dates
-                datasets: [
-                    { 
-                        label: 'Completeness Score (%)', 
-                        data: [92.5, 94.2, 93.8, 98.5], // CHANGE: Random % values
-                        borderColor: '#0ea5e9', // Medical Blue
-                        backgroundColor: (context) => {
-                            const ctx = context.chart.ctx;
-                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                            gradient.addColorStop(0, 'rgba(14, 165, 233, 0.2)');
-                            gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
-                            return gradient;
-                        },
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#0ea5e9',
-                        pointBorderWidth: 2,
-                        pointRadius: 4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { 
-                        callbacks: { label: (context) => ` ${context.raw}% Completeness` }
-                    }
+        type: 'line',
+        data: {
+            labels: ['2024-02-01', '2024-02-08', '2024-02-15', '2024-02-22'],
+            datasets: [
+            {
+                label: 'Completeness Score (%)',
+                data: [92.5, 94.2, 93.8, 98.5],
+                borderColor: '#0ea5e9',
+                backgroundColor: (context) => {
+                const ctx = context.chart.ctx;
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(14, 165, 233, 0.2)');
+                gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
+                return gradient;
                 },
-                scales: { 
-                    y: { 
-                        min: 80, 
-                        max: 100,
-                        grid: { borderDash: [2, 4] } 
-                    }, 
-                    x: { 
-                        grid: { display: false } 
-                    }
+                fill: false,
+                tension: 0.4,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#0ea5e9',
+                pointBorderWidth: 2,
+                pointRadius: 4
+            },
+            // 🔴 NEW: Accuracy line (red)
+            {
+                label: 'Accuracy (%)',
+                data: [88.3, 91.7, 89.5, 95.2], // 4 sample % values
+                borderColor: '#ef4444',          // Tailwind red-500
+                // backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                // fill: false,                     // keep it as a line only
+                backgroundColor: 'transparent', // ⬅ remove gradient
+                fill: false,
+                tension: 0.4,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#ef4444',
+                pointBorderWidth: 2,
+                pointRadius: 4
+            }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+            legend: { display: true }, // turn on legend so both lines are distinguishable
+            tooltip: { 
+                callbacks: { 
+                label: (context) => ` ${context.dataset.label}: ${context.raw}%`
                 }
             }
-        });
-    },
+            },
+            scales: { 
+            y: { 
+                min: 80, 
+                max: 100,
+                grid: { borderDash: [2, 4] } 
+            }, 
+            x: { 
+                grid: { display: false } 
+            }
+            }
+        }
+    });
+},
 
     updateData(period) {
         if (!this.mainChart) return;

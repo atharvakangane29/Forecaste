@@ -81,3 +81,30 @@
     background: #cbd5e1;
     border-radius: 4px;
 }
+
+/* Schema box and info button */
+
+
+/* Highlighted table node */
+.table-danger {
+  background-color: #fee2e2;   /* Tailwind: bg-red-100 */
+  border: 1px solid #f87171;   /* Tailwind: border-red-400 */
+  color: #b91c1c;              /* Tailwind: text-red-700 */
+  position: relative;
+  border-radius: 0.5rem;       /* Tailwind: rounded */
+  padding: 1rem;               /* Tailwind: p-4 */
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); /* shadow-lg */
+}
+
+/* Info button */
+.table-danger .info-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: #dc2626;              /* Tailwind: text-red-600 */
+  cursor: pointer;
+}
+
+.table-danger .info-btn:hover {
+  color: #7f1d1d;              /* Tailwind: hover:text-red-800 */
+}
