@@ -47,12 +47,15 @@
         
             <!-- Insert this directly after the header bar (after the second </div> that closes the top bar) -->
             <div class="flex items-center justify-center gap-3 py-3 border-b bg-white">
+            <!--  
             <img
-                src="C:\Users\AtharvaKangane\CIRCULANTS\Forcasting app\Frontend\assets\img\logo.png"
+                src="/assets/img/logo.png" 
                 alt="Circulants logo"
                 class="w-8 h-8 object-contain"
                 loading="lazy"
             />
+            -->
+            <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8 object-contain">
             <span class="text-slate-600 font-semibold tracking-wide">
                 Circulants platform A
             </span>
@@ -144,7 +147,8 @@
             <div>     <!--Sidebar-->
                 <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-700 cursor-pointer" onclick="App.showToast('Home Refresh')">
                     <!-- <i data-lucide="activity" class="text-medical-500 w-8 h-8"></i> -->
-                     <img src="C:\Users\AtharvaKangane\CIRCULANTS\Forcasting app\Frontend\assets\img\logo.png" alt="Logo" class="w-8 h-8" />
+                     <!-- <img src="C:\Users\AtharvaKangane\CIRCULANTS\Forcasting app\Frontend\assets\img\logo.png" alt="Logo" class="w-8 h-8" />  + object-contain-->
+                     <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8">
                     <span class="ml-3 font-bold text-lg hidden lg:block tracking-tight">Platfrom A</span>
                 </div>
                 <nav class="mt-8 space-y-2 px-2">
@@ -156,7 +160,23 @@
                         <i data-lucide="layout-dashboard" class="w-5 h-5 group-hover:text-white"></i>
                         <span class="ml-3 font-medium hidden lg:block">Clinical Dashboard</span>
                     </a>
+                    
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="scenario-builder">
+                        <i data-lucide="layers" class="w-5 h-5 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden lg:block">Scenario Builder</span>
+                    </a>
+
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="forecasting">
+                        <i data-lucide="trending-up" class="w-5 h-5 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden lg:block">Forecasting</span>
+                    </a>
+
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="scenario-comparison">
+                        <i data-lucide="copy" class="w-5 h-5 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden lg:block">Scenario Comparison</span>
+                    </a>
                 </nav>
+
             </div>
             <div class="p-4 border-t border-slate-700">
                 <div class="flex items-center gap-3">
@@ -253,70 +273,70 @@
                         </div>
                     </div>
 
-<!--  KPI ROWS          
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <p class="text-sm text-slate-500">Avg Bed Utilization</p>
-        <h3 class="text-3xl font-bold text-slate-800 mt-2">78%</h3>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <p class="text-sm text-slate-500">Infusion Chair Utilization</p>
-        <h3 class="text-3xl font-bold text-slate-800 mt-2">65%</h3>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <p class="text-sm text-slate-500">Monthly Patient Volume</p>
-        <h3 class="text-3xl font-bold text-slate-800 mt-2">1,420</h3>
-    </div>
-</div>
--->
+                    <!--  KPI ROWS          
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <p class="text-sm text-slate-500">Avg Bed Utilization</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-2">78%</h3>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <p class="text-sm text-slate-500">Infusion Chair Utilization</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-2">65%</h3>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <p class="text-sm text-slate-500">Monthly Patient Volume</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-2">1,420</h3>
+                        </div>
+                    </div>
+                    -->
 
-<!-- Charts Row -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    
-    <!-- Capacity Utilization -->
-    <div class="bg-white rounded-xl shadow-sm p-6" style="height: 400px">
-        <h3 class="text-lg font-semibold text-slate-800 mb-4">
-            Capacity Utilization (Monthly)
-        </h3>
-        <canvas id="capacityChart" ></canvas>
-    </div>
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- Capacity Utilization -->
+                        <div class="bg-white rounded-xl shadow-sm p-6" style="height: 400px">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">
+                                Capacity Utilization (Monthly)
+                            </h3>
+                            <canvas id="capacityChart" ></canvas>
+                        </div>
 
-    <!-- Program Performance -->
-    <div class="bg-white rounded-xl shadow-sm p-6" style="height: 400px">
-        <h3 class="text-lg font-semibold text-slate-800 mb-4">
-            Program Performance By Service Line
-        </h3>
-        <canvas id="programChart"></canvas>
-    </div>
+                        <!-- Program Performance -->
+                        <div class="bg-white rounded-xl shadow-sm p-6" style="height: 400px">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">
+                                Program Performance By Service Line
+                            </h3>
+                            <canvas id="programChart"></canvas>
+                        </div>
 
-</div>
+                    </div>
 
-<!-- Top Insights -->
-<div class="bg-white rounded-xl shadow-sm p-6">
-    <h3 class="text-lg font-semibold text-slate-800 mb-4">
-        Top Insights
-    </h3>
-    <ul class="space-y-3">
-        <li class="flex items-start gap-3">
-            <span class="mt-1 text-green-600">▲</span>
-            <p class="text-slate-700">
-                Bed utilization peaks during <strong>Q3</strong>, indicating seasonal oncology demand.
-            </p>
-        </li>
-        <li class="flex items-start gap-3">
-            <span class="mt-1 text-yellow-500">●</span>
-            <p class="text-slate-700">
-                Infusion chair utilization remains under capacity, suggesting scheduling optimization opportunities.
-            </p>
-        </li>
-        <li class="flex items-start gap-3">
-            <span class="mt-1 text-blue-600">■</span>
-            <p class="text-slate-700">
-                <strong>Immunotherapy</strong> drives the highest patient volume across programs.
-            </p>
-        </li>
-    </ul>
-</div>
+                    <!-- Top Insights -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+                            Top Insights
+                        </h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3">
+                                <span class="mt-1 text-green-600">▲</span>
+                                <p class="text-slate-700">
+                                    Bed utilization peaks during <strong>Q3</strong>, indicating seasonal oncology demand.
+                                </p>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="mt-1 text-yellow-500">●</span>
+                                <p class="text-slate-700">
+                                    Infusion chair utilization remains under capacity, suggesting scheduling optimization opportunities.
+                                </p>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="mt-1 text-blue-600">■</span>
+                                <p class="text-slate-700">
+                                    <strong>Immunotherapy</strong> drives the highest patient volume across programs.
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
 
 
                 </div>
@@ -474,6 +494,153 @@
                     </div>
                 </div>
             </div>
+                <div id="view-scenario-builder" class="hidden max-w-7xl mx-auto animate-fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        
+                        <div class="lg:col-span-1 space-y-6">
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Scenario Management</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 mb-2">Select Scenario</label>
+                                        <div class="flex gap-2">
+                                            <select id="scenario-selector" class="w-full p-2.5 border rounded-lg bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                                </select>
+                                        </div>
+                                    </div>
+                                    <button id="btn-new-scenario" class="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors">
+                                        <i data-lucide="plus" class="w-4"></i> Create New
+                                    </button>
+                                    <button id="btn-delete-scenario" class="w-full py-2 px-4 border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors">
+                                        <i data-lucide="trash-2" class="w-4"></i> Delete Scenario
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-3">
+                            <div class="bg-[#0f172a] rounded-xl shadow-lg p-8 text-white relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+
+                                <div class="flex justify-between items-center mb-8 relative z-10">
+                                    <h2 id="config-title" class="text-2xl font-bold">Configure: Conservative</h2>
+                                    <button id="btn-save-scenario" class="bg-rose-500 hover:bg-rose-600 text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-lg shadow-rose-500/30">
+                                        <i data-lucide="save" class="w-4"></i> Save Configuration
+                                    </button>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
+                                    
+                                    <div class="space-y-6">
+                                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2">Growth Assumptions</h3>
+                                        
+                                        <div>
+                                            <div class="flex justify-between text-xs mb-2">
+                                                <label class="text-slate-300">Inpatient Growth (%/yr)</label>
+                                                <span id="inpatientGrowth-val" class="font-mono text-rose-400 font-bold">2.00</span>
+                                            </div>
+                                            <input type="range" id="inpatientGrowth" min="0" max="15" step="0.1" class="w-full">
+                                        </div>
+
+                                        <div>
+                                            <div class="flex justify-between text-xs mb-2">
+                                                <label class="text-slate-300">Outpatient Growth (%/yr)</label>
+                                                <span id="outpatientGrowth-val" class="font-mono text-rose-400 font-bold">3.00</span>
+                                            </div>
+                                            <input type="range" id="outpatientGrowth" min="0" max="20" step="0.1" class="w-full">
+                                        </div>
+
+                                        <div>
+                                            <div class="flex justify-between text-xs mb-2">
+                                                <label class="text-slate-300">New Patient Growth (%/yr)</label>
+                                                <span id="newPatientGrowth-val" class="font-mono text-rose-400 font-bold">2.50</span>
+                                            </div>
+                                            <input type="range" id="newPatientGrowth" min="0" max="20" step="0.1" class="w-full">
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-6">
+                                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2">Market Assumptions</h3>
+                                        
+                                        <div>
+                                            <div class="flex justify-between text-xs mb-2">
+                                                <label class="text-slate-300">Market Share Target (%)</label>
+                                                <span id="marketShare-val" class="font-mono text-rose-400 font-bold">35</span>
+                                            </div>
+                                            <input type="range" id="marketShare" min="0" max="100" step="1" class="w-full">
+                                        </div>
+
+                                        <div>
+                                            <div class="flex justify-between text-xs mb-2">
+                                                <label class="text-slate-300">Referral Network Growth (%)</label>
+                                                <span id="referralGrowth-val" class="font-mono text-rose-400 font-bold">15</span>
+                                            </div>
+                                            <input type="range" id="referralGrowth" min="0" max="50" step="1" class="w-full">
+                                        </div>
+
+                                        <div class="pt-4">
+                                            <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Program Expansion</h4>
+                                            <select id="addPrograms" class="w-full p-2 bg-slate-800 border border-slate-700 rounded text-sm text-slate-300 focus:ring-1 focus:ring-rose-500 outline-none">
+                                                <option value="">No Expansion</option>
+                                                <option value="Cardiology">Cardiology</option>
+                                                <option value="Neurology">Neurology</option>
+                                                <option value="Orthopedics">Orthopedics</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-6">
+                                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2">Capacity Constraints</h3>
+                                        
+                                        <div class="flex items-center gap-3 mb-6">
+                                            <input type="checkbox" id="applyCapacityLimits" class="w-5 h-5 rounded border-slate-600 bg-slate-800 text-rose-500 focus:ring-offset-slate-900">
+                                            <label for="applyCapacityLimits" class="text-sm text-slate-300 select-none">Apply Capacity Limits</label>
+                                        </div>
+
+                                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2">Infrastructure</h3>
+                                        
+                                        <div>
+                                            <label class="text-xs text-slate-300 block mb-2">Additional Beds</label>
+                                            <div class="flex items-center bg-slate-800 rounded-lg border border-slate-700 p-1">
+                                                <button class="p-2 hover:bg-slate-700 rounded text-slate-400 hover:text-white counter-btn" data-target="addBeds" data-action="decrement"><i data-lucide="minus" class="w-3"></i></button>
+                                                <input type="number" id="addBeds" value="0" class="bg-transparent text-center w-full text-sm font-mono focus:outline-none" readonly>
+                                                <button class="p-2 hover:bg-slate-700 rounded text-slate-400 hover:text-white counter-btn" data-target="addBeds" data-action="increment"><i data-lucide="plus" class="w-3"></i></button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-xs text-slate-300 block mb-2">Additional Infusion Chairs</label>
+                                            <div class="flex items-center bg-slate-800 rounded-lg border border-slate-700 p-1">
+                                                <button class="p-2 hover:bg-slate-700 rounded text-slate-400 hover:text-white counter-btn" data-target="addChairs" data-action="decrement"><i data-lucide="minus" class="w-3"></i></button>
+                                                <input type="number" id="addChairs" value="0" class="bg-transparent text-center w-full text-sm font-mono focus:outline-none" readonly>
+                                                <button class="p-2 hover:bg-slate-700 rounded text-slate-400 hover:text-white counter-btn" data-target="addChairs" data-action="increment"><i data-lucide="plus" class="w-3"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-forecasting" class="hidden h-[60vh] flex flex-col items-center justify-center animate-fade-in">
+                    <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="construction" class="w-12 h-12 text-slate-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Forecasting Module</h2>
+                    <p class="text-slate-500">This feature is currently under development.</p>
+                </div>
+
+                <div id="view-scenario-comparison" class="hidden h-[60vh] flex flex-col items-center justify-center animate-fade-in">
+                    <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="construction" class="w-12 h-12 text-slate-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Scenario Comparison</h2>
+                    <p class="text-slate-500">This feature is currently under development.</p>
+                </div>
+
+            </div>
         </main>
     </div>
 
@@ -482,6 +649,7 @@
     <script src="src/charts.js"></script>
     <script src="src/schema.js"></script>
     <script src="src/wizard.js"></script>
+    <script src="src/scenario.js"></script>
     <script src="src/app.js"></script>
 
 </body>

@@ -8,6 +8,9 @@ const ChartManager = {
     programChart: null,
 
     init() {
+        if (this.initialized) return;
+        this.initialized = true
+
         this.initMainChart();
         this.initDonutChart();
         this.initIngestionChart();
@@ -18,6 +21,10 @@ const ChartManager = {
     initMainChart() {
         const ctx = document.getElementById('mainChart');
         if (!ctx) return;
+
+        if (this.mainChart instanceof Chart) {
+        this.mainChart.destroy();
+        }
 
         this.mainChart = new Chart(ctx.getContext('2d'), {
             type: 'line',
@@ -62,6 +69,10 @@ const ChartManager = {
     initDonutChart() {
         const ctx = document.getElementById('donutChart');
         if (!ctx) return;
+
+        if (this.donutChart instanceof Chart) {
+        this.donutChart.destroy();
+        }
 
         this.donutChart = new Chart(ctx.getContext('2d'), {
             type: 'doughnut',
