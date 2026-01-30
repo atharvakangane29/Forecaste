@@ -21,6 +21,15 @@
     backdrop-filter: blur(10px);
 }
 
+/* Comparison Card Hover Effect */
+.hover-card-pop {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-card-pop:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
 /* --- Toast Notifications --- */
 #toast-container {
     position: fixed;
@@ -139,4 +148,159 @@ input[type=range]::-webkit-slider-runnable-track {
 
 input[type=range]:focus {
     outline: none;
+}
+
+/* --- Forecasting Module Styles --- */
+
+/* Custom Multi-Select Dropdown */
+#forecast-scenario-container {
+    min-height: 42px; /* Match height of standard inputs */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Chips (Selected Scenarios) */
+.scenario-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px; /* Full pill shape */
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Chip Colors (Dynamic classes) */
+.chip-blue   { background-color: #2563eb; } /* Blue-600 */
+.chip-green  { background-color: #059669; } /* Emerald-600 */
+.chip-rose   { background-color: #e11d48; } /* Rose-600 */
+.chip-purple { background-color: #7c3aed; } /* Violet-600 */
+.chip-orange { background-color: #ea580c; } /* Orange-600 */
+.chip-slate  { background-color: #475569; } /* Slate-600 */
+
+.scenario-chip button {
+    opacity: 0.8;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+
+.scenario-chip button:hover {
+    opacity: 1;
+    background-color: rgba(0,0,0,0.2);
+}
+
+/* Dropdown Options */
+#forecast-scenario-dropdown .dropdown-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #334155;
+    transition: background-color 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#forecast-scenario-dropdown .dropdown-item:hover {
+    background-color: #f1f5f9;
+}
+
+#forecast-scenario-dropdown .dropdown-item.selected {
+    background-color: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+    pointer-events: none; /* Prevent re-selecting */
+    opacity: 0.6;
+}
+
+/* Custom Scrollbar for Report Preview */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1; 
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; 
+}
+
+/* Print simulation for report paper */
+#report-paper {
+    font-family: 'Times New Roman', Times, serif; /* Serif font for report look */
+}
+#report-paper h1, #report-paper h2, #report-paper h3, #report-paper h4 {
+    font-family: 'Inter', sans-serif; /* Keep headers modern sans-serif */
+}
+
+/* --- Custom Date Range Styling --- */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    filter: invert(0.5); /* Makes icon greyish */
+}
+
+input[type="date"]:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+}
+
+#model-selector option {
+    background-color: #0f172a; /* Ensure dropdown options are dark */
+    color: #cbd5e1;
+    padding: 10px;
+}
+
+/* --- Date Slider Customization --- */
+.noUi-target {
+    background: #e2e8f0; 
+    border: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    height: 12px; /* <--- INCREASE THIS number to make the bar thicker */
+    border-radius: 9999px; 
+    cursor: pointer;
+}
+
+.noUi-connect {
+    background: #3b82f6; 
+}
+
+/* Handle (Circle) Styling */
+.noUi-handle {
+    width: 24px !important; 
+    height: 24px !important;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #3b82f6; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    cursor: grab;
+    
+    /* Alignment Math: (Handle Size - Track Height) / 2 * -1 */
+    /* (24px - 12px) / 2 * -1 = -6px */
+    top: -6px !important; 
+    right: -12px !important; 
+}
+
+.noUi-handle:before, .noUi-handle:after {
+    display: none; 
+}
+
+.noUi-handle:active {
+    cursor: grabbing;
+    background: #3b82f6;
+    /* border-color: #white; */
+    transform: scale(1.1);
 }

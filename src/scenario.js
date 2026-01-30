@@ -3,56 +3,61 @@
 const ScenarioManager = {
     // Default Data
     scenarios: [
-        {
-            id: 'conservative',
-            name: 'Conservative',
-            data: {
-                inpatientGrowth: 2.0,
-                outpatientGrowth: 3.0,
-                newPatientGrowth: 2.5,
-                marketShare: 35,
-                referralGrowth: 15,
-                applyCapacityLimits: false,
-                addBeds: 0,
-                addChairs: 0,
-                programs: []
-            }
-        },
-        {
-            id: 'base-case',
-            name: 'Base Case',
-            data: {
-                inpatientGrowth: 4.5,
-                outpatientGrowth: 6.0,
-                newPatientGrowth: 5.0,
-                marketShare: 45,
-                referralGrowth: 25,
-                applyCapacityLimits: true,
-                addBeds: 10,
-                addChairs: 5,
-                programs: ['Cardiology']
-            }
-        },
-        {
-            id: 'aggressive',
-            name: 'Aggressive',
-            data: {
-                inpatientGrowth: 8.0,
-                outpatientGrowth: 12.0,
-                newPatientGrowth: 10.0,
-                marketShare: 60,
-                referralGrowth: 40,
-                applyCapacityLimits: true,
-                addBeds: 25,
-                addChairs: 15,
-                programs: ['Cardiology', 'Neurology']
-            }
-        }
+        // {
+        //     id: 'conservative',
+        //     name: 'Conservative',
+        //     data: {
+        //         inpatientGrowth: 2.0,
+        //         outpatientGrowth: 3.0,
+        //         newPatientGrowth: 2.5,
+        //         marketShare: 35,
+        //         referralGrowth: 15,
+        //         applyCapacityLimits: false,
+        //         addBeds: 0,
+        //         addChairs: 0,
+        //         programs: []
+        //     }
+        // },
+        // {
+        //     id: 'base-case',
+        //     name: 'Base Case',
+        //     data: {
+        //         inpatientGrowth: 4.5,
+        //         outpatientGrowth: 6.0,
+        //         newPatientGrowth: 5.0,
+        //         marketShare: 45,
+        //         referralGrowth: 25,
+        //         applyCapacityLimits: true,
+        //         addBeds: 10,
+        //         addChairs: 5,
+        //         programs: ['Cardiology']
+        //     }
+        // },
+        // {
+        //     id: 'aggressive',
+        //     name: 'Aggressive',
+        //     data: {
+        //         inpatientGrowth: 8.0,
+        //         outpatientGrowth: 12.0,
+        //         newPatientGrowth: 10.0,
+        //         marketShare: 60,
+        //         referralGrowth: 40,
+        //         applyCapacityLimits: true,
+        //         addBeds: 25,
+        //         addChairs: 15,
+        //         programs: ['Cardiology', 'Neurology']
+        //     }
+        // }
     ],
 
     activeScenarioId: 'conservative',
 
-    init() {
+    init(data) {
+        // Load deep copy to allow editing without mutating source
+        if (data && data.scenarios) {
+            this.scenarios = JSON.parse(JSON.stringify(data.scenarios.defaults));
+        }
+
         this.renderScenarioList();
         this.loadScenario(this.activeScenarioId);
         this.bindEvents();
@@ -153,6 +158,13 @@ const ScenarioManager = {
         setSlider('marketShare', d.marketShare);
         setSlider('referralGrowth', d.referralGrowth);
 
+        // Set Model Dropdown
+        const modelSelect = document.getElementById('model-selector');
+        if (modelSelect) {
+            // Default to 'deterministic' if key doesn't exist
+            modelSelect.value = d.selectedModel || 'deterministic'; 
+        }
+
         // Boolean/Counters
         const capCheck = document.getElementById('applyCapacityLimits');
         if(capCheck) capCheck.checked = d.applyCapacityLimits;
@@ -173,6 +185,7 @@ const ScenarioManager = {
         const getData = (id) => parseFloat(document.getElementById(id).value);
         
         const newData = {
+            selectedModel: document.getElementById('model-selector').value,
             inpatientGrowth: getData('inpatientGrowth'),
             outpatientGrowth: getData('outpatientGrowth'),
             newPatientGrowth: getData('newPatientGrowth'),
