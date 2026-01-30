@@ -1,5 +1,55 @@
 /* src/app.js */
 
+window.AuthFlow = {
+    init() {
+        // Ensure Intro is visible, others hidden on fresh load
+        document.getElementById('view-intro').classList.remove('hidden');
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-wizard').classList.add('hidden');
+    },
+
+    goToLogin() {
+        const intro = document.getElementById('view-intro');
+        const login = document.getElementById('view-login');
+
+        // Transition
+        intro.classList.add('opacity-0');
+        setTimeout(() => {
+            intro.classList.add('hidden');
+            login.classList.remove('hidden');
+            // Animate login entrance
+            login.classList.add('animate-fade-in');
+        }, 500);
+    },
+
+    handleLogin() {
+        const login = document.getElementById('view-login');
+        const btn = login.querySelector('button');
+        
+        // Simulate loading
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 animate-spin"></i>`;
+        
+        setTimeout(() => {
+            // Success transition
+            login.classList.add('opacity-0');
+            setTimeout(() => {
+                login.classList.add('hidden');
+                this.startWizard();
+            }, 500);
+        }, 1000);
+    },
+
+    startWizard() {
+        const wizard = document.getElementById('view-wizard');
+        wizard.classList.remove('hidden');
+        wizard.classList.add('animate-fade-in');
+        
+        // Ensure Lucide icons render in the newly visible wizard
+        if (window.lucide) lucide.createIcons();
+    }
+};
+
 const App = {
     state: {
         view: 'dashboard'
@@ -349,4 +399,10 @@ const App = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Initialize Authentication Flow (Intro -> Login -> Wizard)
+    AuthFlow.init();
+    
+    // 2. Initialize Main App (Background loading)
+    App.init(); 
+});

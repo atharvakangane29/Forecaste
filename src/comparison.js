@@ -2,7 +2,11 @@
 
 const ComparisonManager = {
     init(data) {
-        this.baseParams = data.forecasting.baseParams; // Store base params
+        this.forecastingData = data.forecasting; // Store entire object
+        this.baseParams = data.forecasting.baseParams;
+        this.config = data.forecasting.config;
+        this.compConfig = data.forecasting.comparison;
+        
         this.cacheDOM();
         this.bindEvents();
         
@@ -69,7 +73,9 @@ const ComparisonManager = {
     // Calculate projection for 10 years out (2034)
     // Formula: Current * (1 + rate)^10
     calculateProjection(current, rate) {
-        return Math.round(current * Math.pow((1 + rate / 100), 10));
+        // Calculate years dynamically based on JSON config
+        const years = this.config.endYear - this.config.startYear; 
+        return Math.round(current * Math.pow((1 + rate / 100), years));
     },
 
     formatNumber(num) {
@@ -90,16 +96,16 @@ const ComparisonManager = {
         this.tableHeadA.innerText = scenarioA.name;
         this.tableHeadB.innerText = scenarioB.name;
 
-        // 2. Calculate Projections (Base: Inpatient=1200, Outpatient=4500)
-        // Note: Using 1200/4500 as base from forecast.js to match 2024 data
-        const baseInpatient = this.baseParams.baseInpatientVolume;
-        const baseOutpatient = this.baseParams.baseOutpatientVolume;
+        // 2. Calculate Projections
+        const baseIn = this.baseParams.inpatient;
+        const baseOut = this.baseParams.outpatient;
 
-        const projA_In = this.calculateProjection(baseInpatient, scenarioA.data.inpatientGrowth);
-        const projA_Out = this.calculateProjection(baseOutpatient, scenarioA.data.outpatientGrowth);
+        // FIXED: Changed 'baseInpatient' -> 'baseIn' and 'baseOutpatient' -> 'baseOut'
+        const projA_In = this.calculateProjection(baseIn, scenarioA.data.inpatientGrowth);
+        const projA_Out = this.calculateProjection(baseOut, scenarioA.data.outpatientGrowth);
 
-        const projB_In = this.calculateProjection(baseInpatient, scenarioB.data.inpatientGrowth);
-        const projB_Out = this.calculateProjection(baseOutpatient, scenarioB.data.outpatientGrowth);
+        const projB_In = this.calculateProjection(baseIn, scenarioB.data.inpatientGrowth);
+        const projB_Out = this.calculateProjection(baseOut, scenarioB.data.outpatientGrowth);
 
         // 3. Update DOM Values
         this.valAInpatient.innerText = this.formatNumber(projA_In);
@@ -114,13 +120,19 @@ const ComparisonManager = {
         // 5. Update Table
         this.renderTable(scenarioA, scenarioB);
 
-        // 6. Update Dynamic Insight
+        // 6. Update Dynamic Insight using JSON Template
         const insightEl = document.getElementById('insight-dynamic-1');
         if(insightEl) {
             const diff = projB_In - projA_In;
-            const text = diff > 0 
-                ? `${scenarioB.name} projects +${this.formatNumber(diff)} more inpatient volume by 2034.`
-                : `${scenarioB.name} projects ${this.formatNumber(Math.abs(diff))} less inpatient volume by 2034.`;
+            const direction = diff > 0 ? "+" + this.formatNumber(diff) + " more" : this.formatNumber(Math.abs(diff)) + " less";
+            
+            // Simple template replacement
+            let text = this.compConfig.insights.volumeGap
+                .replace('{scenarioName}', scenarioB.name)
+                .replace('{diff}', "") // handled by direction logic mostly, or split logic
+                .replace('{direction}', direction)
+                .replace('{year}', this.config.endYear);
+                
             insightEl.innerText = text;
         }
     },
@@ -147,13 +159,22 @@ const ComparisonManager = {
     },
 
     renderTable(sA, sB) {
-        // Rows: Parameter, A value, B value
-        const rows = [
-            { label: 'Outpatient Growth Rate', valA: sA.data.outpatientGrowth + '%', valB: sB.data.outpatientGrowth + '%' },
-            { label: 'New Patient Growth', valA: sA.data.newPatientGrowth + '%', valB: sB.data.newPatientGrowth + '%' },
-            { label: 'Inpatient Growth Rate', valA: sA.data.inpatientGrowth + '%', valB: sB.data.inpatientGrowth + '%' },
-            { label: 'Capacity Constraints', valA: sA.data.applyCapacityLimits ? 'Active' : 'None', valB: sB.data.applyCapacityLimits ? 'Active' : 'None' }
-        ];
+        // Generate rows dynamically from JSON metrics list
+        const rows = this.compConfig.metrics.map(metric => {
+            let valA = sA.data[metric.id];
+            let valB = sB.data[metric.id];
+
+            // Format values based on JSON format key
+            if (metric.format === 'percent') {
+                valA += '%';
+                valB += '%';
+            } else if (metric.format === 'boolean') {
+                valA = valA ? 'Active' : 'None';
+                valB = valB ? 'Active' : 'None';
+            }
+
+            return { label: metric.label, valA, valB };
+        });
 
         this.tableBody.innerHTML = rows.map(r => `
             <tr class="hover:bg-slate-50 transition-colors">
@@ -162,5 +183,5 @@ const ComparisonManager = {
                 <td class="px-6 py-4 text-blue-600 font-mono font-bold bg-blue-50/30">${r.valB}</td>
             </tr>
         `).join('');
-    }
+    },
 };

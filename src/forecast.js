@@ -12,9 +12,16 @@ const ForecastManager = {
     ],
 
     init(data) {
-        this.baseParams = data.forecasting.baseParams; // Store base params
+        // Read configuration from JSON
+        this.config = data.forecasting.config;
+        this.baseParams = data.forecasting.baseParams;
+        
+        // Use colors from JSON
+        this.colors = this.config.palette;
+
         this.bindEvents();
-        // Default selection: Select the first 3 available scenarios if none selected
+        
+        // Default selection logic...
         if (typeof ScenarioManager !== 'undefined' && this.selectedScenarios.length === 0) {
              const defaults = ScenarioManager.scenarios.slice(0, 3).map(s => s.id);
              defaults.forEach(id => this.addScenario(id));
@@ -121,30 +128,28 @@ const ForecastManager = {
     // --- Chart Generation Logic ---
 
     getYears() {
-        return Array.from({length: 11}, (_, i) => 2020 + i); // 2020 to 2030
+        const count = this.config.endYear - this.config.startYear + 1;
+        return Array.from({length: count}, (_, i) => this.config.startYear + i);
     },
 
-    generateDataPoints(baseValue, growthRate, isHistorical) {
-        // Historical (2020-2025): Slight random noise around base growth
-        // Forecast (2026-2030): Smooth growth curve
-        
+    generateDataPoints(baseValue, growthRate) {
         let data = [];
         let currentValue = baseValue;
+        const { startYear, endYear, historyCutoff, historyNoiseFactor } = this.config;
+        const totalYears = endYear - startYear + 1;
 
-        for (let i = 0; i < 11; i++) {
-            const year = 2020 + i;
+        for (let i = 0; i < totalYears; i++) {
+            const year = startYear + i;
             
-            if (year <= 2025) {
-                // Mock historical noise
+            if (year <= historyCutoff) {
+                // Historical: Apply random noise defined in JSON
                 if (i > 0) {
-                     // Historical growth approx 2-3% + noise
-                    let noise = (Math.random() - 0.5) * 50; 
+                    let noise = (Math.random() - 0.5) * (baseValue * historyNoiseFactor); 
                     currentValue = currentValue * 1.025 + noise;
                 }
                 data.push(Math.round(currentValue));
             } else {
-                // Forecast (Strict compounding based on Scenario Growth Rate)
-                // growthRate is percentage (e.g. 5.0)
+                // Forecast: Strict compounding
                 currentValue = currentValue * (1 + (growthRate / 100));
                 data.push(Math.round(currentValue));
             }
@@ -167,12 +172,14 @@ const ForecastManager = {
             const color = this.colors[index % this.colors.length];
             
             // We return an object representing this scenario's config for use in different charts
+            // updateCharts loop...
             datasets.push({
                 label: scenario.name,
                 color: color,
-                inpatientData: this.generateDataPoints(this.baseParams.baseInpatientVolume, scenario.data.inpatientGrowth),
-                outpatientData: this.generateDataPoints(this.baseParams.baseOutpatientVolume, scenario.data.outpatientGrowth),
-                growthData: scenario.data.newPatientGrowth, // Simplified for bar chart
+                // Use JSON baseParams keys (inpatient/outpatient)
+                inpatientData: this.generateDataPoints(this.baseParams.inpatient, scenario.data.inpatientGrowth),
+                outpatientData: this.generateDataPoints(this.baseParams.outpatient, scenario.data.outpatientGrowth),
+                growthData: scenario.data.newPatientGrowth,
                 capacityLimits: scenario.data.applyCapacityLimits,
                 addBeds: scenario.data.addBeds
             });
@@ -263,8 +270,8 @@ const ForecastManager = {
     renderGapChart(labels, scenarioData) {
         const ctx = document.getElementById('chart-forecast-gap').getContext('2d');
         
-        // Static base capacity
-        const baseCapacity = this.baseParams.baseBedCapacity;
+        // Use JSON key 'bedCapacity'
+        const baseCapacity = this.baseParams.bedCapacity;
 
         const datasets = scenarioData.map(s => {
             // Calculate capacity line (Base + Added Beds over time)

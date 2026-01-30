@@ -187,12 +187,29 @@
     ]
   },
   "forecasting": {
-    "baseParams": {
-      "baseInpatientVolume": 1200,
-      "baseOutpatientVolume": 4500,
-      "baseBedCapacity": 1400,
+    "config": {
       "startYear": 2020,
-      "forecastYears": 11
+      "endYear": 2030,
+      "historyCutoff": 2025,
+      "historyNoiseFactor": 0.025,
+      "palette": ["#2563eb", "#059669", "#e11d48", "#7c3aed", "#ea580c"]
+    },
+    "baseParams": {
+      "inpatient": 1200,
+      "outpatient": 4500,
+      "bedCapacity": 1400
+    },
+    "comparison": {
+      "horizonLabel": "10y",
+      "metrics": [
+        { "id": "outpatientGrowth", "label": "Outpatient Growth Rate", "format": "percent" },
+        { "id": "newPatientGrowth", "label": "New Patient Growth", "format": "percent" },
+        { "id": "inpatientGrowth", "label": "Inpatient Growth Rate", "format": "percent" },
+        { "id": "applyCapacityLimits", "label": "Capacity Constraints", "format": "boolean" }
+      ],
+      "insights": {
+        "volumeGap": "{scenarioName} projects {diff} {direction} inpatient volume by {year} compared to baseline."
+      }
     }
   }
 }
