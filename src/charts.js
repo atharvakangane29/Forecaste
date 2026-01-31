@@ -253,10 +253,18 @@ const ChartManager = {
         });
     },
 
-    updateData(period) {
+    updateData(periodOrDays) {
         if (!this.mainChart || !this.data) return;
         
-        const key = period == '30' ? '30days' : '7days';
+        // Convert input to integer (handles both string "7" and number 45)
+        const days = parseInt(periodOrDays);
+        
+        // LOGIC: 
+        // If range is short (<= 14 days), show the granular '7days' dataset.
+        // If range is long (> 14 days), show the trend '30days' dataset.
+        // (In a real app, you would fetch new data here based on the exact dates)
+        const key = days > 14 ? '30days' : '7days';
+        
         const dataset = this.data.dashboard.charts.patientVolume.datasets[key];
 
         if (dataset) {

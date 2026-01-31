@@ -236,21 +236,29 @@ const App = {
         // Dashboard filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                // 1. Visual Update (Buttons)
                 document.querySelectorAll('.filter-btn').forEach(b => {
-                    b.className =
-                        'px-4 py-1.5 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn';
+                    b.className = 'px-4 py-1.5 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn';
                 });
+                e.currentTarget.className = 'px-4 py-1.5 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn';
 
-                e.currentTarget.className =
-                    'px-4 py-1.5 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn';
+                // 2. Logic Update (Slider & Charts)
+                const days = parseInt(e.currentTarget.dataset.period);
+                
+                if (this.dateSlider) {
+                    const end = new Date().getTime(); // Today
+                    const start = end - (days * 24 * 60 * 60 * 1000); // Today minus X days
+                    
+                    // Physically move the slider handles
+                    this.dateSlider.noUiSlider.set([start, end]);
 
-                if (typeof ChartManager !== 'undefined') {
-                    ChartManager.updateData(e.currentTarget.dataset.period);
+                    // Trigger chart update immediately
+                    if (typeof ChartManager !== 'undefined') {
+                        ChartManager.updateData(days);
+                    }
+                    
+                    this.showToast(`Showing data for last ${days} days`);
                 }
-
-                this.showToast(
-                    `Showing data for ${e.currentTarget.dataset.period} days`
-                );
             });
         });
     },
@@ -259,27 +267,30 @@ const App = {
         const slider = document.getElementById('date-slider');
         if (!slider) return;
 
-        // Configuration: simulate a 1-year range
+        // Configuration: Extended Range (Jan 2023 - Dec 2025)
         const timestamp = (str) => new Date(str).getTime();
-        const minDate = timestamp('2024-01-01');
-        const maxDate = timestamp('2024-12-31');
+        const minDate = timestamp('2023-01-01');
+        const maxDate = timestamp('2025-12-31');
         
-        // Default: Last 30 days roughly
-        const startDefault = timestamp('2024-11-01');
-        const endDefault = maxDate;
+        // Default: Last 30 days
+        const endDefault = new Date().getTime(); // Today
+        const startDefault = endDefault - (30 * 24 * 60 * 60 * 1000); 
 
+        // Create Slider
         noUiSlider.create(slider, {
             range: { min: minDate, max: maxDate },
             start: [startDefault, endDefault],
             connect: true,
-            step: 24 * 60 * 60 * 1000, // 1 day in ms
+            step: 24 * 60 * 60 * 1000, // 1 day step
             format: {
-                to: (val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                to: (val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 from: (val) => val
             }
         });
 
-        // Event: Update Labels & Fetch Data
+        this.dateSlider = slider; // Save reference for button access
+
+        // Event: Update Text Labels while dragging
         const dateStart = document.getElementById('slider-date-start');
         const dateEnd = document.getElementById('slider-date-end');
 
@@ -288,13 +299,18 @@ const App = {
             if (handle === 1) dateEnd.innerText = values[1];
         });
 
+        // Event: Trigger Chart Update on Release (Drag End)
         slider.noUiSlider.on('change', (values) => {
-            App.showToast(`Range updated: ${values[0]} to ${values[1]}`, 'success');
+            // Calculate selected duration in days
+            const startMs = new Date(values[0]).getTime();
+            const endMs = new Date(values[1]).getTime();
+            const diffDays = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24));
             
-            // Trigger Chart Update
+            App.showToast(`Custom Range: ${diffDays} days selected`, 'success');
+            
+            // Update Chart Data dynamically
             if (typeof ChartManager !== 'undefined') {
-                // You can pass the actual date strings or a specific flag
-                ChartManager.updateData('custom'); 
+                ChartManager.updateData(diffDays); 
             }
         });
     },
