@@ -96,30 +96,26 @@ const ReportManager = {
     },
 
     // --- Logic similar to comparison.js (Projection) ---
-    calculateProjection(current, rate, years = 10) {
-        return Math.round(current * Math.pow((1 + rate / 100), years));
-    },
+    // calculateProjection(current, rate, years = 10) {
+    //     return Math.round(current * Math.pow((1 + rate / 100), years));
+    // },
 
     updateReportPreview(scenarioId) {
         const scenario = ScenarioManager.scenarios.find(s => s.id === scenarioId);
         if (!scenario) return;
 
-        // Base Data (2024)
-        const baseIn = 1200;
-        const baseOut = 4500;
+        // DIRECT READ from JSON source-of-truth
+        const m = scenario.forecast.metrics;
 
-        // Projections (2034)
-        const targetIn = this.calculateProjection(baseIn, scenario.data.inpatientGrowth);
-        const targetOut = this.calculateProjection(baseOut, scenario.data.outpatientGrowth);
-
-        // Deltas
-        const deltaIn = targetIn - baseIn;
-        const deltaOut = targetOut - baseOut;
-        const totalDelta = deltaIn + deltaOut;
-
-        // Growth Percentages (Total over 10 years, not CAGR)
-        const pctIn = ((deltaIn / baseIn) * 100).toFixed(1);
-        const pctOut = ((deltaOut / baseOut) * 100).toFixed(1);
+        const targetIn = m.terminalInpatient;
+        const targetOut = m.terminalOutpatient;
+        const totalDelta = m.totalPatientDelta;
+        
+        const pctIn = m.totalInpatientGrowthPct;
+        const pctOut = m.totalOutpatientGrowthPct;
+        
+        const deltaIn = Math.round(targetIn - 1200); // Optional: Simple subtract is allowed for UI delta
+        const deltaOut = Math.round(targetOut - 4500);
 
         // Update DOM
         if(this.rptName) this.rptName.innerText = scenario.name + " Scenario";

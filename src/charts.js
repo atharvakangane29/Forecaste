@@ -1,5 +1,14 @@
 /* src/charts.js */
 
+const Palette = {
+    palladian: '#EEE9DF',
+    oatmeal: '#C9C1B1',
+    blueFantastic: '#2C3B4D',
+    burningFlame: '#FFB162',
+    truffleTrouble: '#A35139',
+    abyssal: '#1B2632'
+};
+
 const ChartManager = {
     mainChart: null,
     donutChart: null,
@@ -22,10 +31,7 @@ const ChartManager = {
     initMainChart() {
         const ctx = document.getElementById('mainChart');
         if (!ctx) return;
-
-        if (this.mainChart instanceof Chart) {
-        this.mainChart.destroy();
-        }
+        if (this.mainChart instanceof Chart) this.mainChart.destroy();
 
         this.mainChart = new Chart(ctx.getContext('2d'), {
             type: 'line',
@@ -34,13 +40,13 @@ const ChartManager = {
                 datasets: [
                     {
                         label: 'Outpatient Visits',
-                        data: this.data.dashboard.charts.patientVolume.datasets['7days'].outpatient, // Default to 7days
-                        borderColor: '#2563eb', 
+                        data: this.data.dashboard.charts.patientVolume.datasets['7days'].outpatient,
+                        borderColor: Palette.blueFantastic,
                         backgroundColor: (context) => {
                             const ctx = context.chart.ctx;
                             const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                            gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');
-                            gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+                            gradient.addColorStop(0, 'rgba(44, 59, 77, 0.2)'); // Blue Fantastic alpha
+                            gradient.addColorStop(1, 'rgba(44, 59, 77, 0)');
                             return gradient;
                         },
                         fill: true,
@@ -49,7 +55,7 @@ const ChartManager = {
                     {
                         label: 'Inpatient Admits',
                         data: this.data.dashboard.charts.patientVolume.datasets['7days'].inpatient,
-                        borderColor: '#94a3b8',
+                        borderColor: Palette.oatmeal, // Secondary metric
                         borderDash: [5, 5],
                         tension: 0.4
                     }
@@ -58,22 +64,23 @@ const ChartManager = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'top', align: 'end' } },
+                plugins: { legend: { position: 'top', align: 'end', labels: { color: Palette.abyssal } } },
                 scales: { 
-                    y: { grid: { borderDash: [2, 4] } }, 
-                    x: { grid: { display: false } } 
+                    y: { grid: { borderDash: [2, 4], color: Palette.oatmeal }, ticks: { color: Palette.abyssal } }, 
+                    x: { grid: { display: false }, ticks: { color: Palette.abyssal } } 
                 }
             }
         });
     },
+    
 
     initDonutChart() {
         const ctx = document.getElementById('donutChart');
         if (!ctx) return;
+        if (this.donutChart instanceof Chart) this.donutChart.destroy();
 
-        if (this.donutChart instanceof Chart) {
-        this.donutChart.destroy();
-        }
+        // Use Palette for segments
+        const colors = [Palette.blueFantastic, Palette.burningFlame, Palette.truffleTrouble, Palette.oatmeal];
 
         this.donutChart = new Chart(ctx.getContext('2d'), {
             type: 'doughnut',
@@ -81,7 +88,7 @@ const ChartManager = {
                 labels: this.data.dashboard.charts.programMix.labels,
                 datasets: [{
                     data: this.data.dashboard.charts.programMix.data,
-                    backgroundColor: this.data.dashboard.charts.programMix.colors,
+                    backgroundColor: colors,
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -93,6 +100,19 @@ const ChartManager = {
                 plugins: { legend: { display: false } }
             }
         });
+        
+        // Update Legend HTML colors manually if needed, or rely on chart
+        const mixLegend = document.getElementById('program-mix-legend');
+        if (mixLegend) {
+             mixLegend.innerHTML = this.data.dashboard.charts.programMix.labels.map((label, i) => `
+                <div class="flex justify-between text-xs items-center text-abyssal">
+                    <span class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full" style="background-color: ${colors[i]}"></span> ${label}
+                    </span> 
+                    <span class="font-bold">${this.data.dashboard.charts.programMix.data[i]}%</span>
+                </div>
+            `).join('');
+        }
     },
 
     initIngestionChart() {
@@ -113,7 +133,7 @@ const ChartManager = {
             {
                 label: 'Completeness Score (%)',
                 data: this.data.pipeline.ingestionTrend.completeness,
-                borderColor: '#0ea5e9',
+                borderColor: Palette.blueFantastic,
                 backgroundColor: (context) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -121,22 +141,22 @@ const ChartManager = {
                     gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
                     return gradient;
                 },
-                fill: true, // Changed to true to match style
+                // fill: true, // Changed to true to match style
                 tension: 0.4,
                 pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#0ea5e9',
+                pointBorderColor: Palette.blueFantastic,
                 pointBorderWidth: 2,
                 pointRadius: 4
             },
             {
                 label: 'Accuracy (%)',
                 data: this.data.pipeline.ingestionTrend.accuracy,
-                borderColor: '#ef4444',
+                borderColor: Palette.truffleTrouble,
                 backgroundColor: 'transparent',
                 fill: false,
                 tension: 0.4,
                 pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#ef4444',
+                pointBorderColor: Palette.truffleTrouble,
                 pointBorderWidth: 2,
                 pointRadius: 4
             }
@@ -167,54 +187,39 @@ const ChartManager = {
     });
 },
 
-            initCapacityChart() {
-                const ctx = document.getElementById('capacityChart');
-                if (!ctx) return;
+        initCapacityChart() {
+        const ctx = document.getElementById('capacityChart');
+        if (!ctx) return;
+        if (this.capacityChart instanceof Chart) this.capacityChart.destroy();
 
-                if (this.capacityChart instanceof Chart) {
-                    this.capacityChart.destroy();
-                }
-
-                this.capacityChart = new Chart(ctx.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                        datasets: [
-                            {
-                                label: 'Bed Utilization (%)',
-                                data: [70, 75, 72, 80, 85, 90],
-                                backgroundColor: '#2563eb'
-                            },
-                            {
-                                label: 'Infusion Chair Utilization (%)',
-                                data: [55, 60, 58, 62, 65, 68],
-                                backgroundColor: '#22c55e'
-                            }
-                        ]
+        this.capacityChart = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Bed Utilization (%)',
+                        data: [70, 75, 72, 80, 85, 90],
+                        backgroundColor: Palette.blueFantastic
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                ticks: {
-                                    callback: value => value + '%'
-                                },
-                                grid: { borderDash: [2, 4] }
-                            },
-                            x: {
-                                grid: { display: false }
-                            }
-                        }
+                    {
+                        label: 'Infusion Chair Utilization (%)',
+                        data: [55, 60, 58, 62, 65, 68],
+                        backgroundColor: Palette.burningFlame // Accent
                     }
-                });
+                ]
             },
-
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: Palette.abyssal } } },
+                scales: {
+                    y: { max: 100, ticks: { color: Palette.abyssal }, grid: { borderDash: [2, 4], color: Palette.oatmeal } },
+                    x: { grid: { display: false }, ticks: { color: Palette.abyssal } }
+                }
+            }
+        });
+    },
         initProgramChart() {
         const ctx = document.getElementById('programChart');
         if (!ctx) return;
@@ -230,10 +235,10 @@ const ChartManager = {
                 datasets: [{
                     data: [420, 310, 520, 170],
                     backgroundColor: [
-                        '#3b82f6',
-                        '#f59e0b',
-                        '#10b981',
-                        '#ef4444'
+                        Palette.palladian,
+                        Palette.oatmeal,
+                        Palette.blueFantastic,
+                        Palette.burningFlame
                     ],
                     borderWidth: 0
                 }]

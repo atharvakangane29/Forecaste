@@ -3,12 +3,13 @@
 const ForecastManager = {
     charts: {},
     selectedScenarios: [], // Stores IDs of selected scenarios
+    // Palette: Blue Fantastic, Burning Flame, Truffle Trouble, Abyssal, Oatmeal
     colors: [
-        '#2563eb', // Blue (Conservative)
-        '#059669', // Emerald (Base Case)
-        '#e11d48', // Rose (Aggressive)
-        '#7c3aed', // Purple
-        '#ea580c'  // Orange
+        '#2C3B4D', 
+        '#FFB162', 
+        '#A35139', 
+        '#1B2632', 
+        '#C9C1B1'
     ],
 
     init(data) {
@@ -16,8 +17,7 @@ const ForecastManager = {
         this.config = data.forecasting.config;
         this.baseParams = data.forecasting.baseParams;
         
-        // Use colors from JSON
-        this.colors = this.config.palette;
+        // Keep the hardcoded colors array defined above
 
         this.bindEvents();
         
@@ -106,8 +106,8 @@ const ForecastManager = {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
             if (!scenario) return;
 
-            // Cycle through colors
-            const colorClass = ['chip-blue', 'chip-green', 'chip-rose', 'chip-purple', 'chip-orange'][index % 5];
+            // Cycle through color classes using the new palette order
+            const colorClass = ['chip-blue', 'chip-orange', 'chip-brown', 'chip-dark', 'chip-tan'][index % 5];
 
             const chip = document.createElement('div');
             chip.className = `scenario-chip ${colorClass}`;
@@ -127,68 +127,48 @@ const ForecastManager = {
 
     // --- Chart Generation Logic ---
 
-    getYears() {
-        const count = this.config.endYear - this.config.startYear + 1;
-        return Array.from({length: count}, (_, i) => this.config.startYear + i);
-    },
-
-    generateDataPoints(baseValue, growthRate) {
-        let data = [];
-        let currentValue = baseValue;
-        const { startYear, endYear, historyCutoff, historyNoiseFactor } = this.config;
-        const totalYears = endYear - startYear + 1;
-
-        for (let i = 0; i < totalYears; i++) {
-            const year = startYear + i;
-            
-            if (year <= historyCutoff) {
-                // Historical: Apply random noise defined in JSON
-                if (i > 0) {
-                    let noise = (Math.random() - 0.5) * (baseValue * historyNoiseFactor); 
-                    currentValue = currentValue * 1.025 + noise;
-                }
-                data.push(Math.round(currentValue));
-            } else {
-                // Forecast: Strict compounding
-                currentValue = currentValue * (1 + (growthRate / 100));
-                data.push(Math.round(currentValue));
-            }
-        }
-        return data;
-    },
+    // REMOVED: getYears()
+    // REMOVED: generateDataPoints()
 
     updateCharts() {
         // Destroy existing to rebuild
         Object.values(this.charts).forEach(chart => chart.destroy());
 
-        const years = this.getYears();
+        // Get timeline labels from the first selected scenario (assuming aligned timelines)
+        if (this.selectedScenarios.length === 0) return;
+        const firstScenario = ScenarioManager.scenarios.find(s => s.id === this.selectedScenarios[0]);
+        if (!firstScenario) return;
+        
+        const labels = firstScenario.forecast.timeline; 
         const datasets = [];
 
-        // Prepare datasets for selected scenarios
+        // Prepare datasets via direct JSON access
         this.selectedScenarios.forEach((id, index) => {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
             if (!scenario) return;
 
+            // Use the same color from the colors array (matching chip colors)
             const color = this.colors[index % this.colors.length];
             
-            // We return an object representing this scenario's config for use in different charts
-            // updateCharts loop...
             datasets.push({
                 label: scenario.name,
                 color: color,
-                // Use JSON baseParams keys (inpatient/outpatient)
-                inpatientData: this.generateDataPoints(this.baseParams.inpatient, scenario.data.inpatientGrowth),
-                outpatientData: this.generateDataPoints(this.baseParams.outpatient, scenario.data.outpatientGrowth),
-                growthData: scenario.data.newPatientGrowth,
+                index: index, // Store index for color lookup
+                // DIRECT READ: No calculation
+                inpatientData: scenario.forecast.inpatientValues,
+                outpatientData: scenario.forecast.outpatientValues,
+                growthData: scenario.forecast.growthRates, 
+                gapData: scenario.forecast.capacityGap,
+                // Metadata
                 capacityLimits: scenario.data.applyCapacityLimits,
                 addBeds: scenario.data.addBeds
             });
         });
 
-        this.renderInpatientChart(years, datasets);
-        this.renderOutpatientChart(years, datasets);
-        this.renderGrowthChart(years, datasets);
-        this.renderGapChart(years, datasets);
+        this.renderInpatientChart(labels, datasets);
+        this.renderOutpatientChart(labels, datasets);
+        this.renderGrowthChart(labels, datasets);
+        this.renderGapChart(labels, datasets);
     },
 
     renderInpatientChart(labels, scenarioData) {
@@ -282,7 +262,7 @@ const ForecastManager = {
 
             return {
                 label: `${s.label} Capacity Gap`,
-                data: capacityLine, // Plotting capacity vs demand is complex, here plotting just Capacity for simplicity per instructions
+                data: s.gapData, // Plotting capacity vs demand is complex, here plotting just Capacity for simplicity per instructions
                 borderColor: s.color,
                 borderWidth: 2,
                 borderDash: [2,2],
@@ -292,16 +272,16 @@ const ForecastManager = {
 
         // Add Demand Line (Reference - usually the highest scenario demand)
         // Here we just plot the Inpatient Volume of the first scenario as "Demand" context
-        if(scenarioData.length > 0) {
-             datasets.push({
-                label: 'Projected Demand (Primary)',
-                data: scenarioData[0].inpatientData,
-                borderColor: '#64748b', // Slate-500
-                backgroundColor: 'rgba(100, 116, 139, 0.1)',
-                fill: true,
-                tension: 0.4
-             });
-        }
+        // if(scenarioData.length > 0) {
+        //      datasets.push({
+        //         label: 'Projected Demand (Primary)',
+        //         data: scenarioData[0].inpatientData,
+        //         borderColor: '#64748b', // Slate-500
+        //         backgroundColor: 'rgba(100, 116, 139, 0.1)',
+        //         fill: true,
+        //         tension: 0.4
+        //      });
+        // }
 
         this.charts.gap = new Chart(ctx, {
             type: 'line',
@@ -311,17 +291,29 @@ const ForecastManager = {
     },
 
     getCommonOptions(yTitle) {
+        // Local reference to palette colors
+        const colorText = '#1B2632'; // Abyssal
+        const colorGrid = '#C9C1B1'; // Oatmeal
+
         return {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'top', align: 'end' },
-                tooltip: { mode: 'index', intersect: false }
+                legend: { position: 'top', align: 'end', labels: { color: colorText } },
+                tooltip: { mode: 'index', intersect: false, backgroundColor: colorText, titleColor: '#EEE9DF' }
             },
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
-                y: { display: true, title: { display: true, text: yTitle }, grid: { borderDash: [2, 4] } },
-                x: { grid: { display: false } }
+                y: { 
+                    display: true, 
+                    title: { display: true, text: yTitle, color: colorText }, 
+                    grid: { borderDash: [2, 4], color: colorGrid },
+                    ticks: { color: colorText }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { color: colorText }
+                }
             }
         };
     }

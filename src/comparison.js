@@ -72,11 +72,11 @@ const ComparisonManager = {
 
     // Calculate projection for 10 years out (2034)
     // Formula: Current * (1 + rate)^10
-    calculateProjection(current, rate) {
-        // Calculate years dynamically based on JSON config
-        const years = this.config.endYear - this.config.startYear; 
-        return Math.round(current * Math.pow((1 + rate / 100), years));
-    },
+    // calculateProjection(current, rate) {
+    //     // Calculate years dynamically based on JSON config
+    //     const years = this.config.endYear - this.config.startYear; 
+    //     return Math.round(current * Math.pow((1 + rate / 100), years));
+    // },
 
     formatNumber(num) {
         return new Intl.NumberFormat('en-US').format(num);
@@ -100,13 +100,12 @@ const ComparisonManager = {
         const baseIn = this.baseParams.inpatient;
         const baseOut = this.baseParams.outpatient;
 
-        // FIXED: Changed 'baseInpatient' -> 'baseIn' and 'baseOutpatient' -> 'baseOut'
-        const projA_In = this.calculateProjection(baseIn, scenarioA.data.inpatientGrowth);
-        const projA_Out = this.calculateProjection(baseOut, scenarioA.data.outpatientGrowth);
+        // Values are pre-computed in JSON for the terminal year (2030)        
+        const projA_In = scenarioA.forecast.metrics.terminalInpatient;
+        const projA_Out = scenarioA.forecast.metrics.terminalOutpatient;
 
-        const projB_In = this.calculateProjection(baseIn, scenarioB.data.inpatientGrowth);
-        const projB_Out = this.calculateProjection(baseOut, scenarioB.data.outpatientGrowth);
-
+        const projB_In = scenarioB.forecast.metrics.terminalInpatient;
+        const projB_Out = scenarioB.forecast.metrics.terminalOutpatient;
         // 3. Update DOM Values
         this.valAInpatient.innerText = this.formatNumber(projA_In);
         this.valAOutpatient.innerText = this.formatNumber(projA_Out);
