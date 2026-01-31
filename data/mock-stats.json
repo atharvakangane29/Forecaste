@@ -16,7 +16,7 @@
       {
         "id": "avg-tti",
         "label": "Avg TTI (Days)",
-        "value": "14.2",
+        "value": "1",
         "trend": "-2.1 Days",
         "trendDirection": "down",
         "icon": "timer"
@@ -140,7 +140,6 @@
         "id": "conservative",
         "name": "Conservative",
         "data": {
-          "selectedModel": "deterministic",
           "inpatientGrowth": 2.0,
           "outpatientGrowth": 3.0,
           "newPatientGrowth": 2.5,
@@ -150,13 +149,26 @@
           "addBeds": 0,
           "addChairs": 0,
           "programs": []
+        },
+        "forecast": {
+          "timeline": [2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030],
+          "inpatientValues": [1200, 1224, 1248, 1273, 1298, 1324, 1350, 1377, 1405, 1433, 1462],
+          "outpatientValues": [4500, 4635, 4774, 4917, 5065, 5217, 5374, 5535, 5701, 5872, 6048],
+          "growthRates": [0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+          "capacityGap": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "metrics": {
+            "terminalInpatient": 1462,
+            "terminalOutpatient": 6048,
+            "totalInpatientGrowthPct": 21.8,
+            "totalOutpatientGrowthPct": 34.4,
+            "totalPatientDelta": 1810
+          }
         }
       },
       {
         "id": "base-case",
         "name": "Base Case",
         "data": {
-          "selectedModel": "deterministic",
           "inpatientGrowth": 4.5,
           "outpatientGrowth": 6.0,
           "newPatientGrowth": 5.0,
@@ -166,13 +178,26 @@
           "addBeds": 10,
           "addChairs": 5,
           "programs": ["Cardiology"]
+        },
+        "forecast": {
+          "timeline": [2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030],
+          "inpatientValues": [1200, 1254, 1310, 1369, 1431, 1495, 1562, 1632, 1705, 1782, 1862],
+          "outpatientValues": [4500, 4770, 5056, 5359, 5681, 6022, 6383, 6766, 7172, 7602, 8058],
+          "growthRates": [0, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5],
+          "capacityGap": [0, 0, 0, 0, 10, 25, 45, 70, 95, 120, 150],
+          "metrics": {
+            "terminalInpatient": 1862,
+            "terminalOutpatient": 8058,
+            "totalInpatientGrowthPct": 55.2,
+            "totalOutpatientGrowthPct": 79.1,
+            "totalPatientDelta": 4220
+          }
         }
       },
       {
         "id": "aggressive",
         "name": "Aggressive",
         "data": {
-          "selectedModel": "deterministic",
           "inpatientGrowth": 8.0,
           "outpatientGrowth": 12.0,
           "newPatientGrowth": 10.0,
@@ -182,6 +207,20 @@
           "addBeds": 25,
           "addChairs": 15,
           "programs": ["Cardiology", "Neurology"]
+        },
+        "forecast": {
+          "timeline": [2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030],
+          "inpatientValues": [1200, 1296, 1400, 1512, 1633, 1764, 1905, 2057, 2222, 2400, 2592],
+          "outpatientValues": [4500, 5040, 5645, 6322, 7081, 7931, 8882, 9948, 11142, 12479, 13976],
+          "growthRates": [0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0],
+          "capacityGap": [0, 0, 0, 20, 50, 90, 140, 200, 280, 350, 450],
+          "metrics": {
+            "terminalInpatient": 2592,
+            "terminalOutpatient": 13976,
+            "totalInpatientGrowthPct": 116.0,
+            "totalOutpatientGrowthPct": 210.6,
+            "totalPatientDelta": 10868
+          }
         }
       }
     ]

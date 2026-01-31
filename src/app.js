@@ -109,20 +109,28 @@ const App = {
         const kpiContainer = document.getElementById('dashboard-kpi-container');
         if (kpiContainer && data.dashboard.kpis) {
             kpiContainer.innerHTML = data.dashboard.kpis.map(kpi => {
-                const trendColor = kpi.trendDirection === 'up' ? 'text-emerald-600 bg-emerald-50' : 
-                                   kpi.trendDirection === 'down' ? 'text-emerald-600 bg-emerald-50' : // logic can be refined
-                                   'text-orange-600 bg-orange-50'; // warning
-                const iconColor = kpi.trendDirection === 'warning' ? 'bg-orange-50 text-orange-600' : 
-                                  'bg-blue-50 text-blue-600'; // default blue
+                // Logic: Up = Blue Fantastic, Warning = Burning Flame, Down/Alert = Truffle Trouble
+                let iconColor, trendColor;
+
+                if (kpi.trendDirection === 'up') {
+                    iconColor = 'bg-palladian text-blue-fantastic';
+                    trendColor = 'text-blue-fantastic bg-palladian border border-oatmeal';
+                } else if (kpi.trendDirection === 'warning') {
+                    iconColor = 'bg-palladian text-burning-flame';
+                    trendColor = 'text-burning-flame bg-palladian border border-oatmeal';
+                } else {
+                    iconColor = 'bg-palladian text-truffle-trouble';
+                    trendColor = 'text-truffle-trouble bg-palladian border border-oatmeal';
+                }
                 
                 return `
-                <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <div class="bg-white p-6 rounded-xl border border-oatmeal shadow-sm">
                     <div class="flex justify-between items-start mb-4">
                         <div class="p-2 ${iconColor} rounded-lg"><i data-lucide="${kpi.icon}" class="w-5 h-5"></i></div>
                         <span class="text-xs font-bold ${trendColor} px-2 py-1 rounded">${kpi.trend}</span>
                     </div>
-                    <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">${kpi.label}</h4>
-                    <p class="text-3xl font-bold text-slate-800 mt-2">${kpi.value}</p>
+                    <h4 class="text-abyssal opacity-60 text-xs font-bold uppercase tracking-wide">${kpi.label}</h4>
+                    <p class="text-3xl font-bold text-abyssal mt-2">${kpi.value}</p>
                 </div>`;
             }).join('');
         }
@@ -148,14 +156,14 @@ const App = {
         const insightsContainer = document.getElementById('dashboard-insights-container');
         if (insightsContainer && data.dashboard.insights) {
             insightsContainer.innerHTML = data.dashboard.insights.map(insight => {
-                const color = insight.type === 'positive' ? 'text-green-600' :
-                              insight.type === 'warning' ? 'text-yellow-500' : 'text-blue-600';
+                const color = insight.type === 'positive' ? 'text-blue-fantastic' :
+                              insight.type === 'warning' ? 'text-burning-flame' : 'text-abyssal';
                 const symbol = insight.type === 'positive' ? '▲' :
                                insight.type === 'warning' ? '●' : '■';
                 return `
                 <li class="flex items-start gap-3">
                     <span class="mt-1 ${color}">${symbol}</span>
-                    <p class="text-slate-700 text-sm">${insight.text}</p>
+                    <p class="text-abyssal text-sm">${insight.text}</p>
                 </li>`;
             }).join('');
         }

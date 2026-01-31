@@ -1,7 +1,6 @@
 /* assets/css/styles.css */
 
 
-/* Global Color Palette */
 :root {
     --color-palladian: #EEE9DF;
     --color-oatmeal: #C9C1B1;
@@ -11,12 +10,11 @@
     --color-abyssal: #1B2632;
 }
 
-/* Base Override */
+/* Global Background Override */
 body {
     background-color: var(--color-palladian);
     color: var(--color-abyssal);
 }
-
 /* Animations */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
