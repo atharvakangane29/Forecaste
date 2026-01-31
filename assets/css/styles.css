@@ -200,12 +200,17 @@ input[type=range]:focus {
     animation: fadeIn 0.2s ease-out;
 }
 
-/* Chip Colors (Dynamic classes) */
-.chip-blue   { background-color: #2563eb; } /* Blue-600 */
+/* Chip Colors - Updated to match new palette */
+.chip-blue   { background-color: #2C3B4D; } /* Blue Fantastic */
+.chip-orange { background-color: #FFB162; } /* Burning Flame */
+.chip-brown  { background-color: #A35139; } /* Truffle Trouble */
+.chip-dark   { background-color: #1B2632; } /* Abyssal */
+.chip-tan    { background-color: #C9C1B1; } /* Oatmeal */
+
+/* Keep these if you need backwards compatibility */
 .chip-green  { background-color: #059669; } /* Emerald-600 */
 .chip-rose   { background-color: #e11d48; } /* Rose-600 */
 .chip-purple { background-color: #7c3aed; } /* Violet-600 */
-.chip-orange { background-color: #ea580c; } /* Orange-600 */
 .chip-slate  { background-color: #475569; } /* Slate-600 */
 
 .scenario-chip button {

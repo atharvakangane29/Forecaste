@@ -17,8 +17,7 @@ const ForecastManager = {
         this.config = data.forecasting.config;
         this.baseParams = data.forecasting.baseParams;
         
-        // Use colors from JSON
-        this.colors = this.config.palette;
+        // Keep the hardcoded colors array defined above
 
         this.bindEvents();
         
@@ -107,8 +106,8 @@ const ForecastManager = {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
             if (!scenario) return;
 
-            // Cycle through colors
-            const colorClass = ['chip-blue', 'chip-green', 'chip-rose', 'chip-purple', 'chip-orange'][index % 5];
+            // Cycle through color classes using the new palette order
+            const colorClass = ['chip-blue', 'chip-orange', 'chip-brown', 'chip-dark', 'chip-tan'][index % 5];
 
             const chip = document.createElement('div');
             chip.className = `scenario-chip ${colorClass}`;
@@ -148,11 +147,13 @@ const ForecastManager = {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
             if (!scenario) return;
 
+            // Use the same color from the colors array (matching chip colors)
             const color = this.colors[index % this.colors.length];
             
             datasets.push({
                 label: scenario.name,
                 color: color,
+                index: index, // Store index for color lookup
                 // DIRECT READ: No calculation
                 inpatientData: scenario.forecast.inpatientValues,
                 outpatientData: scenario.forecast.outpatientValues,
@@ -271,16 +272,16 @@ const ForecastManager = {
 
         // Add Demand Line (Reference - usually the highest scenario demand)
         // Here we just plot the Inpatient Volume of the first scenario as "Demand" context
-        if(scenarioData.length > 0) {
-             datasets.push({
-                label: 'Projected Demand (Primary)',
-                data: scenarioData[0].inpatientData,
-                borderColor: '#64748b', // Slate-500
-                backgroundColor: 'rgba(100, 116, 139, 0.1)',
-                fill: true,
-                tension: 0.4
-             });
-        }
+        // if(scenarioData.length > 0) {
+        //      datasets.push({
+        //         label: 'Projected Demand (Primary)',
+        //         data: scenarioData[0].inpatientData,
+        //         borderColor: '#64748b', // Slate-500
+        //         backgroundColor: 'rgba(100, 116, 139, 0.1)',
+        //         fill: true,
+        //         tension: 0.4
+        //      });
+        // }
 
         this.charts.gap = new Chart(ctx, {
             type: 'line',

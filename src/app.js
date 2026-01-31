@@ -113,14 +113,14 @@ const App = {
                 let iconColor, trendColor;
 
                 if (kpi.trendDirection === 'up') {
-                    iconColor = 'bg-palladian text-blue-fantastic';
-                    trendColor = 'text-blue-fantastic bg-palladian border border-oatmeal';
+                    iconColor = 'bg-palladian text-green-600';
+                    trendColor = 'text-green-700 bg-palladian border border-oatmeal';
                 } else if (kpi.trendDirection === 'warning') {
                     iconColor = 'bg-palladian text-burning-flame';
                     trendColor = 'text-burning-flame bg-palladian border border-oatmeal';
                 } else {
-                    iconColor = 'bg-palladian text-truffle-trouble';
-                    trendColor = 'text-truffle-trouble bg-palladian border border-oatmeal';
+                    iconColor = 'bg-palladian text-red-600';
+                    trendColor = 'text-red-700 bg-palladian border border-oatmeal';
                 }
                 
                 return `
@@ -172,7 +172,7 @@ const App = {
         const pipelineKpiContainer = document.getElementById('pipeline-kpi-container');
         if (pipelineKpiContainer && data.pipeline.kpis) {
             pipelineKpiContainer.innerHTML = data.pipeline.kpis.map(kpi => {
-                const trendClass = kpi.trendColor === 'red' ? 'bg-red-50 text-red-500 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                const trendClass = kpi.trendColor === 'red' ? 'bg-red-50 text-red-600 border-red-700' : 'bg-green-50 text-green-600 border-green-700';
                 return `
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>

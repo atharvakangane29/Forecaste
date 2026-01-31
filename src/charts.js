@@ -133,7 +133,7 @@ const ChartManager = {
             {
                 label: 'Completeness Score (%)',
                 data: this.data.pipeline.ingestionTrend.completeness,
-                borderColor: '#0ea5e9',
+                borderColor: Palette.blueFantastic,
                 backgroundColor: (context) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -141,22 +141,22 @@ const ChartManager = {
                     gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
                     return gradient;
                 },
-                fill: true, // Changed to true to match style
+                // fill: true, // Changed to true to match style
                 tension: 0.4,
                 pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#0ea5e9',
+                pointBorderColor: Palette.blueFantastic,
                 pointBorderWidth: 2,
                 pointRadius: 4
             },
             {
                 label: 'Accuracy (%)',
                 data: this.data.pipeline.ingestionTrend.accuracy,
-                borderColor: '#ef4444',
+                borderColor: Palette.truffleTrouble,
                 backgroundColor: 'transparent',
                 fill: false,
                 tension: 0.4,
                 pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#ef4444',
+                pointBorderColor: Palette.truffleTrouble,
                 pointBorderWidth: 2,
                 pointRadius: 4
             }
@@ -235,10 +235,10 @@ const ChartManager = {
                 datasets: [{
                     data: [420, 310, 520, 170],
                     backgroundColor: [
-                        '#3b82f6',
-                        '#f59e0b',
-                        '#10b981',
-                        '#ef4444'
+                        Palette.palladian,
+                        Palette.oatmeal,
+                        Palette.blueFantastic,
+                        Palette.burningFlame
                     ],
                     borderWidth: 0
                 }]
