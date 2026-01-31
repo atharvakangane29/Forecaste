@@ -52,7 +52,8 @@ window.AuthFlow = {
 
 const App = {
     state: {
-        view: 'dashboard'
+        view: 'dashboard',
+        ignoreSliderUpdate: false
     },
 
     async init() {
@@ -234,30 +235,41 @@ const App = {
         });
 
         // Dashboard filter buttons
+        // Filter Buttons Logic
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // 1. Visual Update (Buttons)
+                // 1. Highlight Button
                 document.querySelectorAll('.filter-btn').forEach(b => {
                     b.className = 'px-4 py-1.5 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn';
                 });
                 e.currentTarget.className = 'px-4 py-1.5 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn';
 
-                // 2. Logic Update (Slider & Charts)
                 const days = parseInt(e.currentTarget.dataset.period);
                 
                 if (this.dateSlider) {
-                    const end = new Date().getTime(); // Today
-                    const start = end - (days * 24 * 60 * 60 * 1000); // Today minus X days
-                    
-                    // Physically move the slider handles
-                    this.dateSlider.noUiSlider.set([start, end]);
+                    const end = new Date().getTime();
+                    const start = end - (days * 24 * 60 * 60 * 1000); 
 
-                    // Trigger chart update immediately
-                    if (typeof ChartManager !== 'undefined') {
-                        ChartManager.updateData(days);
+                    // LOGIC SPLIT:
+                    if (days === 7) {
+                        // For 7 Days: Use JSON Data
+                        this.state.ignoreSliderUpdate = true; // Prevent slider from generating random data
+                        this.dateSlider.noUiSlider.set([start, end]); // Move handles visually
+                        
+                        if (typeof ChartManager !== 'undefined') {
+                            ChartManager.updateData('7days'); // Call static JSON mode
+                        }
+                        
+                        // Re-enable slider logic after a moment
+                        setTimeout(() => { this.state.ignoreSliderUpdate = false; }, 200);
+
+                    } else {
+                        // For 30 Days (or others): Use Random Data
+                        this.state.ignoreSliderUpdate = false;
+                        this.dateSlider.noUiSlider.set([start, end]); // This triggers 'update' event below
                     }
                     
-                    this.showToast(`Showing data for last ${days} days`);
+                    this.showToast(`Showing last ${days} days`);
                 }
             });
         });
@@ -294,24 +306,33 @@ const App = {
         const dateStart = document.getElementById('slider-date-start');
         const dateEnd = document.getElementById('slider-date-end');
 
+        // Event: 'update' fires continuously while dragging
         slider.noUiSlider.on('update', (values, handle) => {
-            if (handle === 0) dateStart.innerText = values[0];
-            if (handle === 1) dateEnd.innerText = values[1];
+            // 1. Update HTML Labels (The dates below the slider)
+            // We use generic indices [0] and [1] to handle both handles
+            if (dateStart) dateStart.innerText = values[0];
+            if (dateEnd) dateEnd.innerText = values[1];
+
+            // 2. Real-Time Chart Update (Random)
+            // Only run if we aren't ignoring updates (e.g. during 7-day button click)
+            if (!this.state.ignoreSliderUpdate) {
+                const startTs = new Date(values[0]).getTime();
+                const endTs = new Date(values[1]).getTime();
+
+                if (typeof ChartManager !== 'undefined') {
+                    ChartManager.updateData(startTs, endTs);
+                }
+            }
         });
 
-        // Event: Trigger Chart Update on Release (Drag End)
+        // Event: 'change' fires only when you drop the handle
         slider.noUiSlider.on('change', (values) => {
-            // Calculate selected duration in days
-            const startMs = new Date(values[0]).getTime();
-            const endMs = new Date(values[1]).getTime();
-            const diffDays = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24));
+            const startTs = new Date(values[0]).getTime();
+            const endTs = new Date(values[1]).getTime();
+            const days = Math.round((endTs - startTs) / (24 * 60 * 60 * 1000));
             
-            App.showToast(`Custom Range: ${diffDays} days selected`, 'success');
-            
-            // Update Chart Data dynamically
-            if (typeof ChartManager !== 'undefined') {
-                ChartManager.updateData(diffDays); 
-            }
+            // Show notification on drop
+            this.showToast(`Range Selected: ${days} days`);
         });
     },
 

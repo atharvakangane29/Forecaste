@@ -253,25 +253,55 @@ const ChartManager = {
         });
     },
 
-    updateData(periodOrDays) {
-        if (!this.mainChart || !this.data) return;
-        
-        // Convert input to integer (handles both string "7" and number 45)
-        const days = parseInt(periodOrDays);
-        
-        // LOGIC: 
-        // If range is short (<= 14 days), show the granular '7days' dataset.
-        // If range is long (> 14 days), show the trend '30days' dataset.
-        // (In a real app, you would fetch new data here based on the exact dates)
-        const key = days > 14 ? '30days' : '7days';
-        
-        const dataset = this.data.dashboard.charts.patientVolume.datasets[key];
+    // --- SIMPLE RANDOM GENERATOR ---
+    // Handles both Static JSON (7days) and Random Ranges (Slider/30days)
+    updateData(arg1, arg2) {
+        if (!this.mainChart) return;
 
-        if (dataset) {
-            this.mainChart.data.datasets[0].data = dataset.outpatient;
-            this.mainChart.data.datasets[1].data = dataset.inpatient;
-            this.mainChart.update();
+        // MODE 1: Static JSON Data (Requested for "7 Days" button)
+        if (arg1 === '7days') {
+            const dataset = this.data.dashboard.charts.patientVolume.datasets['7days'];
+            if (dataset) {
+                // Use the static labels from JSON (assuming the first 7 match)
+                this.mainChart.data.labels = this.data.dashboard.charts.patientVolume.labels;
+                this.mainChart.data.datasets[0].data = dataset.outpatient;
+                this.mainChart.data.datasets[1].data = dataset.inpatient;
+                this.mainChart.update();
+            }
+            return;
         }
+
+        // MODE 2: Random Generator (Slider & "30 Days" button)
+        const startMs = arg1;
+        const endMs = arg2;
+
+        // Calculate days
+        const oneDay = 24 * 60 * 60 * 1000;
+        const diffDays = Math.round((endMs - startMs) / oneDay);
+        const days = Math.max(diffDays, 2); // Minimum 2 points
+
+        // Generate Random Data
+        const labels = [];
+        const inData = [];
+        const outData = [];
+        
+        let current = startMs;
+        for (let i = 0; i <= days; i++) {
+            const date = new Date(current);
+            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+            // Random values
+            outData.push(Math.floor(80 + Math.random() * 70));
+            inData.push(Math.floor(30 + Math.random() * 30));
+
+            current += oneDay;
+        }
+
+        // Update Chart
+        this.mainChart.data.labels = labels;
+        this.mainChart.data.datasets[0].data = outData;
+        this.mainChart.data.datasets[1].data = inData;
+        this.mainChart.update('none'); // No animation for performance
     }
     
 };
