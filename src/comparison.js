@@ -2,7 +2,6 @@
 
 const ComparisonManager = {
     init(data) {
-        this.forecastingData = data.forecasting; // Store entire object
         this.baseParams = data.forecasting.baseParams;
         this.config = data.forecasting.config;
         this.compConfig = data.forecasting.comparison;
@@ -10,7 +9,7 @@ const ComparisonManager = {
         this.cacheDOM();
         this.bindEvents();
         
-        // Wait for ScenarioManager to exist
+        // Wait for ScenarioManager
         if (typeof ScenarioManager !== 'undefined') {
             this.populateDropdowns();
             // Default selections
@@ -29,19 +28,16 @@ const ComparisonManager = {
         this.selectA = document.getElementById('compare-select-a');
         this.selectB = document.getElementById('compare-select-b');
         
-        // Labels
         this.labelA = document.getElementById('label-scenario-a');
         this.labelB = document.getElementById('label-scenario-b');
         this.tableHeadA = document.getElementById('table-head-a');
         this.tableHeadB = document.getElementById('table-head-b');
 
-        // Values
         this.valAInpatient = document.getElementById('val-a-inpatient');
         this.valAOutpatient = document.getElementById('val-a-outpatient');
         this.valBInpatient = document.getElementById('val-b-inpatient');
         this.valBOutpatient = document.getElementById('val-b-outpatient');
 
-        // Differences
         this.diffInpatient = document.getElementById('diff-inpatient');
         this.pctInpatient = document.getElementById('pct-inpatient');
         this.diffOutpatient = document.getElementById('diff-outpatient');
@@ -51,15 +47,12 @@ const ComparisonManager = {
     },
 
     bindEvents() {
-        if(this.selectA) {
-            this.selectA.addEventListener('change', () => this.updateComparison());
-        }
-        if(this.selectB) {
-            this.selectB.addEventListener('change', () => this.updateComparison());
-        }
+        if(this.selectA) this.selectA.addEventListener('change', () => this.updateComparison());
+        if(this.selectB) this.selectB.addEventListener('change', () => this.updateComparison());
     },
 
     populateDropdowns() {
+        if (!ScenarioManager) return;
         const createOptions = () => {
             return ScenarioManager.scenarios.map(s => 
                 `<option value="${s.id}">${s.name}</option>`
@@ -70,20 +63,18 @@ const ComparisonManager = {
         if(this.selectB) this.selectB.innerHTML = createOptions();
     },
 
-    // Calculate projection for 10 years out (2034)
-    // Formula: Current * (1 + rate)^10
-    // calculateProjection(current, rate) {
-    //     // Calculate years dynamically based on JSON config
-    //     const years = this.config.endYear - this.config.startYear; 
-    //     return Math.round(current * Math.pow((1 + rate / 100), years));
-    // },
-
     formatNumber(num) {
         return new Intl.NumberFormat('en-US').format(num);
     },
 
     updateComparison() {
         if (!this.selectA || !this.selectB) return;
+        
+        // Ensure Engine is available
+        if (typeof ForecastEngine === 'undefined') {
+            console.warn("ForecastEngine not loaded");
+            return;
+        }
 
         const scenarioA = ScenarioManager.scenarios.find(s => s.id === this.selectA.value);
         const scenarioB = ScenarioManager.scenarios.find(s => s.id === this.selectB.value);
@@ -96,16 +87,19 @@ const ComparisonManager = {
         this.tableHeadA.innerText = scenarioA.name;
         this.tableHeadB.innerText = scenarioB.name;
 
-        // 2. Calculate Projections
-        const baseIn = this.baseParams.inpatient;
-        const baseOut = this.baseParams.outpatient;
+        // 2. Calculate Projections dynamically
+        // We use the ForecastEngine to generate the full series, then pick the last value (10y target)
+        const getTerminalValue = (base, rate) => {
+            const series = ForecastEngine.generateSeries(base, rate, this.config);
+            return series[series.length - 1]; // Last year in the series
+        };
 
-        // Values are pre-computed in JSON for the terminal year (2030)        
-        const projA_In = scenarioA.forecast.metrics.terminalInpatient;
-        const projA_Out = scenarioA.forecast.metrics.terminalOutpatient;
+        const projA_In = getTerminalValue(this.baseParams.inpatient, scenarioA.data.inpatientGrowth);
+        const projA_Out = getTerminalValue(this.baseParams.outpatient, scenarioA.data.outpatientGrowth);
 
-        const projB_In = scenarioB.forecast.metrics.terminalInpatient;
-        const projB_Out = scenarioB.forecast.metrics.terminalOutpatient;
+        const projB_In = getTerminalValue(this.baseParams.inpatient, scenarioB.data.inpatientGrowth);
+        const projB_Out = getTerminalValue(this.baseParams.outpatient, scenarioB.data.outpatientGrowth);
+
         // 3. Update DOM Values
         this.valAInpatient.innerText = this.formatNumber(projA_In);
         this.valAOutpatient.innerText = this.formatNumber(projA_Out);
@@ -116,19 +110,19 @@ const ComparisonManager = {
         this.updateDiff(this.diffInpatient, this.pctInpatient, projA_In, projB_In);
         this.updateDiff(this.diffOutpatient, this.pctOutpatient, projA_Out, projB_Out);
 
-        // 5. Update Table
+        // 5. Update Table (Parameters)
         this.renderTable(scenarioA, scenarioB);
 
-        // 6. Update Dynamic Insight using JSON Template
+        // 6. Update Dynamic Insight
         const insightEl = document.getElementById('insight-dynamic-1');
         if(insightEl) {
             const diff = projB_In - projA_In;
-            const direction = diff > 0 ? "+" + this.formatNumber(diff) + " more" : this.formatNumber(Math.abs(diff)) + " less";
+            const direction = diff > 0 ? `+${this.formatNumber(diff)} more` : `${this.formatNumber(Math.abs(diff))} less`;
             
             // Simple template replacement
             let text = this.compConfig.insights.volumeGap
                 .replace('{scenarioName}', scenarioB.name)
-                .replace('{diff}', "") // handled by direction logic mostly, or split logic
+                .replace('{diff}', "") 
                 .replace('{direction}', direction)
                 .replace('{year}', this.config.endYear);
                 
@@ -137,13 +131,13 @@ const ComparisonManager = {
     },
 
     updateDiff(valEl, pctEl, valA, valB) {
-        const diff = valB - valA; // Target - Baseline
+        const diff = valB - valA; 
         const pct = valA !== 0 ? ((diff / valA) * 100).toFixed(1) : 0;
 
         valEl.innerText = (diff > 0 ? "+" : "") + this.formatNumber(diff);
         pctEl.innerText = (diff > 0 ? "+" : "") + pct + "%";
 
-        // Color coding (Green if B > A, Red if B < A - assuming Growth is good)
+        // Color coding
         if (diff >= 0) {
             valEl.classList.remove('text-rose-400');
             valEl.classList.add('text-emerald-400');

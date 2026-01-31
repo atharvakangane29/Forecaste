@@ -1,54 +1,8 @@
 /* src/scenario.js */
 
 const ScenarioManager = {
-    // Default Data
-    scenarios: [
-        // {
-        //     id: 'conservative',
-        //     name: 'Conservative',
-        //     data: {
-        //         inpatientGrowth: 2.0,
-        //         outpatientGrowth: 3.0,
-        //         newPatientGrowth: 2.5,
-        //         marketShare: 35,
-        //         referralGrowth: 15,
-        //         applyCapacityLimits: false,
-        //         addBeds: 0,
-        //         addChairs: 0,
-        //         programs: []
-        //     }
-        // },
-        // {
-        //     id: 'base-case',
-        //     name: 'Base Case',
-        //     data: {
-        //         inpatientGrowth: 4.5,
-        //         outpatientGrowth: 6.0,
-        //         newPatientGrowth: 5.0,
-        //         marketShare: 45,
-        //         referralGrowth: 25,
-        //         applyCapacityLimits: true,
-        //         addBeds: 10,
-        //         addChairs: 5,
-        //         programs: ['Cardiology']
-        //     }
-        // },
-        // {
-        //     id: 'aggressive',
-        //     name: 'Aggressive',
-        //     data: {
-        //         inpatientGrowth: 8.0,
-        //         outpatientGrowth: 12.0,
-        //         newPatientGrowth: 10.0,
-        //         marketShare: 60,
-        //         referralGrowth: 40,
-        //         applyCapacityLimits: true,
-        //         addBeds: 25,
-        //         addChairs: 15,
-        //         programs: ['Cardiology', 'Neurology']
-        //     }
-        // }
-    ],
+    // Default Data Placeholder
+    scenarios: [],
 
     activeScenarioId: 'conservative',
 
@@ -139,7 +93,8 @@ const ScenarioManager = {
         if (!scenario) return;
 
         // Update Title
-        document.getElementById('config-title').innerText = `Configure: ${scenario.name}`;
+        const titleEl = document.getElementById('config-title');
+        if(titleEl) titleEl.innerText = `Configure: ${scenario.name}`;
 
         // Set Values
         const d = scenario.data;
@@ -161,7 +116,6 @@ const ScenarioManager = {
         // Set Model Dropdown
         const modelSelect = document.getElementById('model-selector');
         if (modelSelect) {
-            // Default to 'deterministic' if key doesn't exist
             modelSelect.value = d.selectedModel || 'deterministic'; 
         }
 
@@ -172,7 +126,7 @@ const ScenarioManager = {
         document.getElementById('addBeds').value = d.addBeds;
         document.getElementById('addChairs').value = d.addChairs;
         
-        // Program Dropdown (Simplified for UI)
+        // Program Dropdown
         const progSelect = document.getElementById('addPrograms');
         if(progSelect) progSelect.value = d.programs.length > 0 ? d.programs[0] : "";
     },
@@ -197,9 +151,15 @@ const ScenarioManager = {
             programs: [document.getElementById('addPrograms').value].filter(Boolean)
         };
 
+        // Update Data
         this.scenarios[scenarioIndex].data = newData;
         
         App.showToast(`Scenario "${this.scenarios[scenarioIndex].name}" saved successfully`, 'success');
+
+        // --- INTEGRATION: Trigger Forecast Recalculation ---
+        if (typeof ForecastManager !== 'undefined') {
+            ForecastManager.updateCharts();
+        }
     },
 
     createNewScenario() {
@@ -208,8 +168,8 @@ const ScenarioManager = {
 
         const id = name.toLowerCase().replace(/\s+/g, '-');
         
-        // Clone Base Case data
-        const baseData = JSON.parse(JSON.stringify(this.scenarios[1].data)); 
+        // Clone Base Case data (or current scenario)
+        const baseData = JSON.parse(JSON.stringify(this.scenarios[0].data)); 
         
         const newScenario = {
             id: id,
@@ -224,6 +184,11 @@ const ScenarioManager = {
         // Select the new option in dropdown
         document.getElementById('scenario-selector').value = id;
         App.showToast(`Created scenario: ${name}`, 'success');
+
+        // --- INTEGRATION: Update Dropdowns ---
+        if (typeof ForecastManager !== 'undefined') {
+            ForecastManager.renderDropdownOptions();
+        }
     },
 
     deleteScenario() {
@@ -243,5 +208,13 @@ const ScenarioManager = {
         this.loadScenario(this.activeScenarioId);
         
         App.showToast('Scenario deleted.', 'info');
+
+        // --- INTEGRATION: Update Forecast UI ---
+        if (typeof ForecastManager !== 'undefined') {
+            // Remove from selection if active
+            ForecastManager.removeScenario(current.id); 
+            ForecastManager.renderDropdownOptions();
+            ForecastManager.updateCharts();
+        }
     }
 };
