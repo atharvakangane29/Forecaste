@@ -362,6 +362,8 @@ const App = {
         // Update page title
         const titles = {
             dashboard: 'Clinical Command Center',
+            'cancer-dashboard' : 'Cancer Dashboard',
+            'geography-dashboard' : 'Geography Dashboard',
             pipeline: 'Data Pipeline Configuration',
             'scenario-builder': 'Scenario Builder',
             forecasting: 'Forecasting',

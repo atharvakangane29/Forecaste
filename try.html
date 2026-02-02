@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Journey Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    #container {
+      max-width: 1800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .stage-bg {
+      opacity: 0.95;
+    }
+
+    .stage-label {
+      font-size: 20px;
+      font-weight: bold;
+      fill: white;
+    }
+
+    .node-circle {
+      fill: white;
+      stroke: #999;
+      stroke-width: 2;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .node-circle:hover {
+      stroke: #333;
+      stroke-width: 3;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .node-text {
+      font-size: 11px;
+      fill: #333;
+      pointer-events: none;
+    }
+
+    .patient-count {
+      font-size: 12px;
+      font-weight: bold;
+      fill: #2196F3;
+      pointer-events: none;
+    }
+
+    .connection-line {
+      stroke: #999;
+      stroke-width: 2;
+      fill: none;
+      opacity: 0.4;
+    }
+
+    .tooltip {
+      position: absolute;
+      padding: 10px 15px;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      border-radius: 5px;
+      font-size: 13px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <svg id="journey-svg" viewBox="0 0 1600 750"></svg>
+  </div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    // ============================================================================
+    // DATA - Based on actual healthcare data columns
+    // ============================================================================
+    const journeyData = {
+      stages: [
+        { name: "Initial Visit", color: "#7BA7C8", x: 0, width: 400 },
+        { name: "Diagnosis & Treatment", color: "#6B97B8", x: 400, width: 500 },
+        { name: "Follow-up Care", color: "#C9B195", x: 900, width: 350 },
+        { name: "Long-term Monitoring", color: "#D89F7E", x: 1250, width: 350 }
+      ],
+      
+      nodes: [
+        // Initial Visit Stage
+        // Derived from: VisitTypeName = 'Routine', encounter_type = 'Outpatient'
+        { 
+          id: 1, 
+          x: 150, 
+          y: 300, 
+          label: "Routine\nCheckup", 
+          patients: 1000,
+          derivation: "VisitTypeName = 'Routine'"
+        },
+        
+        // Diagnosis & Treatment Stage
+        // Derived from: primary_dx_code NOT LIKE 'I42%', discharge_disposition = 'Home'
+        { 
+          id: 2, 
+          x: 500, 
+          y: 200, 
+          label: "Normal\nExam Results", 
+          patients: 650,
+          derivation: "No abnormal diagnosis codes"
+        },
+        
+        // Derived from: attending_provider_specialty = 'Cardiology', encounter_type = 'Outpatient'
+        { 
+          id: 3, 
+          x: 550, 
+          y: 400, 
+          label: "Referred to\nSpecialist", 
+          patients: 350,
+          derivation: "attending_provider_specialty = 'Cardiology'"
+        },
+        
+        // Derived from: primary_dx_code LIKE 'I42%' (Cardiomyopathy)
+        { 
+          id: 4, 
+          x: 700, 
+          y: 250, 
+          label: "Cardiac\nDiagnosis", 
+          patients: 200,
+          derivation: "primary_dx_code LIKE 'I42%'"
+        },
+        
+        // Derived from: primary_procedure_descr LIKE '%medication%'
+        { 
+          id: 5, 
+          x: 750, 
+          y: 450, 
+          label: "Started on\nMedication", 
+          patients: 280,
+          derivation: "Treatment with medication"
+        },
+        
+        // Follow-up Care Stage
+        // Derived from: VisitTypeName = 'Follow-up', readmission_flag = 0
+        { 
+          id: 6, 
+          x: 1000, 
+          y: 200, 
+          label: "Stable\nFollow-up", 
+          patients: 450,
+          derivation: "VisitTypeName = 'Follow-up' AND readmission_flag = 0"
+        },
+        
+        // Derived from: readmission_flag = 1
+        { 
+          id: 7, 
+          x: 1050, 
+          y: 400, 
+          label: "Readmitted", 
+          patients: 80,
+          derivation: "readmission_flag = 1"
+        },
+        
+        // Derived from: surgery_flag = 1, primary_procedure_code IN ('33945', '33944')
+        { 
+          id: 8, 
+          x: 1150, 
+          y: 500, 
+          label: "Surgical\nIntervention", 
+          patients: 45,
+          derivation: "surgery_flag = 1 OR transplant procedure"
+        },
+        
+        // Long-term Monitoring Stage
+        // Derived from: DATEDIFF(encounter_dt, first_encounter) > 365, readmission_flag = 0
+        { 
+          id: 9, 
+          x: 1400, 
+          y: 250, 
+          label: "1+ Year\nStable", 
+          patients: 380,
+          derivation: "No readmissions after 1 year"
+        },
+        
+        // Derived from: DATEDIFF(encounter_dt, first_encounter) > 1825 (5 years)
+        { 
+          id: 10, 
+          x: 1500, 
+          y: 400, 
+          label: "5+ Years\nHealthy", 
+          patients: 150,
+          derivation: "Stable condition after 5 years"
+        }
+      ],
+      
+      connections: [
+        // From Initial Visit
+        { from: 1, to: 2, patients: 650 },
+        { from: 1, to: 3, patients: 350 },
+        
+        // From Diagnosis & Treatment
+        { from: 3, to: 4, patients: 200 },
+        { from: 3, to: 5, patients: 150 },
+        { from: 4, to: 5, patients: 130 },
+        
+        // To Follow-up Care
+        { from: 2, to: 6, patients: 450 },
+        { from: 5, to: 6, patients: 200 },
+        { from: 5, to: 7, patients: 80 },
+        { from: 7, to: 8, patients: 45 },
+        
+        // To Long-term Monitoring
+        { from: 6, to: 9, patients: 380 },
+        { from: 8, to: 9, patients: 35 },
+        { from: 9, to: 10, patients: 150 }
+      ]
+    };
+
+    // ============================================================================
+    // VISUALIZATION
+    // ============================================================================
+    const svg = d3.select("#journey-svg");
+    const width = 1600;
+    const height = 750;
+    const nodeRadius = 55;
+    const tooltip = d3.select("#tooltip");
+
+    // Draw stage backgrounds
+    const stageGroup = svg.append("g").attr("class", "stages");
+    
+    journeyData.stages.forEach(stage => {
+      // Background bar
+      stageGroup.append("rect")
+        .attr("class", "stage-bg")
+        .attr("x", stage.x)
+        .attr("y", height - 70)
+        .attr("width", stage.width)
+        .attr("height", 70)
+        .attr("fill", stage.color);
+      
+      // Stage label
+      stageGroup.append("text")
+        .attr("class", "stage-label")
+        .attr("x", stage.x + stage.width / 2)
+        .attr("y", height - 35)
+        .attr("text-anchor", "middle")
+        .text(stage.name);
+      
+      // Decorative dot
+      stageGroup.append("circle")
+        .attr("cx", stage.x + 20)
+        .attr("cy", height - 35)
+        .attr("r", 5)
+        .attr("fill", "white")
+        .attr("opacity", 0.7);
+    });
+
+    // Draw STRAIGHT connection lines
+    const connectionGroup = svg.append("g").attr("class", "connections");
+    
+    journeyData.connections.forEach(conn => {
+      const fromNode = journeyData.nodes.find(n => n.id === conn.from);
+      const toNode = journeyData.nodes.find(n => n.id === conn.to);
+      
+      if (fromNode && toNode) {
+        // Calculate start and end points on circle edge
+        const dx = toNode.x - fromNode.x;
+        const dy = toNode.y - fromNode.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        const x1 = fromNode.x + (dx / distance) * nodeRadius;
+        const y1 = fromNode.y + (dy / distance) * nodeRadius;
+        const x2 = toNode.x - (dx / distance) * nodeRadius;
+        const y2 = toNode.y - (dy / distance) * nodeRadius;
+        
+        // Draw STRAIGHT line
+        connectionGroup.append("line")
+          .attr("class", "connection-line")
+          .attr("x1", x1)
+          .attr("y1", y1)
+          .attr("x2", x2)
+          .attr("y2", y2)
+          .attr("stroke-width", Math.max(1, conn.patients / 50)) // Width based on patient flow
+          .on("mouseover", function(event) {
+            d3.select(this).attr("opacity", 0.8);
+            tooltip
+              .style("opacity", 1)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 20) + "px")
+              .html(`<strong>Patient Flow</strong><br>${conn.patients} patients<br>${fromNode.label.replace(/\n/g, " ")} → ${toNode.label.replace(/\n/g, " ")}`);
+          })
+          .on("mouseout", function() {
+            d3.select(this).attr("opacity", 0.4);
+            tooltip.style("opacity", 0);
+          });
+      }
+    });
+
+    // Draw nodes
+    const nodeGroup = svg.append("g").attr("class", "nodes");
+    
+    journeyData.nodes.forEach(node => {
+      const g = nodeGroup.append("g")
+        .attr("transform", `translate(${node.x}, ${node.y})`);
+      
+      // Circle
+      g.append("circle")
+        .attr("class", "node-circle")
+        .attr("r", nodeRadius)
+        .on("mouseover", function(event) {
+          tooltip
+            .style("opacity", 1)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 20) + "px")
+            .html(`
+              <strong>${node.label.replace(/\n/g, " ")}</strong><br>
+              <strong>Patients:</strong> ${node.patients.toLocaleString()}<br>
+              <strong>Data Source:</strong> ${node.derivation}
+            `);
+        })
+        .on("mouseout", function() {
+          tooltip.style("opacity", 0);
+        })
+        .on("click", function() {
+          alert(`${node.label.replace(/\n/g, " ")}\n\nPatients: ${node.patients}\n\nDerived from: ${node.derivation}`);
+        });
+      
+      // Text label (multi-line)
+      const lines = node.label.split("\n");
+      const lineHeight = 12;
+      const startY = -(lines.length - 1) * lineHeight / 2;
+      
+      lines.forEach((line, i) => {
+        g.append("text")
+          .attr("class", "node-text")
+          .attr("y", startY + i * lineHeight)
+          .attr("text-anchor", "middle")
+          .text(line);
+      });
+      
+      // Patient count at bottom
+      g.append("text")
+        .attr("class", "patient-count")
+        .attr("y", nodeRadius - 15)
+        .attr("text-anchor", "middle")
+        .text(`${node.patients}`);
+    });
+
+    // ============================================================================
+    // SQL QUERY REFERENCE (How to derive this data from your database)
+    // ============================================================================
+    console.log(`
+    -- SQL to generate this visualization data:
+    
+    WITH patient_stages AS (
+      SELECT 
+        patient_token,
+        encounter_token,
+        encounter_dt,
+        
+        -- Stage 1: Initial Visit
+        CASE WHEN VisitTypeName = 'Routine' THEN 'initial_visit' END,
+        
+        -- Stage 2: Diagnosis & Treatment
+        CASE 
+          WHEN primary_dx_code NOT LIKE 'I42%' THEN 'normal_results'
+          WHEN attending_provider_specialty = 'Cardiology' THEN 'specialist_referral'
+          WHEN primary_dx_code LIKE 'I42%' THEN 'cardiac_diagnosis'
+          WHEN primary_procedure_descr LIKE '%medication%' THEN 'medication_started'
+        END,
+        
+        -- Stage 3: Follow-up Care
+        CASE
+          WHEN VisitTypeName = 'Follow-up' AND readmission_flag = 0 THEN 'stable_followup'
+          WHEN readmission_flag = 1 THEN 'readmitted'
+          WHEN surgery_flag = 1 THEN 'surgical_intervention'
+        END,
+        
+        -- Stage 4: Long-term Monitoring
+        CASE
+          WHEN DATEDIFF(encounter_dt, first_encounter) > 365 AND readmission_flag = 0 THEN '1yr_stable'
+          WHEN DATEDIFF(encounter_dt, first_encounter) > 1825 THEN '5yr_healthy'
+        END AS stage
+        
+      FROM healthcare_data
+    )
+    
+    SELECT 
+      stage,
+      COUNT(DISTINCT patient_token) as patient_count
+    FROM patient_stages
+    GROUP BY stage;
+    `);
+  </script>
+</body>
+</html>
