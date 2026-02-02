@@ -12,8 +12,10 @@
 
 /* Global Background Override */
 body {
+    font-family: 'Inter', sans-serif;
     background-color: var(--color-palladian);
     color: var(--color-abyssal);
+    overflow: hidden;
 }
 /* Animations */
 @keyframes fadeInUp {

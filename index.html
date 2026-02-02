@@ -94,7 +94,7 @@
         </div>
     </div>
 
-    <div id="view-wizard" class="fixed inset-0 z-50 bg-white flex flex-col hidden">
+    <div id="view-wizard" class="fixed inset-0 z-50 bg-[var(--color-palladian)] flex flex-col hidden">
         <div class="h-16 border-b flex items-center justify-between px-8 bg-slate-50">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white"><i data-lucide="zap" class="w-5"></i></div>
@@ -110,7 +110,8 @@
 
         
             <!-- Insert this directly after the header bar (after the second </div> that closes the top bar) -->
-            <div class="flex items-center justify-center gap-3 py-3 border-b bg-white">
+        <!-- <div class="flex items-center justify-center gap-3 py-3 border-b bg-[var(--color-palladian)]"> -->
+        <div class="flex items-center justify-center gap-3 py-3 border-b border-[var(--color-oatmeal)] bg-[var(--color-palladian)]">
             <!--  
             <img
                 src="/assets/img/logo.png" 
@@ -123,7 +124,7 @@
             <span class="text-slate-600 font-semibold tracking-wide">
                 Circulants platform A
             </span>
-            </div>
+        </div>
 
 
         <div class="flex-1 flex items-center justify-center p-6 bg-slate-50/50">
@@ -205,7 +206,7 @@
         </div>
     </div>
 
-    <div id="app-shell" class="hidden h-full flex opacity-0 transition-opacity duration-700">
+    <div id="app-shell" class="hidden h-full flex opacity-0 bg-[var(--color-palladian)]. transition-opacity duration-700">
         
         <aside class="w-20 lg:w-64 bg-slate-900 text-white flex flex-col justify-between transition-all duration-300 z-20">
             <div>     <!--Sidebar-->
@@ -270,7 +271,7 @@
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth bg-slate-50">
+            <div class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth bg-[var(--color-palladian)]">
                 
                 <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto animate-fade-in">
                     <div class="flex flex-col md:flex-row md:items-end gap-6 w-full mb-6">
