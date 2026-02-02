@@ -3,6 +3,92 @@
     "version": "1.0",
     "lastUpdated": "2026-01-29T12:00:00Z"
   },
+
+  "geographyDashboard": {
+    "insight": "<strong>23%</strong> of patients travel <strong>>50 miles</strong> – significant opportunity for a satellite clinic in <strong>Wayne County</strong>.",
+    "filters": ["0-10mi", "10-25mi", "25-50mi", "50+mi"],
+    "mapData": [
+      { "x": 10, "y": 20, "r": 15, "payor": "Medicare", "distance": "0-10mi", "label": "Facility Hub" },
+      { "x": 15, "y": 25, "r": 8, "payor": "Commercial", "distance": "0-10mi", "label": "Downtown Clinic" },
+      { "x": 40, "y": 50, "r": 20, "payor": "Medicaid", "distance": "10-25mi", "label": "North District" },
+      { "x": 30, "y": 45, "r": 12, "payor": "Medicare", "distance": "10-25mi", "label": "West End" },
+      { "x": 60, "y": 70, "r": 25, "payor": "Commercial", "distance": "25-50mi", "label": "Suburban Center" },
+      { "x": 80, "y": 80, "r": 30, "payor": "Medicare", "distance": "50+mi", "label": "Rural Outpost" },
+      { "x": 85, "y": 75, "r": 10, "payor": "Medicaid", "distance": "50+mi", "label": "Wayne County Target" }
+    ]
+  },
+  
+  "cancerDashboard": {
+    "kpis": [
+      {
+        "label": "Total Cancer Patients",
+        "value": "2,450",
+        "trend": "+5.2%",
+        "icon": "users"
+      },
+      {
+        "label": "Infusion Volume",
+        "value": "12,400",
+        "trend": "+12.8%",
+        "icon": "activity"
+      },
+      {
+        "label": "Active Oncology Cases",
+        "value": "840",
+        "trend": "-1.5%",
+        "icon": "clipboard"
+      }
+    ],
+    "charts": {
+      "cancerType": {
+        "labels": ["Breast", "Lung", "Prostate", "Colorectal", "Melanoma"],
+        "data": [35, 25, 20, 15, 5]
+      },
+      "diseaseSite": {
+        "labels": ["Thoracic", "GI", "GU", "Breast", "Skin", "H&N"],
+        "data": [22, 18, 15, 30, 8, 7]
+      },
+      "infusionTrends": {
+        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        "data": [1100, 1150, 1220, 1180, 1350, 1400]
+      }
+    },
+    "patientJourney": {
+      "stages": [
+        { "id": "stage_1", "name": "Initial Visit", "color": "#C9C1B1" },
+        { "id": "stage_2", "name": "Diagnosis & Treatment", "color": "#A35139" },
+        { "id": "stage_3", "name": "Follow-up Care", "color": "#FFB162" },
+        { "id": "stage_4", "name": "Long-term Monitoring", "color": "#1B2632" }
+      ],
+      "nodes": [
+        { "id": "routine_checkup", "name": "Routine\nCheckup", "stage": "stage_1", "patients": 1000 },
+        { "id": "normal_exam", "name": "Normal\nExam Results", "stage": "stage_2", "patients": 650 },
+        { "id": "specialist", "name": "Referred to\nSpecialist", "stage": "stage_2", "patients": 350 },
+        { "id": "cardiac_dx", "name": "Cardiac\nDiagnosis", "stage": "stage_2", "patients": 200 },
+        { "id": "medication", "name": "Started on\nMedication", "stage": "stage_2", "patients": 280 },
+        { "id": "stable_followup", "name": "Stable\nFollow-up", "stage": "stage_3", "patients": 450 },
+        { "id": "readmitted", "name": "Readmitted", "stage": "stage_3", "patients": 80 },
+        { "id": "surgery", "name": "Surgical\nIntervention", "stage": "stage_3", "patients": 45 },
+        { "id": "1yr_stable", "name": "1+ Year\nStable", "stage": "stage_4", "patients": 380 },
+        { "id": "5yr_healthy", "name": "5+ Years\nHealthy", "stage": "stage_4", "patients": 150 }
+      ],
+      "links": [
+        { "source": "routine_checkup", "target": "normal_exam", "value": 650 },
+        { "source": "routine_checkup", "target": "specialist", "value": 350 },
+        { "source": "specialist", "target": "cardiac_dx", "value": 200 },
+        { "source": "specialist", "target": "medication", "value": 150 },
+        { "source": "cardiac_dx", "target": "medication", "value": 130 },
+        { "source": "normal_exam", "target": "stable_followup", "value": 450 },
+        { "source": "medication", "target": "stable_followup", "value": 200 },
+        { "source": "medication", "target": "readmitted", "value": 80 },
+        { "source": "readmitted", "target": "surgery", "value": 45 },
+        { "source": "stable_followup", "target": "1yr_stable", "value": 380 },
+        { "source": "surgery", "target": "1yr_stable", "value": 35 },
+        { "source": "1yr_stable", "target": "5yr_healthy", "value": 150 }
+      ]
+    }
+  },
+
   "dashboard": {
     "kpis": [
       {

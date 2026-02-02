@@ -10,6 +10,8 @@
     <script src="https://unpkg.com/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
@@ -408,6 +410,115 @@
                                 Program Performance By Service Line
                             </h3>
                             <canvas id="programChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="view-cancer-dashboard" class="hidden space-y-6 max-w-7xl mx-auto animate-fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold text-slate-800">Cancer Care Analytics</h2>
+                        <span class="text-sm text-slate-500">Real-time oncology department metrics</span>
+                    </div>
+
+                    <div id="cancer-kpi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-4">Patient Journey Flow</h3>
+                        <div id="diagram-container" class="w-full min-h-[600px] bg-slate-50 border border-slate-200 rounded-lg p-4 relative">
+                            <svg id="sankey-svg" class="w-full h-full block mx-auto"></svg>
+                            
+                            <div class="mt-6 p-4 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-lg">
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-3">Journey Stages</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded bg-[#C9C1B1]"></div>
+                                        <span class="text-xs text-slate-600">Initial Visit</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded bg-[#A35139]"></div>
+                                        <span class="text-xs text-slate-600">Diagnosis & Treatment</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded bg-[#FFB162]"></div>
+                                        <span class="text-xs text-slate-600">Follow-up Care</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded bg-[#1B2632]"></div>
+                                        <span class="text-xs text-slate-600">Long-term Monitoring</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4">Cancer Type Distribution</h3>
+                            <div class="h-64 relative w-full">
+                                <canvas id="cancerTypeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4">Disease Site Grouping</h3>
+                            <div class="h-64 relative w-full">
+                                <canvas id="diseaseSiteChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4">Infusion Trends Over Time</h3>
+                            <div class="h-72 relative w-full">
+                                <canvas id="infusionTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-geography-dashboard" class="hidden space-y-6 max-w-7xl mx-auto animate-fade-in">
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">Geographic Market Analysis</h2>
+                            <span class="text-sm text-slate-500">Patient distribution and facility catchment areas</span>
+                        </div>
+                        <div class="bg-white p-1 rounded-lg border border-slate-200 flex" id="geo-filters">
+                            <button class="px-3 py-1 text-xs font-bold rounded bg-slate-800 text-white shadow-sm transition-all" data-filter="all">All</button>
+                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="0-10mi">0-10mi</button>
+                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="10-25mi">10-25mi</button>
+                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="25-50mi">25-50mi</button>
+                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="50+mi">50+mi</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-600 rounded-xl p-4 shadow-lg flex items-center gap-4 text-white">
+                        <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                            <i data-lucide="map-pin" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <!-- <div class="flex-1">
+                            <h4 class="text-xs font-bold uppercase tracking-wider opacity-80 mb-1">Strategic Insight</h4>
+                            <p class="text-lg leading-tight" id="geo-insight-text">Loading insights...</p>
+                        </div> -->
+                        <button class="px-4 py-2 bg-white text-blue-700 text-xs font-bold rounded-lg hover:bg-blue-50 transition-colors">
+                            View Details
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-800">Patient Heat Map & Facility Locations</h3>
+                            
+                            <div class="flex gap-4 text-xs font-medium text-slate-600">
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#2C3B4D]"></span> Medicare</span>
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#FFB162]"></span> Commercial</span>
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#A35139]"></span> Medicaid</span>
+                            </div>
+                        </div>
+
+                        <div class="h-[500px] w-full bg-slate-50 rounded-xl border border-slate-100 relative">
+                            <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 20px 20px;"></div>
+                            <canvas id="geoMapChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -1122,6 +1233,8 @@
     <script src="src/forecast.js"></script>
     <script src="src/comparison.js"></script>
     <script src="src/reports.js"></script>
+    <script src="src/cancerDashboard.js"></script>
+    <script src="src/geographyDashboard.js"></script>
     <script src="src/app.js" defer></script>
 
 </body>

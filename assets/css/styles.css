@@ -336,3 +336,43 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
     /* border-color: #white; */
     transform: scale(1.1);
 }
+/* --- Sankey Diagram Styles --- */
+.sankey-node rect {
+    cursor: pointer;
+    fill-opacity: 0.9;
+    stroke: #334155; /* Slate-700 */
+    stroke-width: 1px;
+    transition: all 0.2s;
+}
+
+.sankey-node rect:hover {
+    fill-opacity: 1;
+    stroke-width: 2px;
+}
+
+.sankey-node text {
+    pointer-events: none;
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    fill: #334155;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+}
+
+.sankey-link {
+    fill: none;
+    stroke-opacity: 0.2;
+    transition: stroke-opacity 0.2s;
+}
+
+.sankey-link:hover {
+    stroke-opacity: 0.5;
+}
+
+#sankey-tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.1s;
+}

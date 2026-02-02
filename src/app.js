@@ -87,6 +87,8 @@ const App = {
             this.safeInit('ForecastManager', () => ForecastManager.init(data));
             this.safeInit('ComparisonManager', () => ComparisonManager.init(data));
             this.safeInit('ReportManager', () => ReportManager.init(data));
+            this.safeInit('CancerDashboard', () => CancerDashboard.init(data));
+            this.safeInit('GeographyDashboard', () => GeographyDashboard.init(data));
 
         } catch (error) {
             console.error("App Init Failed:", error);
@@ -340,6 +342,8 @@ const App = {
         const views = [
             'dashboard',
             'pipeline',
+            'cancer-dashboard',
+            'geography-dashboard',
             'scenario-builder',
             'forecasting',
             'scenario-comparison',
@@ -401,6 +405,24 @@ const App = {
                     // Refresh in case scenarios changed
                     ComparisonManager.populateDropdowns(); 
                     ComparisonManager.updateComparison();
+                }
+            }, 100);
+        }
+
+        if (viewName === 'cancer-dashboard') {
+            setTimeout(() => {
+                if (typeof CancerDashboard !== 'undefined') {
+                    CancerDashboard.renderCharts(); 
+                    // Re-render Sankey on tab switch to ensure correct width calculation
+                    CancerDashboard.renderSankey();
+                }
+            }, 100);
+        }
+
+        if (viewName === 'geography-dashboard') {
+            setTimeout(() => {
+                if (typeof GeographyDashboard !== 'undefined') {
+                    GeographyDashboard.chart?.resize(); // Ensure chart fits container
                 }
             }, 100);
         }
