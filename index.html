@@ -54,7 +54,7 @@
             <div id="intro-slides" class="relative min-h-[200px]">
                 <div class="intro-slide animate-fade-in block">
                     <h1 class="text-5xl font-bold mb-4 tracking-tight">Predict. Plan. Perform.</h1>
-                    <p class="text-xl text-[var(--color-blue-fantastic)] opacity-80">Advanced forecasting for clinical operations.</p>
+                    <p class="text-xl text-[var(--color-blue-fantastic)] opacity-80">Forecasting for commercial planning.</p>
                 </div>
                 </div>
 
@@ -233,10 +233,10 @@
                         <span class="ml-3 font-medium hidden lg:block">Cancer Dashboard</span>
                     </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="geography-dashboard">
+                    <!-- <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="geography-dashboard">
                         <i data-lucide="map" class="w-5 h-5 group-hover:text-white"></i>
                         <span class="ml-3 font-medium hidden lg:block">Geography Dashboard</span>
-                    </a>
+                    </a> -->
                     
                     <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="scenario-builder">
                         <i data-lucide="layers" class="w-5 h-5 group-hover:text-white"></i>
@@ -417,7 +417,7 @@
                 <div id="view-cancer-dashboard" class="hidden space-y-6 max-w-7xl mx-auto animate-fade-in">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-2xl font-bold text-slate-800">Cancer Care Analytics</h2>
-                        <span class="text-sm text-slate-500">Real-time oncology department metrics</span>
+                        <!-- <span class="text-sm text-slate-500">Real-time oncology department metrics</span> -->
                     </div>
 
                     <div id="cancer-kpi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -525,7 +525,7 @@
 
                 <div id="view-pipeline" class="hidden space-y-8 max-w-7xl mx-auto">
                     
-                    <div id="pipeline-kpi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div id="pipeline-kpi-container" class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <!-- <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                             <div>
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Completeness</p>
@@ -561,6 +561,7 @@
                                         <tr>
                                             <th class="px-6 py-3 font-semibold">Source System</th>
                                             <th class="px-6 py-3 font-semibold">Data Type</th>
+                                            <th class="px-6 py-3 font-semibold">Load Type</th>
                                             <th class="px-6 py-3 font-semibold">Status</th>
                                             <th class="px-6 py-3 font-semibold">Last Sync</th>
                                             <th class="px-6 py-3 font-semibold text-right">Records</th>
@@ -1221,6 +1222,24 @@
 
             </div>
         </main>
+    </div>
+
+    <div id="model-training-overlay" class="fixed inset-0 z-[70] bg-slate-900/80 backdrop-blur-sm hidden flex flex-col items-center justify-center transition-opacity duration-300 opacity-0">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-5 max-w-sm w-full text-center border border-white/10">
+            <div class="relative">
+                <div class="w-20 h-20 border-[5px] border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-blue-600">
+                    <i data-lucide="cpu" class="w-8 h-8"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-slate-800">Training Model...</h3>
+                <p class="text-sm text-slate-500 mt-2">Optimizing parameters & processing historical data</p>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden relative">
+                <div class="absolute h-full bg-blue-600 w-1/2 animate-progress-indeterminate rounded-full"></div>
+            </div>
+        </div>
     </div>
 
     <div id="toast-container"></div>

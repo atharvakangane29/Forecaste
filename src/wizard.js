@@ -84,6 +84,10 @@ const Wizard = {
             mainApp.style.opacity = '1';
             
             App.showToast('Pipeline Configured Successfully', 'success');
+            // Requirement 1: Data Loaded Notification
+            setTimeout(() => {
+                App.showToast("Data loaded successfully. Please look at the data KPI's and schema.", 'info');
+            }, 1000);
             
             // Initialize Charts
             ChartManager.init();
