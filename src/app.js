@@ -43,6 +43,7 @@ window.AuthFlow = {
     startWizard() {
         const wizard = document.getElementById('view-wizard');
         wizard.classList.remove('hidden');
+        wizard.classList.add('flex', 'flex-col');
         wizard.classList.add('animate-fade-in');
         
         // Ensure Lucide icons render in the newly visible wizard
@@ -207,8 +208,9 @@ const App = {
         if (!shell) return;
 
         shell.classList.remove('hidden');
+        shell.classList.add('flex');
         requestAnimationFrame(() => {
-            shell.classList.remove('opacity-0');
+            shell.classList.remove('opacity-100');
         });
     },
 
