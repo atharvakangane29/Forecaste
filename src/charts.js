@@ -119,73 +119,46 @@ const ChartManager = {
         const ctx = document.getElementById('ingestionChart');
         if(!ctx) return;
         
-        // Destroy existing instance if it exists to prevent canvas errors
         if (this.ingestionChart instanceof Chart) {
             this.ingestionChart.destroy();
         }
         
-        
         this.ingestionChart = new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: this.data.pipeline.ingestionTrend.labels,
-            datasets: [
-            {
-                label: 'Completeness Score (%)',
-                data: this.data.pipeline.ingestionTrend.completeness,
-                borderColor: Palette.blueFantastic,
-                backgroundColor: (context) => {
-                    const ctx = context.chart.ctx;
-                    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                    gradient.addColorStop(0, 'rgba(14, 165, 233, 0.2)');
-                    gradient.addColorStop(1, 'rgba(14, 165, 233, 0)');
-                    return gradient;
-                },
-                // fill: true, // Changed to true to match style
-                tension: 0.4,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: Palette.blueFantastic,
-                pointBorderWidth: 2,
-                pointRadius: 4
+            type: 'bar',
+            data: {
+                labels: this.data.pipeline.ingestionTrend.labels,
+                datasets: [
+                    {
+                        label: 'Data Added (Records)',
+                        data: this.data.pipeline.ingestionTrend.added,
+                        backgroundColor: Palette.blueFantastic,
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }
+                ]
             },
-            {
-                label: 'Accuracy (%)',
-                data: this.data.pipeline.ingestionTrend.accuracy,
-                borderColor: Palette.truffleTrouble,
-                backgroundColor: 'transparent',
-                fill: false,
-                tension: 0.4,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: Palette.truffleTrouble,
-                pointBorderWidth: 2,
-                pointRadius: 4
-            }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-            legend: { display: true }, // turn on legend so both lines are distinguishable
-            tooltip: { 
-                callbacks: { 
-                label: (context) => ` ${context.dataset.label}: ${context.raw}%`
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: true, position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` +${new Intl.NumberFormat('en-US').format(ctx.raw)} records`
+                        }
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        grid: { borderDash: [2, 4] },
+                        title: { display: true, text: 'Volume Added' }
+                    }, 
+                    x: { grid: { display: false } }
                 }
             }
-            },
-            scales: { 
-            y: { 
-                min: 80, 
-                max: 100,
-                grid: { borderDash: [2, 4] } 
-            }, 
-            x: { 
-                grid: { display: false } 
-            }
-            }
-        }
-    });
-},
+        });
+    },
 
         initCapacityChart() {
         const ctx = document.getElementById('capacityChart');

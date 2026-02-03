@@ -376,3 +376,14 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
     opacity: 0;
     transition: opacity 0.1s;
 }
+
+/* --- Loading Animations --- */
+@keyframes progressIndeterminate {
+    0% { left: -40%; width: 40%; }
+    50% { left: 30%; width: 60%; }
+    100% { left: 100%; width: 20%; }
+}
+
+.animate-progress-indeterminate {
+    animation: progressIndeterminate 1.5s infinite linear;
+}

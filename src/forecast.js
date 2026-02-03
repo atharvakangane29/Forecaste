@@ -171,17 +171,32 @@ const ForecastManager = {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
             if (!scenario) return;
 
-            // FIXED: Match the order of this.colors array
-            // this.colors[0] = '#2C3B4D' → chip-blue (Blue Fantastic)
-            // this.colors[1] = '#FFB162' → chip-orange (Burning Flame)
-            // this.colors[2] = '#A35139' → chip-brown (Truffle Trouble)
-            // this.colors[3] = '#1B2632' → chip-dark (Abyssal)
-            // this.colors[4] = '#C9C1B1' → chip-tan (Oatmeal)
-            const colorClass = ['chip-blue', 'chip-orange', 'chip-brown', 'chip-dark', 'chip-tan'][index % 5];
+            // 1. Get the Hex Color directly from the shared palette
+            // This ensures it MATCHES THE CHARTS exactly
+            const colorHex = this.colors[index % this.colors.length];
             
+            // 2. Keep the class for shape/size, but add inline background
             const chip = document.createElement('div');
-            chip.className = `scenario-chip ${colorClass}`;
-            chip.innerHTML = `${scenario.name} <button onclick="ForecastManager.removeScenario('${id}')"><i data-lucide="x" class="w-3 h-3 text-white"></i></button>`;
+            chip.className = `scenario-chip`; 
+            
+            // --- FIX: Force properties inline (Bypasses CSS issues) ---
+            chip.style.backgroundColor = colorHex;
+            chip.style.color = '#ffffff'; 
+            chip.style.display = 'inline-flex';
+            chip.style.alignItems = 'center';
+            chip.style.gap = '6px';
+            chip.style.padding = '4px 12px';
+            chip.style.borderRadius = '9999px';
+            chip.style.fontSize = '0.75rem';
+            chip.style.fontWeight = '700';
+            chip.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+            
+            chip.innerHTML = `
+                ${scenario.name} 
+                <button onclick="ForecastManager.removeScenario('${id}')" class="hover:opacity-75 transition-opacity flex items-center justify-center">
+                    <i data-lucide="x" class="w-3 h-3 text-white"></i>
+                </button>
+            `;
             
             container.insertBefore(chip, input);
         });

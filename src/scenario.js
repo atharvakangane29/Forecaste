@@ -135,31 +135,54 @@ const ScenarioManager = {
         const scenarioIndex = this.scenarios.findIndex(s => s.id === this.activeScenarioId);
         if (scenarioIndex === -1) return;
 
-        // Gather Data from DOM
-        const getData = (id) => parseFloat(document.getElementById(id).value);
-        
-        const newData = {
-            selectedModel: document.getElementById('model-selector').value,
-            inpatientGrowth: getData('inpatientGrowth'),
-            outpatientGrowth: getData('outpatientGrowth'),
-            newPatientGrowth: getData('newPatientGrowth'),
-            marketShare: getData('marketShare'),
-            referralGrowth: getData('referralGrowth'),
-            applyCapacityLimits: document.getElementById('applyCapacityLimits').checked,
-            addBeds: parseInt(document.getElementById('addBeds').value),
-            addChairs: parseInt(document.getElementById('addChairs').value),
-            programs: [document.getElementById('addPrograms').value].filter(Boolean)
-        };
-
-        // Update Data
-        this.scenarios[scenarioIndex].data = newData;
-        
-        App.showToast(`Scenario "${this.scenarios[scenarioIndex].name}" saved successfully`, 'success');
-
-        // --- INTEGRATION: Trigger Forecast Recalculation ---
-        if (typeof ForecastManager !== 'undefined') {
-            ForecastManager.updateCharts();
+        // 1. Show Training Animation
+        const overlay = document.getElementById('model-training-overlay');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            // Force browser reflow to trigger transition
+            void overlay.offsetWidth; 
+            overlay.classList.remove('opacity-0');
         }
+
+        // 2. Simulate Training Delay (Wait-time)
+        setTimeout(() => {
+            
+            // Gather Data from DOM (Existing Logic)
+            const getData = (id) => parseFloat(document.getElementById(id).value);
+            
+            const newData = {
+                selectedModel: document.getElementById('model-selector').value,
+                inpatientGrowth: getData('inpatientGrowth'),
+                outpatientGrowth: getData('outpatientGrowth'),
+                newPatientGrowth: getData('newPatientGrowth'),
+                marketShare: getData('marketShare'),
+                referralGrowth: getData('referralGrowth'),
+                applyCapacityLimits: document.getElementById('applyCapacityLimits').checked,
+                addBeds: parseInt(document.getElementById('addBeds').value),
+                addChairs: parseInt(document.getElementById('addChairs').value),
+                programs: [document.getElementById('addPrograms').value].filter(Boolean)
+            };
+
+            // Update Data
+            this.scenarios[scenarioIndex].data = newData;
+
+            // 3. Hide Animation
+            if (overlay) {
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    
+                    // 4. Show Confirmation (Requirement 2)
+                    App.showToast('Model is trained', 'success');
+                    
+                    // Update Forecast UI
+                    if (typeof ForecastManager !== 'undefined') {
+                        ForecastManager.updateCharts();
+                    }
+                }, 300); // Wait for fade out transition
+            }
+
+        }, 2500); // 2.5 seconds wait time
     },
 
     createNewScenario() {

@@ -99,21 +99,25 @@ const CancerDashboard = {
     },
     
     renderSankey() {
+        // --- DEMO CONFIGURATION ---
+        // Change this to 'false' to hide the Rose colored exit nodes
+        const SHOW_DROPOFFS = false; 
+
+        // 1. Safety Check
         if (!this.data.patientJourney || typeof d3 === 'undefined') return;
         
         const rawData = this.data.patientJourney;
         const container = document.getElementById('diagram-container');
         if (!container) return;
 
-        // Clear previous if any
+        // 2. Clear previous SVG content
         d3.select("#sankey-svg").selectAll("*").remove();
         
-        // Dimensions
-        // We use container width but fixed height logic for the diagram aspect ratio
+        // 3. Setup Dimensions
         const containerRect = container.getBoundingClientRect();
         const margin = { top: 40, right: 10, bottom: 20, left: 10 };
         const width = containerRect.width - margin.left - margin.right;
-        const height = 500 - margin.top - margin.bottom; // Fit within the min-h-600px
+        const height = 500 - margin.top - margin.bottom;
 
         const svg = d3.select("#sankey-svg")
             .attr("width", width + margin.left + margin.right)
@@ -121,61 +125,132 @@ const CancerDashboard = {
             .append("g")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-        // Create Tooltip div if not exists
+        // 4. Force Create Tooltip
         let tooltip = d3.select("#sankey-tooltip");
         if (tooltip.empty()) {
             tooltip = d3.select("body").append("div")
                 .attr("id", "sankey-tooltip")
-                .attr("class", "bg-slate-900 text-white text-xs p-3 rounded shadow-xl max-w-xs");
+                .attr("class", "bg-slate-900 text-white text-xs p-3 rounded shadow-xl max-w-xs")
+                .style("position", "absolute")
+                .style("z-index", "9999")
+                .style("pointer-events", "none")
+                .style("opacity", "0")
+                .style("transition", "opacity 0.2s");
         }
 
-        // Color Logic
-        const getNodeColor = (nodeName) => {
-            const node = rawData.nodes.find(n => n.id === nodeName || n.name === nodeName);
-            const stage = node ? rawData.stages.find(s => s.id === node.stage) : null;
-            return stage ? stage.color : "#cbd5e1";
-        };
+        // --- 5. DATA PROCESSING ---
+        
+        // Deep clone to avoid mutating original data on re-renders
+        let nodes = rawData.nodes.map(n => ({ ...n }));
+        let links = rawData.links.map(l => ({ ...l }));
 
-        // Prepare Data for D3
-        const sankeyData = {
-            nodes: rawData.nodes.map(n => ({ ...n })), // Clone
-            links: rawData.links.map(l => ({ ...l }))  // Clone
-        };
+        // Only calculate drop-offs if the flag is TRUE
+        if (SHOW_DROPOFFS) {
+            const nodeFlows = {};
+            nodes.forEach(n => nodeFlows[n.id] = { in: 0, out: 0 });
 
-        // Generator
+            links.forEach(l => {
+                if(nodeFlows[l.source]) nodeFlows[l.source].out += l.value;
+                if(nodeFlows[l.target]) nodeFlows[l.target].in += l.value;
+            });
+
+            const newLinks = [];
+            const newNodes = [];
+
+            nodes.forEach(node => {
+                const flow = nodeFlows[node.id];
+                if (!flow) return;
+
+                // Effective Volume logic
+                const volume = Math.max(flow.in, node.patients || 0, flow.out);
+                
+                if (flow.out > 0 && flow.out < volume) {
+                    const loss = volume - flow.out;
+                    
+                    if (loss > 0) {
+                        const exitId = `exit_${node.id}`;
+                        
+                        newNodes.push({
+                            id: exitId,
+                            name: "Loss / Drop-off", 
+                            isExitNode: true,
+                            stage: node.stage
+                        });
+
+                        newLinks.push({
+                            source: node.id,
+                            target: exitId,
+                            value: loss,
+                            isExitLink: true
+                        });
+                    }
+                }
+            });
+
+            // Merge Synthetic Data
+            nodes = [...nodes, ...newNodes];
+            links = [...links, ...newLinks];
+        }
+
+        // --- 6. SANKEY GENERATOR ---
         const sankey = d3.sankey()
             .nodeId(d => d.id)
             .nodeWidth(20)
             .nodePadding(30)
             .extent([[0, 0], [width, height]]);
 
-        const { nodes, links } = sankey(sankeyData);
+        const graph = sankey({ nodes, links });
+
+        // --- 7. RENDERING ---
+
+        const getNodeColor = (d) => {
+            if (d.isExitNode) return "#e11d48"; 
+            const stage = rawData.stages.find(s => s.id === d.stage);
+            return stage ? stage.color : "#cbd5e1";
+        };
 
         // Draw Links
         svg.append("g")
             .selectAll("path")
-            .data(links)
+            .data(graph.links)
             .enter()
             .append("path")
             .attr("class", "sankey-link")
             .attr("d", d3.sankeyLinkHorizontal())
-            .attr("stroke", d => getNodeColor(d.source.id))
             .attr("stroke-width", d => Math.max(1, d.width))
-            .on("mouseover", (event, d) => {
+            .attr("stroke", d => d.isExitLink ? "#e11d48" : getNodeColor(d.source))
+            .style("fill", "none")
+            .style("stroke-opacity", 0.2)
+            .on("mouseover", function(event, d) {
+                d3.select(this).transition().duration(200).style("stroke-opacity", 0.6);
+
+                const percent = Math.round((d.value / d.source.value) * 100);
+                const label = d.isExitLink ? "Dropout / Loss" : `${d.source.name} → ${d.target.name}`;
+
                 tooltip.style("opacity", 1)
                        .html(`
-                           <strong>${d.source.name} → ${d.target.name}</strong><br/>
-                           Patients: ${d.value}
+                           <div class="font-bold border-b border-white/20 pb-1 mb-1">${label}</div>
+                           <div class="flex justify-between gap-4 text-xs">
+                               <span class="text-slate-400">Volume:</span>
+                               <span class="font-mono text-emerald-400 font-bold">${d.value}</span>
+                           </div>
+                           <div class="flex justify-between gap-4 text-xs">
+                               <span class="text-slate-400">Split:</span>
+                               <span class="font-mono ${d.isExitLink ? 'text-rose-400' : 'text-blue-400'} font-bold">${percent}%</span>
+                           </div>
                        `)
                        .style("left", (event.pageX + 10) + "px")
-                       .style("top", (event.pageY - 10) + "px");
+                       .style("top", (event.pageY + 10) + "px");
             })
-            .on("mouseout", () => tooltip.style("opacity", 0));
+            .on("mouseout", function() {
+                d3.select(this).transition().duration(200).style("stroke-opacity", 0.2);
+                tooltip.style("opacity", 0);
+            });
 
         // Draw Nodes
         const node = svg.append("g")
             .selectAll("g")
-            .data(nodes)
+            .data(graph.nodes)
             .enter()
             .append("g")
             .attr("class", "sankey-node");
@@ -185,27 +260,33 @@ const CancerDashboard = {
             .attr("y", d => d.y0)
             .attr("height", d => d.y1 - d.y0)
             .attr("width", d => d.x1 - d.x0)
-            .attr("fill", d => getNodeColor(d.id))
+            .attr("fill", d => getNodeColor(d))
+            .style("stroke", "#334155")
+            .style("opacity", d => d.isExitNode ? 0.6 : 1)
+            .style("cursor", "pointer")
             .on("mouseover", (event, d) => {
                 tooltip.style("opacity", 1)
                        .html(`
                            <strong>${d.name}</strong><br/>
-                           Total Patients: ${d.patients}
+                           Total: ${d.value}
                        `)
                        .style("left", (event.pageX + 10) + "px")
-                       .style("top", (event.pageY - 10) + "px");
+                       .style("top", (event.pageY + 10) + "px");
             })
             .on("mouseout", () => tooltip.style("opacity", 0));
 
-        // Node Labels (Smart Positioning)
-        node.append("text")
+        // Draw Labels (Skip for Exit nodes)
+        node.filter(d => !d.isExitNode)
+            .append("text")
             .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
             .attr("y", d => (d.y1 + d.y0) / 2)
             .attr("dy", "0.35em")
             .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+            .style("font-size", "11px")
+            .style("font-weight", "bold")
+            .style("fill", "#334155")
             .text(d => d.name)
             .each(function(d) {
-                // Multiline text handling
                 const el = d3.select(this);
                 const words = d.name.split('\n');
                 el.text('');

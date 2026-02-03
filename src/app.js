@@ -195,6 +195,7 @@ const App = {
                 <tr class="hover:bg-slate-50">
                     <td class="px-6 py-4 font-medium text-slate-900">${source.system}</td>
                     <td class="px-6 py-4 text-slate-500">${source.type}</td>
+                    <td class="px-6 py-4 text-slate-500"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">${source.loadType}</span></td>
                     <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">${source.status}</span></td>
                     <td class="px-6 py-4 text-slate-500">${source.lastSync}</td>
                     <td class="px-6 py-4 text-right font-mono">${source.records}</td>
