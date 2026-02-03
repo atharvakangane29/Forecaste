@@ -133,6 +133,8 @@
             <div class="max-w-3xl w-full">
                 
                 <div id="wizard-step-1" class="wizard-step active">
+                    <button id="info-btn" class="text-blue-600 hover:text-blue-800 ml-2" title="Dataset Information">
+                    <i class="fas fa-info-circle"></i> </button>
                     <h1 class="text-3xl font-bold text-slate-900 mb-2 text-center">How would you like to ingest data?</h1>
                     <p class="text-slate-500 text-center mb-10">Select a source to begin the pipeline configuration.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -707,6 +709,14 @@
 
                                 <div class="flex justify-between items-center mb-8 relative z-10">
                                     <h2 id="config-title" class="text-2xl font-bold">Configure: Conservative</h2>
+                                    <div class="flex items-center gap-2">
+                                    <label for="forecast-horizon" class="text-sm font-medium text-slate-600">Horizon:</label>
+                                    <select id="forecast-horizon" class="border border-slate-300 rounded px-2 py-1 text-sm">
+                                        <option value="5">5 Years</option>
+                                        <option value="7">7 Years</option>
+                                        <option value="10">10 Years</option>
+                                    </select>
+                                    </div>
                                     <button id="btn-save-scenario" class="bg-rose-700 hover:bg-rose-900 text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-lg ">
                                         <i data-lucide="save" class="w-4"></i> Save Configuration
                                     </button>
@@ -837,8 +847,23 @@
             <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-4 top-4 pointer-events-none"></i>
           </div>
 
-          <div id="forecast-scenario-dropdown" class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto"></div>
-        </div>
+          <div id="forecast-scenario-dropdown" class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Hospital</label>
+                <select id="hospital-filter" class="w-full border border-slate-300 rounded-md p-2">
+                <option value="all">All Hospitals</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Service Line</label>
+                <select id="service-line-filter" class="w-full border border-slate-300 rounded-md p-2">
+                <option value="all">All Service Lines</option>
+                </select>
+            </div>
+            </div>
+          </div>
       </div>
     </div>
 
