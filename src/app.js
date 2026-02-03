@@ -43,6 +43,7 @@ window.AuthFlow = {
     startWizard() {
         const wizard = document.getElementById('view-wizard');
         wizard.classList.remove('hidden');
+        wizard.classList.add('flex', 'flex-col');
         wizard.classList.add('animate-fade-in');
         
         // Ensure Lucide icons render in the newly visible wizard
@@ -52,7 +53,8 @@ window.AuthFlow = {
 
 const App = {
     state: {
-        view: 'dashboard'
+        view: 'dashboard',
+        ignoreSliderUpdate: false
     },
 
     async init() {
@@ -86,6 +88,8 @@ const App = {
             this.safeInit('ForecastManager', () => ForecastManager.init(data));
             this.safeInit('ComparisonManager', () => ComparisonManager.init(data));
             this.safeInit('ReportManager', () => ReportManager.init(data));
+            this.safeInit('CancerDashboard', () => CancerDashboard.init(data));
+            this.safeInit('GeographyDashboard', () => GeographyDashboard.init(data));
 
         } catch (error) {
             console.error("App Init Failed:", error);
@@ -204,8 +208,9 @@ const App = {
         if (!shell) return;
 
         shell.classList.remove('hidden');
+        shell.classList.add('flex');
         requestAnimationFrame(() => {
-            shell.classList.remove('opacity-0');
+            shell.classList.remove('opacity-100');
         });
     },
 
@@ -234,23 +239,42 @@ const App = {
         });
 
         // Dashboard filter buttons
+        // Filter Buttons Logic
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                // 1. Highlight Button
                 document.querySelectorAll('.filter-btn').forEach(b => {
-                    b.className =
-                        'px-4 py-1.5 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn';
+                    b.className = 'px-4 py-1.5 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn';
                 });
+                e.currentTarget.className = 'px-4 py-1.5 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn';
 
-                e.currentTarget.className =
-                    'px-4 py-1.5 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn';
+                const days = parseInt(e.currentTarget.dataset.period);
+                
+                if (this.dateSlider) {
+                    const end = new Date().getTime();
+                    const start = end - (days * 24 * 60 * 60 * 1000); 
 
-                if (typeof ChartManager !== 'undefined') {
-                    ChartManager.updateData(e.currentTarget.dataset.period);
+                    // LOGIC SPLIT:
+                    if (days === 7) {
+                        // For 7 Days: Use JSON Data
+                        this.state.ignoreSliderUpdate = true; // Prevent slider from generating random data
+                        this.dateSlider.noUiSlider.set([start, end]); // Move handles visually
+                        
+                        if (typeof ChartManager !== 'undefined') {
+                            ChartManager.updateData('7days'); // Call static JSON mode
+                        }
+                        
+                        // Re-enable slider logic after a moment
+                        setTimeout(() => { this.state.ignoreSliderUpdate = false; }, 200);
+
+                    } else {
+                        // For 30 Days (or others): Use Random Data
+                        this.state.ignoreSliderUpdate = false;
+                        this.dateSlider.noUiSlider.set([start, end]); // This triggers 'update' event below
+                    }
+                    
+                    this.showToast(`Showing last ${days} days`);
                 }
-
-                this.showToast(
-                    `Showing data for ${e.currentTarget.dataset.period} days`
-                );
             });
         });
     },
@@ -259,43 +283,60 @@ const App = {
         const slider = document.getElementById('date-slider');
         if (!slider) return;
 
-        // Configuration: simulate a 1-year range
+        // Configuration: Extended Range (Jan 2023 - Dec 2025)
         const timestamp = (str) => new Date(str).getTime();
-        const minDate = timestamp('2024-01-01');
-        const maxDate = timestamp('2024-12-31');
+        const minDate = timestamp('2023-01-01');
+        const maxDate = timestamp('2025-12-31');
         
-        // Default: Last 30 days roughly
-        const startDefault = timestamp('2024-11-01');
-        const endDefault = maxDate;
+        // Default: Last 30 days
+        const endDefault = new Date().getTime(); // Today
+        const startDefault = endDefault - (30 * 24 * 60 * 60 * 1000); 
 
+        // Create Slider
         noUiSlider.create(slider, {
             range: { min: minDate, max: maxDate },
             start: [startDefault, endDefault],
             connect: true,
-            step: 24 * 60 * 60 * 1000, // 1 day in ms
+            step: 24 * 60 * 60 * 1000, // 1 day step
             format: {
-                to: (val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                to: (val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 from: (val) => val
             }
         });
 
-        // Event: Update Labels & Fetch Data
+        this.dateSlider = slider; // Save reference for button access
+
+        // Event: Update Text Labels while dragging
         const dateStart = document.getElementById('slider-date-start');
         const dateEnd = document.getElementById('slider-date-end');
 
+        // Event: 'update' fires continuously while dragging
         slider.noUiSlider.on('update', (values, handle) => {
-            if (handle === 0) dateStart.innerText = values[0];
-            if (handle === 1) dateEnd.innerText = values[1];
+            // 1. Update HTML Labels (The dates below the slider)
+            // We use generic indices [0] and [1] to handle both handles
+            if (dateStart) dateStart.innerText = values[0];
+            if (dateEnd) dateEnd.innerText = values[1];
+
+            // 2. Real-Time Chart Update (Random)
+            // Only run if we aren't ignoring updates (e.g. during 7-day button click)
+            if (!this.state.ignoreSliderUpdate) {
+                const startTs = new Date(values[0]).getTime();
+                const endTs = new Date(values[1]).getTime();
+
+                if (typeof ChartManager !== 'undefined') {
+                    ChartManager.updateData(startTs, endTs);
+                }
+            }
         });
 
+        // Event: 'change' fires only when you drop the handle
         slider.noUiSlider.on('change', (values) => {
-            App.showToast(`Range updated: ${values[0]} to ${values[1]}`, 'success');
+            const startTs = new Date(values[0]).getTime();
+            const endTs = new Date(values[1]).getTime();
+            const days = Math.round((endTs - startTs) / (24 * 60 * 60 * 1000));
             
-            // Trigger Chart Update
-            if (typeof ChartManager !== 'undefined') {
-                // You can pass the actual date strings or a specific flag
-                ChartManager.updateData('custom'); 
-            }
+            // Show notification on drop
+            this.showToast(`Range Selected: ${days} days`);
         });
     },
 
@@ -303,6 +344,8 @@ const App = {
         const views = [
             'dashboard',
             'pipeline',
+            'cancer-dashboard',
+            'geography-dashboard',
             'scenario-builder',
             'forecasting',
             'scenario-comparison',
@@ -325,6 +368,8 @@ const App = {
         // Update page title
         const titles = {
             dashboard: 'Clinical Command Center',
+            'cancer-dashboard' : 'Cancer Dashboard',
+            'geography-dashboard' : 'Geography Dashboard',
             pipeline: 'Data Pipeline Configuration',
             'scenario-builder': 'Scenario Builder',
             forecasting: 'Forecasting',
@@ -362,6 +407,24 @@ const App = {
                     // Refresh in case scenarios changed
                     ComparisonManager.populateDropdowns(); 
                     ComparisonManager.updateComparison();
+                }
+            }, 100);
+        }
+
+        if (viewName === 'cancer-dashboard') {
+            setTimeout(() => {
+                if (typeof CancerDashboard !== 'undefined') {
+                    CancerDashboard.renderCharts(); 
+                    // Re-render Sankey on tab switch to ensure correct width calculation
+                    CancerDashboard.renderSankey();
+                }
+            }, 100);
+        }
+
+        if (viewName === 'geography-dashboard') {
+            setTimeout(() => {
+                if (typeof GeographyDashboard !== 'undefined') {
+                    GeographyDashboard.chart?.resize(); // Ensure chart fits container
                 }
             }, 100);
         }

@@ -1,27 +1,99 @@
 /* src/forecast.js */
 
+// --- Pure Calculation Engine ---
+// src/forecast.js
+
+const ForecastEngine = {
+    getYears(config) {
+        const count = config.endYear - config.startYear + 1;
+        return Array.from({ length: count }, (_, i) => config.startYear + i);
+    },
+
+    // NEW: Deterministic Random Helper
+    // Returns a consistent number between 0 and 1 based on the input string.
+    pseudoRandom(input) {
+        let h = 0xdeadbeef;
+        for(let i = 0; i < input.length; i++)
+            h = Math.imul(h ^ input.charCodeAt(i), 2654435761);
+        return ((h ^ h >>> 16) >>> 0) / 4294967296;
+    },
+
+    // UPDATED: Now accepts 'seedStr' to ensure consistent volatility
+    generateSeries(baseValue, targetGrowthRate, config, seedStr = '') {
+        // console.log("Generating deterministic series for:", seedStr);
+        
+        let data = [];
+        let currentValue = baseValue;
+        const { startYear, endYear, historyCutoff } = config;
+        const totalYears = endYear - startYear + 1;
+
+        for (let i = 0; i < totalYears; i++) {
+            const year = startYear + i;
+            
+            // Generate a unique seed for this specific year + scenario
+            const yearSeed = seedStr + "_" + year;
+            
+            // Deterministic Variance: result is consistent for the same Scenario + Year
+            // Range: -1.2 to +1.2
+            const rawRandom = this.pseudoRandom(yearSeed); 
+            const variance = (rawRandom - 0.5) * 2.4; 
+
+            if (year <= historyCutoff) {
+                // Historical Volatility
+                // Range: 0.5% to 3.5%
+                const histRandom = this.pseudoRandom("hist_" + yearSeed);
+                const historicalRate = (histRandom * 3.0) + 0.5;
+                
+                if (i > 0) { 
+                   currentValue = currentValue * (1 + (historicalRate / 100));
+                }
+                data.push(Math.round(currentValue));
+
+            } else {
+                // Forecast Volatility
+                const appliedRate = parseFloat(targetGrowthRate) + variance;
+                currentValue = currentValue * (1 + (appliedRate / 100));
+                data.push(Math.round(currentValue));
+            }
+        }
+        return data;
+    },
+
+    calculateGap(demandSeries, baseCapacity, addedBeds, config) {
+        const activationYear = config.historyCutoff + 1;
+        return demandSeries.map((demand, index) => {
+            const currentYear = config.startYear + index;
+            const currentCapacity = currentYear >= activationYear 
+                ? baseCapacity + addedBeds 
+                : baseCapacity;
+            return Math.round(demand - currentCapacity);
+        });
+    }
+};
+
+// --- UI & State Manager ---
 const ForecastManager = {
     charts: {},
-    selectedScenarios: [], // Stores IDs of selected scenarios
-    // Palette: Blue Fantastic, Burning Flame, Truffle Trouble, Abyssal, Oatmeal
+    selectedScenarios: [], 
+    config: null,
+    baseParams: null,
+    
     colors: [
-        '#2C3B4D', 
-        '#FFB162', 
-        '#A35139', 
-        '#1B2632', 
-        '#C9C1B1'
+        '#2C3B4D', // Index 0 - Blue Fantastic
+        '#FFB162', // Index 1 - Burning Flame (Orange)
+        '#A35139', // Index 2 - Truffle Trouble (Brown)
+        '#1B2632', // Index 3 - Abyssal (Dark)
+        '#C9C1B1'  // Index 4 - Oatmeal (Tan)
     ],
 
     init(data) {
-        // Read configuration from JSON
         this.config = data.forecasting.config;
         this.baseParams = data.forecasting.baseParams;
+        // Don't override colors with JSON palette - keep hardcoded colors
         
-        // Keep the hardcoded colors array defined above
-
         this.bindEvents();
         
-        // Default selection logic...
+        // Select defaults if empty
         if (typeof ScenarioManager !== 'undefined' && this.selectedScenarios.length === 0) {
              const defaults = ScenarioManager.scenarios.slice(0, 3).map(s => s.id);
              defaults.forEach(id => this.addScenario(id));
@@ -35,16 +107,13 @@ const ForecastManager = {
 
         if (!input || !container || !dropdown) return;
 
-        // Toggle Dropdown on Input Click
         container.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'BUTTON') { // Don't toggle if clicking delete
-                dropdown.classList.toggle('hidden');
-                this.renderDropdownOptions();
-                input.focus();
-            }
+            if (e.target.closest('button')) return; 
+            dropdown.classList.toggle('hidden');
+            this.renderDropdownOptions();
+            input.focus();
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!container.contains(e.target) && !dropdown.contains(e.target)) {
                 dropdown.classList.add('hidden');
@@ -54,27 +123,25 @@ const ForecastManager = {
 
     renderDropdownOptions() {
         const dropdown = document.getElementById('forecast-scenario-dropdown');
+        if (!dropdown) return;
         dropdown.innerHTML = '';
 
         if (typeof ScenarioManager === 'undefined') return;
 
         ScenarioManager.scenarios.forEach(scenario => {
             const isSelected = this.selectedScenarios.includes(scenario.id);
-            
             const item = document.createElement('div');
             item.className = `dropdown-item ${isSelected ? 'selected' : ''}`;
             item.innerHTML = `
                 <span>${scenario.name}</span>
                 ${isSelected ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
             `;
-
             if (!isSelected) {
                 item.addEventListener('click', () => {
                     this.addScenario(scenario.id);
-                    document.getElementById('forecast-scenario-dropdown').classList.add('hidden');
+                    dropdown.classList.add('hidden');
                 });
             }
-
             dropdown.appendChild(item);
         });
         
@@ -96,95 +163,98 @@ const ForecastManager = {
 
     renderChips() {
         const container = document.getElementById('forecast-scenario-container');
-        // Remove existing chips (keep the input and icon)
-        const chips = container.querySelectorAll('.scenario-chip');
-        chips.forEach(chip => chip.remove());
-
+        if (!container) return;
+        container.querySelectorAll('.scenario-chip').forEach(c => c.remove());
         const input = document.getElementById('scenario-input');
         
         this.selectedScenarios.forEach((id, index) => {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
             if (!scenario) return;
 
-            // Cycle through color classes using the new palette order
+            // FIXED: Match the order of this.colors array
+            // this.colors[0] = '#2C3B4D' → chip-blue (Blue Fantastic)
+            // this.colors[1] = '#FFB162' → chip-orange (Burning Flame)
+            // this.colors[2] = '#A35139' → chip-brown (Truffle Trouble)
+            // this.colors[3] = '#1B2632' → chip-dark (Abyssal)
+            // this.colors[4] = '#C9C1B1' → chip-tan (Oatmeal)
             const colorClass = ['chip-blue', 'chip-orange', 'chip-brown', 'chip-dark', 'chip-tan'][index % 5];
-
+            
             const chip = document.createElement('div');
             chip.className = `scenario-chip ${colorClass}`;
-            chip.innerHTML = `
-                ${scenario.name}
-                <button onclick="ForecastManager.removeScenario('${id}')">
-                    <i data-lucide="x" class="w-3 h-3 text-white"></i>
-                </button>
-            `;
+            chip.innerHTML = `${scenario.name} <button onclick="ForecastManager.removeScenario('${id}')"><i data-lucide="x" class="w-3 h-3 text-white"></i></button>`;
             
-            // Insert before the input field
             container.insertBefore(chip, input);
         });
-
         if(window.lucide) lucide.createIcons();
     },
 
-    // --- Chart Generation Logic ---
-
-    // REMOVED: getYears()
-    // REMOVED: generateDataPoints()
+    // --- Charting Logic ---
 
     updateCharts() {
-        // Destroy existing to rebuild
-        Object.values(this.charts).forEach(chart => chart.destroy());
+        if (typeof Chart === 'undefined') return;
 
-        // Get timeline labels from the first selected scenario (assuming aligned timelines)
+        Object.values(this.charts).forEach(chart => chart && chart.destroy());
+
         if (this.selectedScenarios.length === 0) return;
-        const firstScenario = ScenarioManager.scenarios.find(s => s.id === this.selectedScenarios[0]);
-        if (!firstScenario) return;
-        
-        const labels = firstScenario.forecast.timeline; 
+
+        const years = ForecastEngine.getYears(this.config);
         const datasets = [];
 
-        // Prepare datasets via direct JSON access
+        // Inside ForecastManager.updateCharts ...
+
         this.selectedScenarios.forEach((id, index) => {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
             if (!scenario) return;
 
-            // Use the same color from the colors array (matching chip colors)
             const color = this.colors[index % this.colors.length];
+            const d = scenario.data;
+
+            // UPDATED: Pass 'scenario.id' as the 4th argument (the seed)
+            const inpatientSeries = ForecastEngine.generateSeries(
+                this.baseParams.inpatient, 
+                d.inpatientGrowth, 
+                this.config, 
+                scenario.id // <--- SEED
+            );
+
+            const outpatientSeries = ForecastEngine.generateSeries(
+                this.baseParams.outpatient, 
+                d.outpatientGrowth, 
+                this.config, 
+                scenario.id // <--- SEED
+            );
             
+            const gapSeries = ForecastEngine.calculateGap(inpatientSeries, this.baseParams.bedCapacity, d.addBeds, this.config);
+
             datasets.push({
                 label: scenario.name,
                 color: color,
-                index: index, // Store index for color lookup
-                // DIRECT READ: No calculation
-                inpatientData: scenario.forecast.inpatientValues,
-                outpatientData: scenario.forecast.outpatientValues,
-                growthData: scenario.forecast.growthRates, 
-                gapData: scenario.forecast.capacityGap,
-                // Metadata
-                capacityLimits: scenario.data.applyCapacityLimits,
-                addBeds: scenario.data.addBeds
+                inpatientData: inpatientSeries,
+                outpatientData: outpatientSeries,
+                growthData: inpatientSeries,
+                gapData: gapSeries
             });
         });
 
-        this.renderInpatientChart(labels, datasets);
-        this.renderOutpatientChart(labels, datasets);
-        this.renderGrowthChart(labels, datasets);
-        this.renderGapChart(labels, datasets);
+        if(document.getElementById('chart-forecast-inpatient')) this.renderInpatientChart(years, datasets);
+        if(document.getElementById('chart-forecast-outpatient')) this.renderOutpatientChart(years, datasets);
+        if(document.getElementById('chart-forecast-growth')) this.renderGrowthChart(years, datasets);
+        if(document.getElementById('chart-forecast-gap')) this.renderGapChart(years, datasets);
     },
 
     renderInpatientChart(labels, scenarioData) {
         const ctx = document.getElementById('chart-forecast-inpatient').getContext('2d');
-        
+        const cutoffIndex = this.config.historyCutoff - this.config.startYear;
+
         const datasets = scenarioData.map(d => ({
             label: d.label,
             data: d.inpatientData,
-            borderColor: d.color,
+            borderColor: d.color, // Uses color from dataset
             backgroundColor: d.color,
             tension: 0.4,
-            // borderDash: (ctx) => ctx.p0.parsed.x >= 5 ? [5, 5] : [] // Dashed line starting from index 5 (2025)
-            borderDash: (ctx) => {
-                if (!ctx || !ctx.parsed || ctx.parsed.y == null) return [];
-                return ctx.parsed.y > 0 ? [] : [6, 6];
-                }
+            segment: {
+                borderDash: (ctx) => ctx.p0.parsed.x >= cutoffIndex ? [6, 6] : undefined
+            }
         }));
 
         this.charts.inpatient = new Chart(ctx, {
@@ -196,17 +266,16 @@ const ForecastManager = {
 
     renderOutpatientChart(labels, scenarioData) {
         const ctx = document.getElementById('chart-forecast-outpatient').getContext('2d');
-        
+        const cutoffIndex = this.config.historyCutoff - this.config.startYear;
+
         const datasets = scenarioData.map(d => ({
             label: d.label,
             data: d.outpatientData,
-            borderColor: d.color,
+            borderColor: d.color, // Uses color from dataset
             backgroundColor: d.color,
             tension: 0.4,
-            // borderDash: (ctx) => ctx.p0.parsed.x >= 5 ? [5, 5] : []
-            borderDash: (ctx) => {
-                if (!ctx || !ctx.parsed || ctx.parsed.y == null) return [];
-                return ctx.parsed.y > 0 ? [] : [6, 6];
+            segment: {
+                borderDash: (ctx) => ctx.p0.parsed.x >= cutoffIndex ? [6, 6] : undefined
             }
         }));
 
@@ -219,18 +288,18 @@ const ForecastManager = {
 
     renderGrowthChart(labels, scenarioData) {
         const ctx = document.getElementById('chart-forecast-growth').getContext('2d');
-        
-        // Calculate YoY growth for each scenario
-        const datasets = scenarioData.map(s => {
-            const growthRates = s.inpatientData.map((val, i, arr) => {
+        const datasets = scenarioData.map(d => {
+            // Calculate YoY % change based on the VOLATILE series
+            const growthRates = d.growthData.map((val, i, arr) => {
                 if (i === 0) return 0;
+                // Standard Growth Formula: (Present - Past) / Past * 100
                 return ((val - arr[i-1]) / arr[i-1] * 100).toFixed(1);
             });
-
+            
             return {
-                label: s.label,
+                label: d.label,
                 data: growthRates,
-                backgroundColor: s.color,
+                backgroundColor: d.color, // Uses color from dataset
                 borderRadius: 4
             };
         });
@@ -249,71 +318,39 @@ const ForecastManager = {
 
     renderGapChart(labels, scenarioData) {
         const ctx = document.getElementById('chart-forecast-gap').getContext('2d');
-        
-        // Use JSON key 'bedCapacity'
-        const baseCapacity = this.baseParams.bedCapacity;
+        const cutoffIndex = this.config.historyCutoff - this.config.startYear;
 
-        const datasets = scenarioData.map(s => {
-            // Calculate capacity line (Base + Added Beds over time)
-            // Assuming added beds come online in 2026
-            const capacityLine = labels.map(year => {
-                return year > 2025 ? baseCapacity + (s.addBeds * 10) : baseCapacity; // *10 just to scale visuals
-            });
-
-            return {
-                label: `${s.label} Capacity Gap`,
-                data: s.gapData, // Plotting capacity vs demand is complex, here plotting just Capacity for simplicity per instructions
-                borderColor: s.color,
-                borderWidth: 2,
-                borderDash: [2,2],
-                pointRadius: 0
-            };
-        });
-
-        // Add Demand Line (Reference - usually the highest scenario demand)
-        // Here we just plot the Inpatient Volume of the first scenario as "Demand" context
-        // if(scenarioData.length > 0) {
-        //      datasets.push({
-        //         label: 'Projected Demand (Primary)',
-        //         data: scenarioData[0].inpatientData,
-        //         borderColor: '#64748b', // Slate-500
-        //         backgroundColor: 'rgba(100, 116, 139, 0.1)',
-        //         fill: true,
-        //         tension: 0.4
-        //      });
-        // }
+        const datasets = scenarioData.map(d => ({
+            label: `${d.label} Deficit`,
+            data: d.gapData,
+            borderColor: d.color, // Uses color from dataset
+            backgroundColor: d.color,
+            borderWidth: 2,
+            pointRadius: 2,
+            segment: {
+                borderDash: (ctx) => ctx.p0.parsed.x >= cutoffIndex ? [6, 6] : undefined
+            }
+        }));
 
         this.charts.gap = new Chart(ctx, {
             type: 'line',
             data: { labels, datasets },
-            options: this.getCommonOptions('Bed Count')
+            options: this.getCommonOptions('Capacity Gap (Beds Needed)')
         });
     },
 
     getCommonOptions(yTitle) {
-        // Local reference to palette colors
-        const colorText = '#1B2632'; // Abyssal
-        const colorGrid = '#C9C1B1'; // Oatmeal
-
         return {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'top', align: 'end', labels: { color: colorText } },
-                tooltip: { mode: 'index', intersect: false, backgroundColor: colorText, titleColor: '#EEE9DF' }
+                legend: { position: 'top', align: 'end', labels: { color: '#1B2632' } },
+                tooltip: { mode: 'index', intersect: false }
             },
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
-                y: { 
-                    display: true, 
-                    title: { display: true, text: yTitle, color: colorText }, 
-                    grid: { borderDash: [2, 4], color: colorGrid },
-                    ticks: { color: colorText }
-                },
-                x: { 
-                    grid: { display: false },
-                    ticks: { color: colorText }
-                }
+                y: { display: true, title: { display: true, text: yTitle }, grid: { borderDash: [2, 4] } },
+                x: { grid: { display: false } }
             }
         };
     }
