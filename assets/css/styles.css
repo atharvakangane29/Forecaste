@@ -387,3 +387,98 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
 .animate-progress-indeterminate {
     animation: progressIndeterminate 1.5s infinite linear;
 }
+
+/* --- Modals & Overlays --- */
+/* Lock body scroll when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+}
+
+/* --- Schema Table Styling (Info Modal) --- */
+.schema-table-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.schema-table th {
+    background-color: var(--color-palladian);
+    color: var(--color-blue-fantastic);
+    font-size: 0.75rem; /* text-xs */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.schema-table td {
+    padding: 0.75rem 1rem;
+    color: var(--color-abyssal);
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.schema-table tr:last-child td {
+    border-bottom: none;
+}
+
+.schema-table tr:nth-child(even) {
+    background-color: #f8fafc; /* Slate-50 */
+}
+
+.schema-table tr:hover {
+    background-color: #f1f5f9; /* Slate-100 */
+}
+
+/* --- Horizon Selector Customization --- */
+/* Removes default browser arrow and adds a clean custom SVG arrow */
+#scenario-horizon {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0 center;
+    background-repeat: no-repeat;
+    background-size: 1.2em 1.2em;
+    padding-right: 1.5rem;
+    text-align: right;
+    cursor: pointer;
+    transition: background-image 0.2s;
+}
+
+#scenario-horizon:hover {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    color: white;
+}
+
+/* --- Validation Error Animation --- */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+.input-error {
+    animation: shake 0.3s ease-in-out;
+    border-color: #e11d48 !important; /* Rose-600 */
+    background-color: #fff1f2 !important; /* Rose-50 */
+}
+
+#scenario-horizon {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    /* Custom White SVG Arrow */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0 center;
+    background-repeat: no-repeat;
+    background-size: 1.2em 1.2em;
+    padding-right: 1.5rem;
+}
+
+#scenario-horizon:hover {
+    color: #1B2632;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}

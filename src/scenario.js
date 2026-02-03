@@ -26,9 +26,38 @@ const ScenarioManager = {
             });
         }
 
-        // New Scenario Button
+        // New Scenario Button (Opens Modal)
         document.getElementById('btn-new-scenario')?.addEventListener('click', () => {
-            this.createNewScenario();
+            // Reset input and error state
+            const input = document.getElementById('new-scenario-name');
+            const error = document.getElementById('new-scenario-error');
+            if(input) input.value = '';
+            if(error) error.classList.add('hidden');
+            
+            App.toggleModal('new-scenario-modal', true);
+            setTimeout(() => input?.focus(), 100); // Focus input for UX
+        });
+
+        // Modal: Cancel
+        document.getElementById('btn-cancel-scenario')?.addEventListener('click', () => {
+            App.toggleModal('new-scenario-modal', false);
+        });
+
+        // Modal: Confirm
+        document.getElementById('btn-confirm-scenario')?.addEventListener('click', () => {
+            this.handleModalCreation();
+        });
+
+        // Modal: Enter Key Support
+        document.getElementById('new-scenario-name')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.handleModalCreation();
+        });
+        
+        // Horizon Selector
+        document.getElementById('scenario-horizon')?.addEventListener('change', (e) => {
+            const years = parseInt(e.target.value);
+            // In a real app, this would update the forecast configuration state
+            App.showToast(`Forecast horizon updated to ${years} years`, 'info');
         });
 
         // Delete Scenario Button
@@ -185,8 +214,42 @@ const ScenarioManager = {
         }, 2500); // 2.5 seconds wait time
     },
 
-    createNewScenario() {
-        const name = prompt("Enter scenario name:", "New Scenario");
+    handleModalCreation() {
+        const input = document.getElementById('new-scenario-name');
+        const error = document.getElementById('new-scenario-error');
+        const name = input.value.trim();
+
+        // Validation 1: Empty
+        if (!name) {
+            this.showError(input, error, "Scenario name cannot be empty");
+            return;
+        }
+
+        // Validation 2: Duplicate
+        if (this.scenarios.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+            this.showError(input, error, "A scenario with this name already exists");
+            return;
+        }
+
+        // Success
+        this.createNewScenario(name); // Pass name explicitly
+        App.toggleModal('new-scenario-modal', false);
+    },
+
+    showError(input, errorMsgEl, msg) {
+        input.classList.add('input-error');
+        errorMsgEl.querySelector('span').innerText = msg;
+        errorMsgEl.classList.remove('hidden');
+        
+        // Remove error style on next input
+        input.addEventListener('input', () => {
+            input.classList.remove('input-error');
+            errorMsgEl.classList.add('hidden');
+        }, { once: true });
+    },
+
+    createNewScenario(nameProvided) {
+        const name = nameProvided;
         if (!name) return;
 
         const id = name.toLowerCase().replace(/\s+/g, '-');
@@ -208,9 +271,26 @@ const ScenarioManager = {
         document.getElementById('scenario-selector').value = id;
         App.showToast(`Created scenario: ${name}`, 'success');
 
-        // --- INTEGRATION: Update Dropdowns ---
+        // Select the new option in dropdown
+        document.getElementById('scenario-selector').value = id;
+        App.showToast(`Created scenario: ${name}`, 'success');
+
+        // --- PHASE 4: Global Module Refresh ---
+        // When a new scenario is added, all modules need to know about it.
+        
+        // 1. Forecast Module: Update dropdowns
         if (typeof ForecastManager !== 'undefined') {
             ForecastManager.renderDropdownOptions();
+        }
+
+        // 2. Comparison Module: Update Selectors A & B
+        if (typeof ComparisonManager !== 'undefined') {
+            ComparisonManager.populateDropdowns();
+        }
+
+        // 3. Reports Module: Update selector
+        if (typeof ReportManager !== 'undefined') {
+            ReportManager.populateDropdown();
         }
     },
 

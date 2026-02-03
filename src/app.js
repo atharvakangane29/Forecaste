@@ -64,6 +64,7 @@ const App = {
 
             // 2. Bind UI events
             this.bindEvents();
+            this.bindModalEvents(); // New modal handlers
             this.initDateSlider();
 
             // 3. Render Static Data (KPIs, Tables, Insights)
@@ -94,6 +95,28 @@ const App = {
         } catch (error) {
             console.error("App Init Failed:", error);
             document.body.innerHTML = `<div class="p-10 text-red-600 font-bold">Critical Error: Failed to load application data.</div>`;
+        }
+    },
+
+    // --- PHASE 4: Global Event Bus Helper ---
+    // Use this to trigger updates across independent modules
+    refreshAllModules() {
+        console.log("App: Refreshing all modules...");
+        
+        // Refresh specific views if they are active or cached
+        if (typeof ScenarioManager !== 'undefined') {
+             // Re-render lists if needed (usually handled internally by ScenarioManager)
+        }
+        
+        if (typeof ComparisonManager !== 'undefined') {
+            ComparisonManager.updateComparison();
+        }
+        
+        if (typeof ForecastManager !== 'undefined') {
+            // Only update charts if visible to save performance
+            if (this.state.view === 'forecasting') {
+                ForecastManager.updateCharts();
+            }
         }
     },
 
@@ -442,6 +465,82 @@ const App = {
 
         // Persist state
         this.state.view = viewName;
+    },
+
+    bindModalEvents() {
+        // 1. Info Button -> Open Modal
+        const infoBtn = document.getElementById('btn-dataset-info');
+        if (infoBtn) {
+            infoBtn.addEventListener('click', () => {
+                this.toggleModal('dataset-info-modal', true);
+                this.populateDatasetInfo();
+            });
+        }
+
+        // 2. Generic Close Buttons (for all modals)
+        document.querySelectorAll('.modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modal = e.target.closest('.fixed');
+                if (modal) this.toggleModal(modal.id, false);
+            });
+        });
+
+        // 3. Close on clicking outside (backdrop)
+        ['dataset-info-modal', 'new-scenario-modal'].forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) this.toggleModal(id, false);
+                });
+            }
+        });
+    },
+
+    toggleModal(modalId, show) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        if (show) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            // Small delay to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.firstElementChild.classList.remove('scale-95');
+                modal.firstElementChild.classList.add('scale-100');
+            }, 10);
+        } else {
+            modal.classList.add('opacity-0');
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('modal-open');
+            }, 300);
+        }
+    },
+
+    populateDatasetInfo() {
+        const tbody = document.getElementById('dataset-info-body');
+        if (!tbody) return;
+
+        // Fallback data if JSON isn't updated yet (Phase 5 dependency)
+        // Checks DataService first, then falls back to hardcoded defaults
+        const metadata = DataService.get('meta.schema') || [
+            { col: "PatientID", type: "String", desc: "Unique patient identifier (Masked)" },
+            { col: "AdmitDate", type: "Date", desc: "YYYY-MM-DD format" },
+            { col: "DischargeDate", type: "Date", desc: "YYYY-MM-DD (Null if active)" },
+            { col: "ServiceLine", type: "String", desc: "Oncology, Cardiology, etc." },
+            { col: "FacilityID", type: "Integer", desc: "Hospital/Clinic ID code" }
+        ];
+
+        tbody.innerHTML = metadata.map(row => `
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-xs text-rose-600 font-bold">${row.col}</td>
+                <td class="px-4 py-3 text-xs text-slate-500 font-bold bg-slate-100/50 rounded">${row.type}</td>
+                <td class="px-4 py-3 text-xs text-slate-600">${row.desc}</td>
+            </tr>
+        `).join('');
     },
 
     showToast(message, type = 'info') {
