@@ -74,8 +74,8 @@
         "data": [22, 18, 15, 30, 8, 7]
       },
       "infusionTrends": {
-        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        "data": [1100, 1150, 1220, 1180, 1350, 1400]
+        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "data": [1100, 1150, 1220, 1180, 1350, 1400, 1430, 1501, 1390,1450, 1570, 1590 ]
       }
     },
     "patientJourney": {
@@ -170,9 +170,9 @@
         "colors": ["#2563eb", "#9333ea", "#06b6d4"]
       },
       "capacityUtilization": {
-        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        "bedUtil": [72, 78, 82, 88, 91, 94],
-        "chairUtil": [65, 71, 76, 83, 88, 92]
+        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "bedUtil": [72, 78, 82, 88, 91, 94, 71, 76, 83, 88, 92, 72],
+        "chairUtil": [65, 71, 76, 83, 88, 92, 72, 78, 82, 88, 91, 94]
       },
       "programPerformance": {
         "labels": ["Chemotherapy", "Radiation", "Immunotherapy", "Surgery"],

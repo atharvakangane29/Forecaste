@@ -1,5 +1,6 @@
 /* src/charts.js */
 
+
 const Palette = {
     palladian: '#EEE9DF',
     oatmeal: '#C9C1B1',
@@ -168,16 +169,19 @@ const ChartManager = {
         this.capacityChart = new Chart(ctx.getContext('2d'), {
             type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                // labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                labels: this.data.dashboard.charts.capacityUtilization.labels,
                 datasets: [
                     {
                         label: 'Bed Utilization (%)',
-                        data: [70, 75, 72, 80, 85, 90],
+                        // data: [72, 78, 82, 88, 91, 94, 71, 76, 83, 88, 92, 72],
+                        data: this.data.dashboard.charts.capacityUtilization.bedUtil,
                         backgroundColor: Palette.blueFantastic
                     },
                     {
                         label: 'Infusion Chair Utilization (%)',
-                        data: [55, 60, 58, 62, 65, 68],
+                        // data: [65, 71, 76, 83, 88, 92, 72, 78, 82, 88, 91, 94],
+                        data : this.data.dashboard.charts.capacityUtilization.chairUtil,
                         backgroundColor: Palette.burningFlame // Accent
                     }
                 ]
