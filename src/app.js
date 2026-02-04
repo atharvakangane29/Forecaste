@@ -98,6 +98,40 @@ const App = {
         }
     },
 
+    handleLogout() {
+        const shell = document.getElementById('app-shell');
+        const login = document.getElementById('view-login');
+        
+        // 1. Immediate Visual Feedback
+        if (shell) {
+            shell.classList.add('opacity-0'); // Fade out dashboard
+            shell.classList.add('pointer-events-none'); // Prevent clicks during fade
+        }
+
+        setTimeout(() => {
+            // 2. Hard Reset of Views
+            if (shell) {
+                shell.classList.add('hidden');
+                shell.classList.remove('flex', 'opacity-0', 'pointer-events-none'); // Clean up classes
+            }
+
+            if (login) {
+                // Remove hidden and ensure it's visible
+                login.classList.remove('hidden');
+                
+                // Reset opacity to ensure it's visible
+                login.classList.remove('opacity-0', 'pointer-events-none');
+                
+                // Add animation class for smooth entry
+                login.classList.add('animate-fade-in');
+            }
+            
+            // 3. Reset State if needed (Optional)
+            this.state.view = 'dashboard'; 
+            
+        }, 300); // Match transition duration
+    },
+
     // --- PHASE 4: Global Event Bus Helper ---
     // Use this to trigger updates across independent modules
     refreshAllModules() {
@@ -387,6 +421,19 @@ const App = {
         if (target) {
             target.classList.remove('hidden');
             target.classList.add('animate-fade-in');
+        }
+
+        document.querySelectorAll('aside nav a').forEach(link => {
+            // Reset all links
+            link.classList.remove('active-nav', 'bg-slate-800', 'text-white');
+            link.classList.add('text-slate-300'); // Reset text color
+        });
+
+        // Find the specific link for this view and highlight it
+        const activeLink = document.querySelector(`aside nav a[data-view="${viewName}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active-nav', 'bg-slate-800', 'text-white');
+            activeLink.classList.remove('text-slate-300');
         }
 
         // Update page title

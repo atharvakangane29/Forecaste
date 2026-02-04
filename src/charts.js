@@ -197,6 +197,7 @@ const ChartManager = {
             }
         });
     },
+    
         initProgramChart() {
         const ctx = document.getElementById('programChart');
         if (!ctx) return;
@@ -224,9 +225,58 @@ const ChartManager = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom' }
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) label += ': ';
+                                let value = context.raw;
+                                let total = context.chart._metasets[context.datasetIndex].total;
+                                let percentage = ((value / total) * 100).toFixed(1) + "%";
+                                return label + value + " (" + percentage + ")";
+                            }
+                        }
+                    }
                 }
-            }
+            },
+            plugins: [{
+                id: 'percentageLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx, data } = chart;
+                    
+                    chart.data.datasets.forEach((dataset, i) => {
+                        const meta = chart.getDatasetMeta(i);
+                        const total = meta.total || dataset.data.reduce((a, b) => a + b, 0);
+
+                        meta.data.forEach((element, index) => {
+                            if (element.hidden) return;
+                            
+                            // Calculate Percentage
+                            const value = dataset.data[index];
+                            const percentage = ((value / total) * 100).toFixed(1) + '%';
+                            
+                            // Position Logic
+                            const { x, y } = element.tooltipPosition();
+                            
+                            // Text Styling
+                            ctx.save();
+                            ctx.font = 'bold 11px Inter';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            
+                            // Dynamic Text Color based on background brightness
+                            const hex = dataset.backgroundColor[index];
+                            // Simple heuristic: dark colors get white text, light get black
+                            const isLight = ['#EEE9DF', '#C9C1B1', '#FFB162'].includes(hex);
+                            ctx.fillStyle = isLight ? '#1B2632' : '#FFFFFF';
+                            
+                            ctx.fillText(percentage, x, y);
+                            ctx.restore();
+                        });
+                    });
+                }
+            }]
         });
     },
 

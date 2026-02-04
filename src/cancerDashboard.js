@@ -81,6 +81,44 @@ const CancerDashboard = {
         const ctx = document.getElementById(canvasId);
         if (!ctx) return;
 
+        // Custom Plugin for Percentages
+        const percentagePlugin = {
+            id: 'percentageLabels',
+            afterDatasetsDraw(chart) {
+                // Only draw on Pie/Doughnut charts
+                if (chart.config.type !== 'pie' && chart.config.type !== 'doughnut') return;
+
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    const total = meta.total || dataset.data.reduce((a, b) => a + b, 0);
+
+                    meta.data.forEach((element, index) => {
+                        if (element.hidden) return;
+                        const value = dataset.data[index];
+                        // Skip small slices to avoid clutter
+                        if (value / total < 0.05) return; 
+
+                        const percentage = ((value / total) * 100).toFixed(1) + '%';
+                        const { x, y } = element.tooltipPosition();
+                        
+                        ctx.save();
+                        ctx.font = 'bold 11px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        // Contrast logic
+                        const bg = dataset.backgroundColor[index] || '#000';
+                        const isLight = ['#EEE9DF', '#C9C1B1', '#FFB162'].includes(bg);
+                        ctx.fillStyle = isLight ? '#1B2632' : '#FFFFFF';
+                        
+                        ctx.fillText(percentage, x, y);
+                        ctx.restore();
+                    });
+                });
+            }
+        };
+
         this.charts[canvasId] = new Chart(ctx.getContext('2d'), {
             type: type,
             data: data,
@@ -88,32 +126,42 @@ const CancerDashboard = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { usePointStyle: true } }
+                    legend: { position: 'bottom', labels: { usePointStyle: true } },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                let label = context.label || '';
+                                if (label) label += ': ';
+                                let val = context.raw;
+                                let total = context.chart._metasets[context.datasetIndex].total;
+                                let pct = ((val / total) * 100).toFixed(1) + '%';
+                                return `${label}${val} (${pct})`;
+                            }
+                        }
+                    }
                 },
                 scales: type === 'line' ? {
                     y: { grid: { borderDash: [2, 4] } },
                     x: { grid: { display: false } }
                 } : {}
-            }
+            },
+            plugins: [percentagePlugin] 
         });
     },
     
     renderSankey() {
-        // --- DEMO CONFIGURATION ---
-        // Change this to 'false' to hide the Rose colored exit nodes
+        // --- CONFIGURATION ---
         const SHOW_DROPOFFS = false; 
 
-        // 1. Safety Check
         if (!this.data.patientJourney || typeof d3 === 'undefined') return;
         
         const rawData = this.data.patientJourney;
         const container = document.getElementById('diagram-container');
         if (!container) return;
 
-        // 2. Clear previous SVG content
+        // Clear previous SVG content
         d3.select("#sankey-svg").selectAll("*").remove();
         
-        // 3. Setup Dimensions
         const containerRect = container.getBoundingClientRect();
         const margin = { top: 40, right: 10, bottom: 20, left: 10 };
         const width = containerRect.width - margin.left - margin.right;
@@ -125,7 +173,6 @@ const CancerDashboard = {
             .append("g")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-        // 4. Force Create Tooltip
         let tooltip = d3.select("#sankey-tooltip");
         if (tooltip.empty()) {
             tooltip = d3.select("body").append("div")
@@ -138,13 +185,10 @@ const CancerDashboard = {
                 .style("transition", "opacity 0.2s");
         }
 
-        // --- 5. DATA PROCESSING ---
-        
-        // Deep clone to avoid mutating original data on re-renders
+        // Process Data
         let nodes = rawData.nodes.map(n => ({ ...n }));
         let links = rawData.links.map(l => ({ ...l }));
 
-        // Only calculate drop-offs if the flag is TRUE
         if (SHOW_DROPOFFS) {
             const nodeFlows = {};
             nodes.forEach(n => nodeFlows[n.id] = { in: 0, out: 0 });
@@ -160,39 +204,22 @@ const CancerDashboard = {
             nodes.forEach(node => {
                 const flow = nodeFlows[node.id];
                 if (!flow) return;
-
-                // Effective Volume logic
                 const volume = Math.max(flow.in, node.patients || 0, flow.out);
                 
                 if (flow.out > 0 && flow.out < volume) {
                     const loss = volume - flow.out;
-                    
                     if (loss > 0) {
                         const exitId = `exit_${node.id}`;
-                        
-                        newNodes.push({
-                            id: exitId,
-                            name: "Loss / Drop-off", 
-                            isExitNode: true,
-                            stage: node.stage
-                        });
-
-                        newLinks.push({
-                            source: node.id,
-                            target: exitId,
-                            value: loss,
-                            isExitLink: true
-                        });
+                        newNodes.push({ id: exitId, name: "Loss / Drop-off", isExitNode: true, stage: node.stage });
+                        newLinks.push({ source: node.id, target: exitId, value: loss, isExitLink: true });
                     }
                 }
             });
 
-            // Merge Synthetic Data
             nodes = [...nodes, ...newNodes];
             links = [...links, ...newLinks];
         }
 
-        // --- 6. SANKEY GENERATOR ---
         const sankey = d3.sankey()
             .nodeId(d => d.id)
             .nodeWidth(20)
@@ -201,8 +228,6 @@ const CancerDashboard = {
 
         const graph = sankey({ nodes, links });
 
-        // --- 7. RENDERING ---
-
         const getNodeColor = (d) => {
             if (d.isExitNode) return "#e11d48"; 
             const stage = rawData.stages.find(s => s.id === d.stage);
@@ -210,21 +235,22 @@ const CancerDashboard = {
         };
 
         // Draw Links
-        svg.append("g")
-            .selectAll("path")
-            .data(graph.links)
-            .enter()
-            .append("path")
+        const linkGroup = svg.append("g").selectAll("g").data(graph.links).enter().append("g");
+
+        // The path itself
+        linkGroup.append("path")
             .attr("class", "sankey-link")
             .attr("d", d3.sankeyLinkHorizontal())
             .attr("stroke-width", d => Math.max(1, d.width))
             .attr("stroke", d => d.isExitLink ? "#e11d48" : getNodeColor(d.source))
             .style("fill", "none")
             .style("stroke-opacity", 0.2)
+            .attr("id", (d, i) => `linkPath${i}`)
             .on("mouseover", function(event, d) {
                 d3.select(this).transition().duration(200).style("stroke-opacity", 0.6);
-
-                const percent = Math.round((d.value / d.source.value) * 100);
+                
+                // Calculate percentage flow relative to SOURCE total
+                const percent = ((d.value / d.source.value) * 100).toFixed(1);
                 const label = d.isExitLink ? "Dropout / Loss" : `${d.source.name} → ${d.target.name}`;
 
                 tooltip.style("opacity", 1)
@@ -235,8 +261,8 @@ const CancerDashboard = {
                                <span class="font-mono text-emerald-400 font-bold">${d.value}</span>
                            </div>
                            <div class="flex justify-between gap-4 text-xs">
-                               <span class="text-slate-400">Split:</span>
-                               <span class="font-mono ${d.isExitLink ? 'text-rose-400' : 'text-blue-400'} font-bold">${percent}%</span>
+                               <span class="text-slate-400">Flow Split:</span>
+                               <span class="font-mono text-blue-400 font-bold">${percent}%</span>
                            </div>
                        `)
                        .style("left", (event.pageX + 10) + "px")
@@ -245,6 +271,19 @@ const CancerDashboard = {
             .on("mouseout", function() {
                 d3.select(this).transition().duration(200).style("stroke-opacity", 0.2);
                 tooltip.style("opacity", 0);
+            });
+
+        // Add Percentage Labels to Links
+        linkGroup.append("text")
+            .attr("class", "sankey-link-label")
+            .attr("x", d => (d.source.x1 + d.target.x0) / 2)
+            .attr("y", d => (d.y0 + d.y1) / 2)
+            .attr("dy", -2)
+            .attr("text-anchor", "middle")
+            .text(d => {
+                if (d.width < 10) return ""; 
+                const pct = ((d.value / d.source.value) * 100).toFixed(0);
+                return pct + "%";
             });
 
         // Draw Nodes
@@ -275,14 +314,13 @@ const CancerDashboard = {
             })
             .on("mouseout", () => tooltip.style("opacity", 0));
 
-        // Draw Labels (Skip for Exit nodes)
         node.filter(d => !d.isExitNode)
             .append("text")
             .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
             .attr("y", d => (d.y1 + d.y0) / 2)
             .attr("dy", "0.35em")
             .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-            .style("font-size", "11px")
+            .style("font-size", "14px")
             .style("font-weight", "bold")
             .style("fill", "#334155")
             .text(d => d.name)
