@@ -106,7 +106,7 @@ const App = {
         
         // 1. Immediate Visual Feedback
         if (shell) {
-            shell.classList.add('opacity-0'); // Fade out dashboard
+            shell.classList.add('opacity-100'); // Fade out dashboard
             shell.classList.add('pointer-events-none'); // Prevent clicks during fade
         }
 
@@ -114,7 +114,7 @@ const App = {
             // 2. Hard Reset of Views
             if (shell) {
                 shell.classList.add('hidden');
-                shell.classList.remove('flex', 'opacity-0', 'pointer-events-none'); // Clean up classes
+                shell.classList.remove('flex', 'opacity-100', 'pointer-events-none'); // Clean up classes
             }
 
             if (login) {
@@ -122,7 +122,7 @@ const App = {
                 login.classList.remove('hidden');
                 
                 // Reset opacity to ensure it's visible
-                login.classList.remove('opacity-0', 'pointer-events-none');
+                login.classList.remove('opacity-100', 'pointer-events-none');
                 
                 // Add animation class for smooth entry
                 login.classList.add('animate-fade-in');
@@ -272,8 +272,8 @@ const App = {
         
         // Fix: Properly remove opacity-0 to make it visible
         requestAnimationFrame(() => {
-            shell.classList.remove('opacity-0');
-            shell.classList.add('opacity-100');
+            shell.classList.remove('opacity-100');
+            // shell.classList.add('opacity-100');
         });
     },
     
@@ -562,12 +562,12 @@ const App = {
             document.body.classList.add('modal-open');
             // Small delay to allow display:block to apply before opacity transition
             setTimeout(() => {
-                modal.classList.remove('opacity-0');
+                modal.classList.remove('opacity-100');
                 modal.firstElementChild.classList.remove('scale-95');
                 modal.firstElementChild.classList.add('scale-100');
             }, 10);
         } else {
-            modal.classList.add('opacity-0');
+            modal.classList.add('opacity-100');
             modal.firstElementChild.classList.remove('scale-100');
             modal.firstElementChild.classList.add('scale-95');
             setTimeout(() => {

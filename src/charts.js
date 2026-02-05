@@ -7,7 +7,8 @@ const Palette = {
     blueFantastic: '#2C3B4D',
     burningFlame: '#FFB162',
     truffleTrouble: '#A35139',
-    abyssal: '#1B2632'
+    abyssal: '#1B2632',
+    sageWhisper: '#7E8F7C'
 };
 
 const ChartManager = {
@@ -81,7 +82,7 @@ const ChartManager = {
         if (this.donutChart instanceof Chart) this.donutChart.destroy();
 
         // Use Palette for segments
-        const colors = [Palette.blueFantastic, Palette.burningFlame, Palette.truffleTrouble, Palette.oatmeal];
+        const colors = [Palette.blueFantastic, Palette.burningFlame, Palette.truffleTrouble, Palette.oatmeal,Palette.abyssal,Palette.palladian,Palette.sageWhisper];
 
         this.donutChart = new Chart(ctx.getContext('2d'), {
             type: 'doughnut',

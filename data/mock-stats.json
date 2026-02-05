@@ -47,7 +47,7 @@
     "kpis": [
       {
         "label": "Total Cancer Patients",
-        "value": "2,450",
+        "value": "1162",
         "trend": "+5.2%",
         "icon": "users"
       },
@@ -117,8 +117,8 @@
   "dashboard": {
     "kpis": [
       {
-        "id": "ndcc-patients",
-        "label": "NDCC Patients",
+        "id": "Total Patients",
+        "label": "Total Patients",
         "value": "2,847",
         "trend": "+18.3%",
         "trendDirection": "up",
@@ -165,9 +165,10 @@
       },
       "programMix": {
         "totalPatients": "2.8K",
-        "labels": ["MedOnc", "SurgOnc", "RadOnc"],
-        "data": [58, 27, 15],
-        "colors": ["#2563eb", "#9333ea", "#06b6d4"]
+        "labels": ["Medical Oncology", "Rehabilitaion Medicine", "Intervention Radiology", "Pathology", "Genitourinary oncology", "Gynecology oncology", "Colon and Reactal Surgery"],
+        "data": [18, 7, 12, 21, 14, 9, 19],
+        "colors": ["#2563eb","#9333ea","#06b6d4","#ef4444","#f59e0b","#10b981","#f43f5e"]
+
       },
       "capacityUtilization": {
         "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
