@@ -74,8 +74,10 @@ const CancerDashboard = {
                 fill: true,
                 tension: 0.4
             }]
-        });
-    },
+        },
+    );
+},
+
 
     createChart(canvasId, type, data) {
         const ctx = document.getElementById(canvasId);
@@ -85,19 +87,26 @@ const CancerDashboard = {
         const percentagePlugin = {
             id: 'percentageLabels',
             afterDatasetsDraw(chart) {
-                // Only draw on Pie/Doughnut charts
-                if (chart.config.type !== 'pie' && chart.config.type !== 'doughnut') return;
-
                 const { ctx } = chart;
+                
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     const total = meta.total || dataset.data.reduce((a, b) => a + b, 0);
 
+                    // If total is 0, stop
+                    if (!total || total === 0) return;
+
                     meta.data.forEach((element, index) => {
-                        if (element.hidden) return;
+                        // FIX: Strictly check if data is hidden via legend
+                        if (typeof chart.getDataVisibility === 'function' && !chart.getDataVisibility(index)) {
+                            return; 
+                        }
+                        if (element.hidden) return; // Fallback
+
                         const value = dataset.data[index];
-                        // Skip small slices to avoid clutter
-                        if (value / total < 0.05) return; 
+                        
+                        // Fix: Hide small labels (< 5%)
+                        if (value / total < 0.05) return;
 
                         const percentage = ((value / total) * 100).toFixed(1) + '%';
                         const { x, y } = element.tooltipPosition();
@@ -107,9 +116,9 @@ const CancerDashboard = {
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         
-                        // Contrast logic
-                        const bg = dataset.backgroundColor[index] || '#000';
-                        const isLight = ['#EEE9DF', '#C9C1B1', '#FFB162'].includes(bg);
+                        // Dynamic text color
+                        const hex = dataset.backgroundColor[index] || '#000';
+                        const isLight = ['#EEE9DF', '#C9C1B1', '#FFB162'].includes(hex);
                         ctx.fillStyle = isLight ? '#1B2632' : '#FFFFFF';
                         
                         ctx.fillText(percentage, x, y);
@@ -133,9 +142,16 @@ const CancerDashboard = {
                                 let label = context.label || '';
                                 if (label) label += ': ';
                                 let val = context.raw;
-                                let total = context.chart._metasets[context.datasetIndex].total;
-                                let pct = ((val / total) * 100).toFixed(1) + '%';
-                                return `${label}${val} (${pct})`;
+                                
+                                // Fix: Only show percentages for Pie/Doughnut charts
+                                if (context.chart.config.type === 'pie' || context.chart.config.type === 'doughnut') {
+                                    let total = context.chart._metasets[context.datasetIndex].total;
+                                    let pct = ((val / total) * 100).toFixed(1) + '%';
+                                    return `${label}${val} (${pct})`;
+                                }
+                                
+                                // For Line/Bar charts, just show the value
+                                return `${label}${val}`;
                             }
                         }
                     }

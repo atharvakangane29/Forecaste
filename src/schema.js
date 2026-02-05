@@ -26,24 +26,35 @@ const SchemaBuilder = {
   gridSize: 20,
 
   init() {
-    this.container = document.getElementById('schema-container');
-    this.svgLines  = document.getElementById('schema-lines');
-    if (!this.container || !this.svgLines) return;
+  this.container = document.getElementById('schema-container');
+  this.svgLines  = document.getElementById('schema-lines');
+  if (!this.container || !this.svgLines) return;
 
-    this.bindEvents();
-    this.ensureArrowMarker();              // Optional arrowheads
+  this.bindEvents();
+  this.ensureArrowMarker();
+  
+  // Use requestAnimationFrame for reliable rendering
+  const initializeWhenReady = () => {
+    const containerRect = this.container.getBoundingClientRect();
     
-    // Delay layout until container has proper dimensions
-    setTimeout(() => {
-      this.initializeLayout();             // Auto-position nodes
-      this.drawLines();                    // Draw connections
-    }, 150);
+    if (containerRect.width === 0 || containerRect.height === 0) {
+      // Container not ready, try again next frame
+      requestAnimationFrame(initializeWhenReady);
+      return;
+    }
     
-    window.addEventListener('resize', () => {
-      this.initializeLayout();             // Recalculate layout on resize
-      this.drawLines();
-    });
-  },
+    // Container is ready, proceed with layout
+    this.initializeLayout();
+    this.drawLines();
+  };
+  
+  requestAnimationFrame(initializeWhenReady);
+  
+  window.addEventListener('resize', () => {
+    this.initializeLayout();
+    this.drawLines();
+  });
+},
 
   /**
    * Auto-Layout System: Star Schema Pattern

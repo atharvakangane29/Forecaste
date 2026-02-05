@@ -125,9 +125,9 @@
         "icon": "users"
       },
       {
-        "id": "avg-tti",
-        "label": "Avg TTI (Days)",
-        "value": "3.2",
+        "id": "Avg Length of Stay",
+        "label": "Avg Length of Stay (Days)",
+        "value": "8",
         "trend": "-1.8 Days",
         "trendDirection": "down",
         "icon": "timer"
@@ -177,7 +177,7 @@
       "programPerformance": {
         "labels": ["Chemotherapy", "Radiation", "Immunotherapy", "Surgery"],
         "data": [1245, 875, 1680, 520],
-        "colors": ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"]
+        "colors": ["#EEE9DF", "#C9C1B1", "#2C3B4D", "#FFB162"]
       }
     },
     "insights": [
@@ -209,12 +209,7 @@
         "trend": "Quaterly",
         "trendColor": "emerald"
       },
-      {
-        "label": "Data Shape (Row x Col)",
-        "value": "6.2M x 48",
-        "trend": "Wide",
-        "trendColor": "blue"
-      },
+
       {
         "label": "Date Range",
         "value": "2020-2026",

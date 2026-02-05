@@ -209,15 +209,19 @@ const ChartManager = {
         this.programChart = new Chart(ctx.getContext('2d'), {
             type: 'pie',
             data: {
-                labels: ['Chemotherapy', 'Radiation', 'Immunotherapy', 'Surgery'],
+                // labels: ['Chemotherapy', 'Radiation', 'Immunotherapy', 'Surgery'],
+                labels : this.data.dashboard.charts.programPerformance.labels,
+                
                 datasets: [{
-                    data: [420, 310, 520, 170],
-                    backgroundColor: [
-                        Palette.palladian,
-                        Palette.oatmeal,
-                        Palette.blueFantastic,
-                        Palette.burningFlame
-                    ],
+                    // data: [420, 310, 520, 170],
+                    data : this.data.dashboard.charts.programPerformance.data,
+                    // backgroundColor: [
+                    //     Palette.palladian,
+                    //     Palette.oatmeal,
+                    //     Palette.blueFantastic,
+                    //     Palette.burningFlame
+                    // ],
+                    backgroundColor: this.data.dashboard.charts.programPerformance.colors,
                     borderWidth: 0
                 }]
             },
@@ -243,31 +247,33 @@ const ChartManager = {
             plugins: [{
                 id: 'percentageLabels',
                 afterDatasetsDraw(chart) {
-                    const { ctx, data } = chart;
+                    const { ctx } = chart;
                     
                     chart.data.datasets.forEach((dataset, i) => {
                         const meta = chart.getDatasetMeta(i);
                         const total = meta.total || dataset.data.reduce((a, b) => a + b, 0);
 
+                        if (!total || total === 0) return;
+
                         meta.data.forEach((element, index) => {
+                            // FIX: Strictly check visibility
+                            if (typeof chart.getDataVisibility === 'function' && !chart.getDataVisibility(index)) {
+                                return;
+                            }
                             if (element.hidden) return;
                             
-                            // Calculate Percentage
                             const value = dataset.data[index];
-                            const percentage = ((value / total) * 100).toFixed(1) + '%';
+                            if (value / total < 0.05) return;
                             
-                            // Position Logic
+                            const percentage = ((value / total) * 100).toFixed(1) + '%';
                             const { x, y } = element.tooltipPosition();
                             
-                            // Text Styling
                             ctx.save();
                             ctx.font = 'bold 11px Inter';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
                             
-                            // Dynamic Text Color based on background brightness
                             const hex = dataset.backgroundColor[index];
-                            // Simple heuristic: dark colors get white text, light get black
                             const isLight = ['#EEE9DF', '#C9C1B1', '#FFB162'].includes(hex);
                             ctx.fillStyle = isLight ? '#1B2632' : '#FFFFFF';
                             

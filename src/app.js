@@ -1,8 +1,9 @@
 /* src/app.js */
 
 window.AuthFlow = {
+    isDataLoaded: false, // Flag to track status
+
     init() {
-        // Ensure Intro is visible, others hidden on fresh load
         document.getElementById('view-intro').classList.remove('hidden');
         document.getElementById('view-login').classList.add('hidden');
         document.getElementById('view-wizard').classList.add('hidden');
@@ -11,13 +12,10 @@ window.AuthFlow = {
     goToLogin() {
         const intro = document.getElementById('view-intro');
         const login = document.getElementById('view-login');
-
-        // Transition
         intro.classList.add('opacity-0');
         setTimeout(() => {
             intro.classList.add('hidden');
             login.classList.remove('hidden');
-            // Animate login entrance
             login.classList.add('animate-fade-in');
         }, 500);
     },
@@ -25,17 +23,23 @@ window.AuthFlow = {
     handleLogin() {
         const login = document.getElementById('view-login');
         const btn = login.querySelector('button');
+        const originalContent = btn.innerHTML; // Save original text
         
-        // Simulate loading
-        const originalContent = btn.innerHTML;
         btn.innerHTML = `<i data-lucide="loader-2" class="w-5 animate-spin"></i>`;
         
         setTimeout(() => {
-            // Success transition
             login.classList.add('opacity-0');
             setTimeout(() => {
                 login.classList.add('hidden');
-                this.startWizard();
+                btn.innerHTML = originalContent; // Reset button text
+
+                // CHECK: If data is already loaded, skip wizard
+                if (this.isDataLoaded) {
+                    App.showAppShell();
+                    App.switchView('pipeline');
+                } else {
+                    this.startWizard();
+                }
             }, 500);
         }, 1000);
     },
@@ -45,8 +49,6 @@ window.AuthFlow = {
         wizard.classList.remove('hidden');
         wizard.classList.add('flex', 'flex-col');
         wizard.classList.add('animate-fade-in');
-        
-        // Ensure Lucide icons render in the newly visible wizard
         if (window.lucide) lucide.createIcons();
     }
 };
@@ -266,12 +268,15 @@ const App = {
         if (!shell) return;
 
         shell.classList.remove('hidden');
-        shell.classList.add('flex');
+        shell.classList.add('flex'); // Ensures sidebar and content align side-by-side
+        
+        // Fix: Properly remove opacity-0 to make it visible
         requestAnimationFrame(() => {
-            shell.classList.remove('opacity-100');
+            shell.classList.remove('opacity-0');
+            shell.classList.add('opacity-100');
         });
     },
-
+    
     bindEvents() {
         // Sidebar Navigation
         document.querySelectorAll('[data-view]').forEach(link => {
@@ -399,6 +404,11 @@ const App = {
     },
 
     switchView(viewName) {
+
+        // Reset scroll position
+        const scrollContainer = document.getElementById('main-scroll-container');
+        if (scrollContainer) scrollContainer.scrollTop = 0;
+
         const views = [
             'dashboard',
             'pipeline',
