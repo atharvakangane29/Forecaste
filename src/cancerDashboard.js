@@ -72,7 +72,8 @@ const CancerDashboard = {
                 borderColor: '#2C3B4D',
                 backgroundColor: 'rgba(44, 59, 77, 0.1)',
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                datalabels: { display: false }
             }]
         },
     );
@@ -87,6 +88,7 @@ const CancerDashboard = {
         const percentagePlugin = {
             id: 'percentageLabels',
             afterDatasetsDraw(chart) {
+                if (chart.config.type === 'line') return;
                 const { ctx } = chart;
                 
                 chart.data.datasets.forEach((dataset, i) => {
@@ -289,18 +291,43 @@ const CancerDashboard = {
                 tooltip.style("opacity", 0);
             });
 
-        // Add Percentage Labels to Links
-        linkGroup.append("text")
-            .attr("class", "sankey-link-label")
-            .attr("x", d => (d.source.x1 + d.target.x0) / 2)
-            .attr("y", d => (d.y0 + d.y1) / 2)
-            .attr("dy", -2)
-            .attr("text-anchor", "middle")
-            .text(d => {
-                if (d.width < 10) return ""; 
-                const pct = ((d.value / d.source.value) * 100).toFixed(0);
-                return pct + "%";
-            });
+        // Add Percentage Labels to Links with Background
+        linkGroup.each(function(d) {
+            if (d.width < 20) return; // Skip small flows
+            
+            const pct = ((d.value / d.source.value) * 100).toFixed(0) + "%";
+            const xPos = (d.source.x1 + d.target.x0) / 2;
+            const yPos = (d.y0 + d.y1) / 2;
+            
+            const group = d3.select(this);
+            
+            // Background rectangle
+            const padding = 4;
+            const textWidth = pct.length * 7; // Approximate width
+            
+            group.append("rect")
+                .attr("x", xPos - textWidth / 2 - padding)
+                .attr("y", yPos - 9)
+                .attr("width", textWidth + padding * 2)
+                .attr("height", 16)
+                .attr("rx", 3)
+                .attr("fill", "white")
+                .attr("opacity", 0.9)
+                .style("pointer-events", "none");
+            
+            // Text label
+            group.append("text")
+                .attr("class", "sankey-link-label")
+                .attr("x", xPos)
+                .attr("y", yPos)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .style("font-size", "11px")
+                .style("font-weight", "700")
+                .style("fill", "#1e293b")
+                .style("pointer-events", "none")
+                .text(pct);
+        });
 
         // Draw Nodes
         const node = svg.append("g")
@@ -332,21 +359,49 @@ const CancerDashboard = {
 
         node.filter(d => !d.isExitNode)
             .append("text")
-            .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+            .attr("x", d => {
+                // Smart positioning: put labels on the side with more space
+                const isLeftSide = d.x0 < width / 3;
+                const isRightSide = d.x0 > (2 * width / 3);
+                
+                if (isLeftSide) return d.x1 + 12; // Label to the right
+                if (isRightSide) return d.x0 - 12; // Label to the left
+                
+                // Middle nodes: alternate based on y position to reduce stacking
+                return (d.y0 < height / 2) ? d.x1 + 12 : d.x0 - 12;
+            })
             .attr("y", d => (d.y1 + d.y0) / 2)
             .attr("dy", "0.35em")
-            .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-            .style("font-size", "14px")
-            .style("font-weight", "bold")
-            .style("fill", "#334155")
+            .attr("text-anchor", d => {
+                const isLeftSide = d.x0 < width / 3;
+                const isRightSide = d.x0 > (2 * width / 3);
+                
+                if (isLeftSide) return "start";
+                if (isRightSide) return "end";
+                
+                return (d.y0 < height / 2) ? "start" : "end";
+            })
+            .style("font-size", "12px")
+            .style("font-weight", "600")
+            .style("fill", "#1e293b")
+            .style("text-shadow", "0 0 4px white, 0 0 4px white, 0 0 4px white")
             .text(d => d.name)
             .each(function(d) {
                 const el = d3.select(this);
                 const words = d.name.split('\n');
                 el.text('');
+                
+                const isLeftSide = d.x0 < width / 3;
+                const isRightSide = d.x0 > (2 * width / 3);
+                let xPosition;
+                
+                if (isLeftSide) xPosition = d.x1 + 12;
+                else if (isRightSide) xPosition = d.x0 - 12;
+                else xPosition = (d.y0 < height / 2) ? d.x1 + 12 : d.x0 - 12;
+                
                 words.forEach((word, i) => {
                     el.append('tspan')
-                      .attr('x', d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+                      .attr('x', xPosition)
                       .attr('dy', i === 0 ? 0 : "1.2em")
                       .text(word);
                 });
