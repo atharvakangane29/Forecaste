@@ -27,24 +27,33 @@ const ScenarioManager = {
         }
 
         // New Scenario Button (Opens Modal)
-        document.getElementById('btn-new-scenario')?.addEventListener('click', () => {
+        document.getElementById('btn-new-scenario')?.addEventListener('click', (e) => {
+
+            e.preventDefault();
+            e.stopPropagation();
+
             // Reset input and error state
             const input = document.getElementById('new-scenario-name');
             const error = document.getElementById('new-scenario-error');
             if(input) input.value = '';
             if(error) error.classList.add('hidden');
+
+        //     setTimeout(()=> input?.focus(), 100);
+        // },50);
             
             App.toggleModal('new-scenario-modal', true);
-            setTimeout(() => input?.focus(), 100); // Focus input for UX
+            setTimeout(() => input?.focus(), 350); // Focus input for UX
         });
 
         // Modal: Cancel
-        document.getElementById('btn-cancel-scenario')?.addEventListener('click', () => {
+        document.getElementById('btn-cancel-scenario')?.addEventListener('click', (e) => {
+            e.stopPropagation();
             App.toggleModal('new-scenario-modal', false);
         });
 
         // Modal: Confirm
-        document.getElementById('btn-confirm-scenario')?.addEventListener('click', () => {
+        document.getElementById('btn-confirm-scenario')?.addEventListener('click', (e) => {
+            e.stopPropagation();
             this.handleModalCreation();
         });
 
