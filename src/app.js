@@ -559,19 +559,21 @@ const App = {
 
         if (show) {
             modal.classList.remove('hidden');
+            modal.classList.add('flex'); // Add flex display
             document.body.classList.add('modal-open');
-            // Small delay to allow display:block to apply before opacity transition
+            // Small delay to allow display to apply before opacity transition
             setTimeout(() => {
-                modal.classList.remove('opacity-100');
+                modal.classList.remove('opacity-0'); // Fixed: was opacity-100
                 modal.firstElementChild.classList.remove('scale-95');
                 modal.firstElementChild.classList.add('scale-100');
             }, 10);
         } else {
-            modal.classList.add('opacity-100');
+            modal.classList.add('opacity-0'); // Fixed: was opacity-100
             modal.firstElementChild.classList.remove('scale-100');
             modal.firstElementChild.classList.add('scale-95');
             setTimeout(() => {
                 modal.classList.add('hidden');
+                modal.classList.remove('flex'); // Remove flex when hiding
                 document.body.classList.remove('modal-open');
             }, 300);
         }
