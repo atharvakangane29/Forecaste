@@ -6,7 +6,11 @@
     <title>Platfrom A</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
     <script src="https://unpkg.com/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -490,49 +494,87 @@
                     </div>
                 </div>
 
-                <div id="view-geography-dashboard" class="hidden space-y-6 max-w-7xl mx-auto animate-fade-in">
-                    
+                <div id="view-geography-dashboard" class="hidden space-y-8 max-w-7xl mx-auto animate-fade-in pb-10">
+    
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-800">Geographic Market Analysis</h2>
-                            <span class="text-sm text-slate-500">Patient distribution and facility catchment areas</span>
+                            <h2 class="text-2xl font-bold text-slate-800">Healthcare Market Intelligence</h2>
+                            <!-- <span class="text-sm text-slate-500">Geographic Analysis & Payer Mix Strategy</span> -->
                         </div>
-                        <div class="bg-white p-1 rounded-lg border border-slate-200 flex" id="geo-filters">
-                            <button class="px-3 py-1 text-xs font-bold rounded bg-slate-800 text-white shadow-sm transition-all" data-filter="all">All</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="0-10mi">0-10mi</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="10-25mi">10-25mi</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="25-50mi">25-50mi</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="50+mi">50+mi</button>
                         </div>
-                    </div>
 
-                    <div class="bg-blue-600 rounded-xl p-4 shadow-lg flex items-center gap-4 text-white">
-                        <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                            <i data-lucide="map-pin" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <!-- <div class="flex-1">
-                            <h4 class="text-xs font-bold uppercase tracking-wider opacity-80 mb-1">Strategic Insight</h4>
-                            <p class="text-lg leading-tight" id="geo-insight-text">Loading insights...</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- <div class="lg:col-span-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                            </div>
+                            <div class="lg:col-span-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group z-0">
+                                <div class="h-[450px] w-full bg-slate-50 rounded-lg relative z-0" id="geoMap">
+                                </div>
+                            </div>
                         </div> -->
-                        <button class="px-4 py-2 bg-white text-blue-700 text-xs font-bold rounded-lg hover:bg-blue-50 transition-colors">
-                            View Details
-                        </button>
+
+                        <!-- MODIFY - Remove nested duplicate div, keep only: -->
+                        <div class="lg:col-span-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600">
+                                    <i data-lucide="minus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div id="geoMap" class="h-[500px] w-full rounded-lg"></div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="bg-orange-50 border border-orange-200 p-5 rounded-xl shadow-sm relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-orange-400 opacity-10 rounded-bl-full"></div>
+                                <h4 class="text-xs font-bold text-orange-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> Strategic Insight
+                                </h4>
+                                <p class="text-sm text-slate-800 leading-relaxed" id="geo-insight-text">Loading...</p>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-full max-h-[320px] flex flex-col">
+                                <h3 class="font-bold text-slate-800 mb-6 text-sm flex-shrink-0">Patient Distance Distribution</h3>
+                                <div class="space-y-5 overflow-y-auto pr-2" id="geo-dist-list">
+                                    </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-slate-800">Patient Heat Map & Facility Locations</h3>
-                            
-                            <div class="flex gap-4 text-xs font-medium text-slate-600">
-                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#2C3B4D]"></span> Medicare</span>
-                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#FFB162]"></span> Commercial</span>
-                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#A35139]"></span> Medicaid</span>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-4 text-lg">Payer Mix Analysis</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="payer-mix-container">
+                            </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-6 text-sm">Payer Mix by Distance Band</h3>
+                            <div class="h-64">
+                                <canvas id="geoCrossChart"></canvas>
                             </div>
                         </div>
 
-                        <div class="h-[500px] w-full bg-slate-50 rounded-xl border border-slate-100 relative">
-                            <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 20px 20px;"></div>
-                            <canvas id="geoMapChart"></canvas>
+                        <div class="bg-white p-0 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                                <h3 class="font-bold text-slate-800 text-sm">Top Counties by Volume</h3>
+                            </div>
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-6 py-3 font-semibold">County</th>
+                                        <th class="px-6 py-3 font-semibold text-right">Volume</th>
+                                        <th class="px-6 py-3 font-semibold">Primary Payer</th>
+                                        </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100" id="geo-county-body">
+                                    </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

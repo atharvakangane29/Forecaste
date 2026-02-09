@@ -475,3 +475,73 @@ body.modal-open {
     color: #1B2632;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
+
+/* --- Geography Dashboard Additions --- */
+.bg-coral-100 { background-color: #ffedd5; } /* Tailwind orange-100 equivalent */
+.border-coral-200 { border-color: #fed7aa; } /* Tailwind orange-200 equivalent */
+.text-coral-800 { color: #9a3412; }          /* Tailwind orange-800 equivalent */
+
+/* Custom bullet for list items */
+.geo-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+/* Hover lift effect for payer cards */
+.payer-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.payer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ... existing styles ... */
+
+/* Geography Dashboard Updates */
+.bg-us-map {
+    /* Placeholder US Map - Replace URL with your local asset if needed */
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/1a/Blank_US_Map_%28states_only%29.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #f8fafc; /* Slate-50 fallback */
+}
+
+/* Custom Scrollbar for the Distance List */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+
+/* @keyframes spin {
+    to { transform: rotate(360deg); }
+} */
+
+.custom-tooltip {
+    background: white !important;
+    border: 2px solid #2563eb !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+    padding: 0 !important;
+}
+
+.custom-tooltip::before {
+    border-top-color: #2563eb !important;
+}
+
+.custom-facility-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.leaflet-container {
+    font-family: 'Inter', sans-serif;
+}

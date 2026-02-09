@@ -30,86 +30,49 @@
   },
 
   "geographyDashboard": {
-    "insight": "<strong>23%</strong> of patients travel <strong>>50 miles</strong> – significant opportunity for a satellite clinic in <strong>Wayne County</strong>.",
-    "filters": ["0-10mi", "10-25mi", "25-50mi", "50+mi"],
+    "insight": "⚠️ <strong>23%</strong> of patients travel <strong>>50 miles</strong> – opportunity for satellite clinic in <strong>Jefferson County</strong>.",
     "mapData": [
-      { "x": 10, "y": 20, "r": 15, "payor": "Medicare", "distance": "0-10mi", "label": "Facility Hub" },
-      { "x": 15, "y": 25, "r": 8, "payor": "Commercial", "distance": "0-10mi", "label": "Downtown Clinic" },
-      { "x": 40, "y": 50, "r": 20, "payor": "Medicaid", "distance": "10-25mi", "label": "North District" },
-      { "x": 30, "y": 45, "r": 12, "payor": "Medicare", "distance": "10-25mi", "label": "West End" },
-      { "x": 60, "y": 70, "r": 25, "payor": "Commercial", "distance": "25-50mi", "label": "Suburban Center" },
-      { "x": 80, "y": 80, "r": 30, "payor": "Medicare", "distance": "50+mi", "label": "Rural Outpost" },
-      { "x": 85, "y": 75, "r": 10, "payor": "Medicaid", "distance": "50+mi", "label": "Wayne County Target" }
-    ]
-  },
-  
-  "cancerDashboard": {
-    "kpis": [
-      {
-        "label": "Total Cancer Patients",
-        "value": "1162",
-        "trend": "+5.2%",
-        "icon": "users"
-      },
-      {
-        "label": "Infusion Volume",
-        "value": "12,400",
-        "trend": "+12.8%",
-        "icon": "activity"
-      },
-      {
-        "label": "Active Oncology Cases",
-        "value": "840",
-        "trend": "-1.5%",
-        "icon": "clipboard"
-      }
+      { "id": "fac_1", "type": "facility", "lat": 42.3314, "lng": -83.0458, "label": "Main Campus Hub", "volume": "High" },
+      { "id": "fac_2", "type": "facility", "lat": 42.48, "lng": -83.15, "label": "North Satellite", "volume": "Medium" },
+      { "id": "fac_3", "type": "facility", "lat": 42.30, "lng": -83.25, "label": "West Wing Clinic", "volume": "Medium" },
+      { "id": "fac_4", "type": "facility", "lat": 42.38, "lng": -83.10, "label": "East Side Center", "volume": "Low" },
+      
+      { "id": "pt_1", "type": "patient_cluster", "lat": 42.35, "lng": -83.05, "radius": 2000, "density": "High", "payor": "Medicare" },
+      { "id": "pt_2", "type": "patient_cluster", "lat": 42.42, "lng": -83.02, "radius": 1500, "density": "Medium", "payor": "Commercial" },
+      { "id": "pt_3", "type": "patient_cluster", "lat": 42.28, "lng": -83.18, "radius": 3000, "density": "High", "payor": "Medicaid" },
+      { "id": "pt_4", "type": "patient_cluster", "lat": 42.52, "lng": -83.10, "radius": 1200, "density": "Low", "payor": "Commercial" },
+      { "id": "pt_5", "type": "patient_cluster", "lat": 42.25, "lng": -83.35, "radius": 2500, "density": "Medium", "payor": "Medicare" },
+      { "id": "pt_6", "type": "patient_cluster", "lat": 42.37, "lng": -83.15, "radius": 1800, "density": "High", "payor": "Commercial" },
+      { "id": "pt_7", "type": "patient_cluster", "lat": 42.45, "lng": -83.25, "radius": 2200, "density": "Medium", "payor": "Medicaid" },
+      { "id": "pt_8", "type": "patient_cluster", "lat": 42.32, "lng": -82.98, "radius": 1600, "density": "Medium", "payor": "Medicare" }
     ],
-    "charts": {
-      "cancerType": {
-        "labels": ["Breast", "Lung", "Prostate", "Colorectal", "Melanoma"],
-        "data": [35, 25, 20, 15, 5]
-      },
-      "diseaseSite": {
-        "labels": ["Thoracic", "GI", "GU", "Breast", "Skin", "H&N"],
-        "data": [22, 18, 15, 30, 8, 7]
-      },
-      "infusionTrends": {
-        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        "data": [1100, 1150, 1220, 1180, 1350, 1400, 1430, 1501, 1390,1450, 1570, 1590 ]
-      }
+    "marketAnalysis": {
+      "distanceBands": [
+        { "label": "0-10 miles", "count": "2,847", "pct": 45, "color": "#2C3B4D" },
+        { "label": "10-25 miles", "count": "1,523", "pct": 24, "color": "#FFB162" },
+        { "label": "25-50 miles", "count": "734", "pct": 12, "color": "#A35139" },
+        { "label": "50+ miles", "count": "1,196", "pct": 19, "color": "#C9C1B1" }
+      ]
     },
-    "patientJourney": {
-      "stages": [
-        { "id": "stage_1", "name": "Initial Visit", "color": "#C9C1B1" },
-        { "id": "stage_2", "name": "Diagnosis & Treatment", "color": "#A35139" },
-        { "id": "stage_3", "name": "Follow-up Care", "color": "#FFB162" },
-        { "id": "stage_4", "name": "Long-term Monitoring", "color": "#1B2632" }
-      ],
-      "nodes": [
-        { "id": "routine_checkup", "name": "Routine\nCheckup", "stage": "stage_1", "patients": 1000 },
-        { "id": "normal_exam", "name": "Normal\nExam Results", "stage": "stage_2", "patients": 650 },
-        { "id": "specialist", "name": "Referred to\nSpecialist", "stage": "stage_2", "patients": 350 },
-        { "id": "cardiac_dx", "name": "Cardiac\nDiagnosis", "stage": "stage_2", "patients": 200 },
-        { "id": "medication", "name": "Started on\nMedication", "stage": "stage_2", "patients": 280 },
-        { "id": "stable_followup", "name": "Stable\nFollow-up", "stage": "stage_3", "patients": 450 },
-        { "id": "readmitted", "name": "Readmitted", "stage": "stage_3", "patients": 80 },
-        { "id": "surgery", "name": "Surgical\nIntervention", "stage": "stage_3", "patients": 45 },
-        { "id": "1yr_stable", "name": "1+ Year\nStable", "stage": "stage_4", "patients": 380 },
-        { "id": "5yr_healthy", "name": "5+ Years\nHealthy", "stage": "stage_4", "patients": 150 }
-      ],
-      "links": [
-        { "source": "routine_checkup", "target": "normal_exam", "value": 650 },
-        { "source": "routine_checkup", "target": "specialist", "value": 350 },
-        { "source": "specialist", "target": "cardiac_dx", "value": 200 },
-        { "source": "specialist", "target": "medication", "value": 150 },
-        { "source": "cardiac_dx", "target": "medication", "value": 130 },
-        { "source": "normal_exam", "target": "stable_followup", "value": 450 },
-        { "source": "medication", "target": "stable_followup", "value": 200 },
-        { "source": "medication", "target": "readmitted", "value": 80 },
-        { "source": "readmitted", "target": "surgery", "value": 45 },
-        { "source": "stable_followup", "target": "1yr_stable", "value": 380 },
-        { "source": "surgery", "target": "1yr_stable", "value": 35 },
-        { "source": "1yr_stable", "target": "5yr_healthy", "value": 150 }
+    "payerMix": [
+      { "type": "Medicare", "pct": 42, "volume": "2,652", "color": "#2C3B4D", "reimbursement": "$850", "trend": "+3%", "topPayers": ["Medicare A", "Medicare Advantage", "Humana"] },
+      { "type": "Medicaid", "pct": 28, "volume": "1,769", "color": "#06b6d4", "reimbursement": "$420", "trend": "+1.2%", "topPayers": ["State Medicaid", "Molina", "United Comm."] },
+      { "type": "Commercial", "pct": 30, "volume": "1,896", "color": "#9333ea", "reimbursement": "$1,250", "trend": "+5.4%", "topPayers": ["BCBS", "Aetna", "Cigna"] }
+    ],
+    "crossAnalysis": {
+      "byDistance": {
+        "labels": ["0-10mi", "10-25mi", "25-50mi", "50+mi"],
+        "datasets": [
+          { "label": "Medicare", "data": [40, 35, 50, 60], "color": "#2C3B4D" },
+          { "label": "Commercial", "data": [35, 40, 30, 15], "color": "#9333ea" },
+          { "label": "Medicaid", "data": [25, 25, 20, 25], "color": "#06b6d4" }
+        ]
+      },
+      "topCounties": [
+        { "county": "Jefferson", "volume": 1240, "primaryPayer": "Medicare", "trend": "up" },
+        { "county": "Shelby", "volume": 850, "primaryPayer": "Commercial", "trend": "up" },
+        { "county": "Baldwin", "volume": 620, "primaryPayer": "Medicare", "trend": "stable" },
+        { "county": "Mobile", "volume": 410, "primaryPayer": "Medicaid", "trend": "down" }
       ]
     }
   },
