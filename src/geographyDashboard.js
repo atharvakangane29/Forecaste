@@ -1,4 +1,4 @@
-/* src/geographyDashboard.js - OPTIMIZED LEAFLET MAP */
+/* src/geographyDashboard.js - ULTRA-OPTIMIZED WITH FALLBACK TO STATIC MAP */
 
 const GeographyDashboard = (() => {
     // Private state
@@ -7,12 +7,14 @@ const GeographyDashboard = (() => {
     let payerCharts = [];
     let data = null;
     let map = null;  // Leaflet map instance
+    let mapLoadTimeout = null;
+    const MAP_LOAD_TIMEOUT_MS = 3000; // 3 seconds max wait
 
     // Private constants
     const COLORS = {
         'Medicare': '#2C3B4D',
-        'Commercial': '#9333ea',
-        'Medicaid': '#06b6d4'
+        'Commercial': '#FFB162',
+        'Medicaid': '#A35139'
     };
 
     // Private helper functions
@@ -60,7 +62,7 @@ const GeographyDashboard = (() => {
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm payer-card flex flex-col justify-between">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h4 class="font-bold text-lg" style="color: ${payer.color}">${payer.type}</h4>
+                        <h4 class="font-bold text-lg" style="color: ${COLORS[payer.type] || payer.color}">${payer.type}</h4>
                         <p class="text-sm text-slate-500">${payer.pct}% of total volume</p>
                     </div>
                     <div class="h-12 w-12 relative">
@@ -95,7 +97,7 @@ const GeographyDashboard = (() => {
                 data: {
                     datasets: [{
                         data: [payer.pct, 100 - payer.pct],
-                        backgroundColor: [payer.color, '#f1f5f9'],
+                        backgroundColor: [COLORS[payer.type] || payer.color, '#EEE9DF'],
                         borderWidth: 0
                     }]
                 },
@@ -119,9 +121,18 @@ const GeographyDashboard = (() => {
         if (ctx) {
             if (crossChart) crossChart.destroy();
             
+            // Update dataset colors to use legacy COLORS
+            const updatedData = {
+                ...d.byDistance,
+                datasets: d.byDistance.datasets.map(ds => ({
+                    ...ds,
+                    backgroundColor: COLORS[ds.label] || ds.backgroundColor
+                }))
+            };
+            
             crossChart = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
-                data: d.byDistance,
+                data: updatedData,
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -147,211 +158,368 @@ const GeographyDashboard = (() => {
         }
     }
 
+    // Coordinate conversion for static map overlay
+    const MAP_BOUNDS = {
+        minLat: 42.20,
+        maxLat: 42.60,
+        minLng: -83.40,
+        maxLng: -82.90
+    };
+
+    function latLngToPixel(lat, lng, width, height) {
+        const x = ((lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * width;
+        const y = height - ((lat - MAP_BOUNDS.minLat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * height;
+        return { x, y };
+    }
+
+    function createSVGElement(tag, attrs = {}) {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        Object.entries(attrs).forEach(([key, value]) => {
+            el.setAttribute(key, value);
+        });
+        return el;
+    }
+
+    function ensureContainerSized() {
+        const container = document.getElementById('geoMap');
+        if (!container) return;
+
+        // Force proper sizing - critical for Leaflet
+        container.style.display = 'block';
+        container.style.width = '100%';
+        container.style.height = '500px';
+        container.style.minHeight = '500px';
+        container.style.position = 'relative';
+    }
+
+    function renderStaticMap() {
+        const container = document.getElementById('geoMap');
+        if (!container || !data.mapData) return;
+
+        console.log('Rendering static map fallback');
+        
+        ensureContainerSized();
+        
+        container.innerHTML = '';
+        container.style.borderRadius = '12px';
+        container.style.overflow = 'hidden';
+        container.style.backgroundColor = '#EEE9DF';
+
+        // Static map image
+        const mapImg = document.createElement('img');
+        mapImg.src = 'https://api.mapbox.com/styles/v1/mapbox/light-v11/static/-83.15,42.4,9.5,0/900x500@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+        mapImg.style.width = '100%';
+        mapImg.style.height = '100%';
+        mapImg.style.objectFit = 'cover';
+        mapImg.alt = 'Detroit Metro Area';
+        mapImg.onload = () => renderStaticOverlay();
+        container.appendChild(mapImg);
+    }
+
+    function renderStaticOverlay() {
+        const container = document.getElementById('geoMap');
+        if (!container) return;
+
+        const svg = createSVGElement('svg', {
+            viewBox: '0 0 900 500',
+            width: '100%',
+            height: '100%'
+        });
+        svg.style.position = 'absolute';
+        svg.style.top = '0';
+        svg.style.left = '0';
+        svg.style.pointerEvents = 'none';
+
+        const g = createSVGElement('g');
+        g.style.pointerEvents = 'auto';
+
+        // Render markers
+        data.mapData.forEach(point => {
+            const { x, y } = latLngToPixel(point.lat, point.lng, 900, 500);
+
+            if (point.type === 'facility') {
+                const size = point.volume === 'High' ? 16 : 12;
+                
+                // Glow
+                g.appendChild(createSVGElement('rect', {
+                    x: x - size/2 - 2, y: y - size/2 - 2,
+                    width: size + 4, height: size + 4,
+                    fill: '#2C3B4D', opacity: 0.2, rx: 2
+                }));
+
+                // Main
+                g.appendChild(createSVGElement('rect', {
+                    x: x - size/2, y: y - size/2,
+                    width: size, height: size,
+                    fill: '#2C3B4D', stroke: 'white', 'stroke-width': 3, rx: 2
+                }));
+
+                // Label
+                const text = createSVGElement('text', {
+                    x, y: y + 4, 'text-anchor': 'middle',
+                    fill: 'white', 'font-size': size * 0.7, 'font-weight': 'bold'
+                });
+                text.textContent = 'H';
+                text.style.pointerEvents = 'none';
+                g.appendChild(text);
+
+            } else if (point.type === 'patient_cluster') {
+                const color = COLORS[point.payor] || '#cd5454';
+                const radius = point.density === 'High' ? 30 : (point.density === 'Medium' ? 22 : 14);
+
+                // Outer glow
+                g.appendChild(createSVGElement('circle', {
+                    cx: x, cy: y, r: radius + 4,
+                    fill: color, 'fill-opacity': 0.15
+                }));
+
+                // Main circle
+                g.appendChild(createSVGElement('circle', {
+                    cx: x, cy: y, r: radius,
+                    fill: color, 'fill-opacity': 0.35,
+                    stroke: color, 'stroke-width': 3
+                }));
+
+                // Center dot
+                g.appendChild(createSVGElement('circle', {
+                    cx: x, cy: y, r: 4, fill: color
+                }));
+            }
+        });
+
+        svg.appendChild(g);
+
+        // Add legend
+        const legendG = createSVGElement('g');
+        legendG.appendChild(createSVGElement('rect', {
+            x: 30, y: 440, width: 350, height: 45,
+            fill: 'white', opacity: 0.95, rx: 8,
+            stroke: '#cbd5e1', 'stroke-width': 1
+        }));
+
+        // Facility
+        legendG.appendChild(createSVGElement('rect', {
+            x: 60, y: 455, width: 14, height: 14,
+            fill: '#2C3B4D', stroke: 'white', 'stroke-width': 2, rx: 2
+        }));
+        const facilityText = createSVGElement('text', {
+            x: 80, y: 466, 'font-size': 13, 'font-weight': 600, fill: '#1e293b'
+        });
+        facilityText.textContent = 'Facility';
+        legendG.appendChild(facilityText);
+
+        // Patient Cluster
+        legendG.appendChild(createSVGElement('circle', {
+            cx: 207, cy: 462, r: 8,
+            fill: '#C9C1B1', 'fill-opacity': 0.35,
+            stroke: '#C9C1B1', 'stroke-width': 2
+        }));
+        const clusterText = createSVGElement('text', {
+            x: 220, y: 466, 'font-size': 13, 'font-weight': 600, fill: '#1e293b'
+        });
+        clusterText.textContent = 'Patient Cluster';
+        legendG.appendChild(clusterText);
+
+        svg.appendChild(legendG);
+        container.appendChild(svg);
+    }
+
     function renderFacilityMarker(point) {
         if (!map || !point.lat || !point.lng) return;
 
-        const size = point.volume === 'High' ? 24 : 18;
+        const size = point.volume === 'High' ? 20 : 16;
         
-        // Create custom icon
         const facilityIcon = L.divIcon({
             className: 'custom-facility-marker',
-            html: `
-                <div style="
-                    width: ${size}px;
-                    height: ${size}px;
-                    background-color: #2563eb;
-                    border: 3px solid white;
-                    border-radius: 4px;
-                    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4), 0 0 0 4px rgba(37, 99, 235, 0.2);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: bold;
-                    color: white;
-                    font-size: ${size * 0.6}px;
-                    cursor: pointer;
-                ">H</div>
-            `,
+            html: `<div style="width:${size}px;height:${size}px;background:#2C3B4D;border:3px solid white;border-radius:3px;box-shadow:0 2px 6px rgba(84, 128, 181, 0.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:${size*0.6}px;">H</div>`,
             iconSize: [size, size],
-            iconAnchor: [size / 2, size / 2]
+            iconAnchor: [size/2, size/2]
         });
 
-        // Create marker
         const marker = L.marker([point.lat, point.lng], {
             icon: facilityIcon,
             pane: 'facilities'
         }).addTo(map);
 
-        // Add tooltip
-        marker.bindTooltip(`
-            <div style="padding: 4px 8px;">
-                <strong style="display: block; margin-bottom: 4px;">${point.label}</strong>
-                <span style="font-size: 11px; color: #64748b;">Volume: ${point.volume}</span><br>
-                <span style="font-size: 10px; color: #2563eb; font-weight: bold;">Facility</span>
-            </div>
-        `, {
-            permanent: false,
-            direction: 'top',
-            offset: [0, -10],
-            className: 'custom-tooltip'
-        });
+        // Add tooltip on hover
+        marker.bindTooltip(
+            `<div style="font-weight:bold;color:#eeeeee;font-size:12px;">
+                <div>${point.label}</div>
+                <div style="font-size:11px;color:#eeeeee;margin-top:4px;">Volume: ${point.volume}</div>
+            </div>`,
+            {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -10],
+                className: 'leaflet-tooltip-facility',
+                opacity: 0.95
+            }
+        );
     }
 
     function renderPatientCluster(point) {
         if (!map || !point.lat || !point.lng) return;
 
-        const color = COLORS[point.payor] || '#cbd5e1';
-        const radius = point.density === 'High' ? 30 : (point.density === 'Medium' ? 22 : 14);
+        const color = COLORS[point.payor] || '#ffaa00';
+        const radius = point.density === 'High' ? 1200 : (point.density === 'Medium' ? 800 : 500);
 
-        // Create circle marker
         const circle = L.circle([point.lat, point.lng], {
             color: color,
             fillColor: color,
-            fillOpacity: 0.35,
-            weight: 3,
-            radius: radius * 40,  // Convert to meters (approximate)
+            fillOpacity: 0.25,
+            weight: 2,
+            radius: radius,
             pane: 'clusters'
         }).addTo(map);
 
-        // Add center dot
-        const centerDot = L.circleMarker([point.lat, point.lng], {
-            color: color,
-            fillColor: color,
-            fillOpacity: 1,
-            weight: 0,
-            radius: 4,
-            pane: 'clusters'
-        }).addTo(map);
-
-        // Add tooltip to circle
-        circle.bindTooltip(`
-            <div style="padding: 4px 8px;">
-                <strong style="display: block; margin-bottom: 4px;">Patient Hotspot</strong>
-                <span style="font-size: 11px; color: #64748b;">Payor: ${point.payor}</span><br>
-                <span style="font-size: 11px; color: #64748b;">Density: ${point.density}</span><br>
-                <span style="font-size: 10px; color: #94a3b8;">Radius: ${point.radius}m</span>
-            </div>
-        `, {
-            permanent: false,
-            direction: 'top',
-            className: 'custom-tooltip'
-        });
-    }
-
-    function addCustomControls() {
-        if (!map) return;
-
-        // Hook up existing HTML buttons to Leaflet controls
-        const zoomInBtn = document.querySelector('[data-lucide="plus"]')?.closest('button');
-        const zoomOutBtn = document.querySelector('[data-lucide="minus"]')?.closest('button');
-
-        if (zoomInBtn) {
-            zoomInBtn.addEventListener('click', () => map.zoomIn());
-        }
-        if (zoomOutBtn) {
-            zoomOutBtn.addEventListener('click', () => map.zoomOut());
-        }
-    }
-
-    function addMapLegend() {
-        if (!map) return;
-
-        const legend = L.control({ position: 'bottomleft' });
-
-        legend.onAdd = function() {
-            const div = L.DomUtil.create('div', 'map-legend');
-            div.style.cssText = `
-                background: rgba(255, 255, 255, 0.95);
-                padding: 12px 16px;
-                border-radius: 8px;
-                border: 1px solid #cbd5e1;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                font-size: 13px;
-                line-height: 1.8;
-            `;
-
-            div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                    <div style="width: 14px; height: 14px; background: #2563eb; border: 2px solid white; border-radius: 2px;"></div>
-                    <span style="font-weight: 600; color: #1e293b;">Facility</span>
+        // Add tooltip on hover
+        circle.bindTooltip(
+            `<div style="font-weight:bold;color:#eeee;font-size:12px;">
+                <div>Patient Cluster</div>
+                <div style="font-size:11px;color:#eeee;margin-top:4px;">
+                    Payer: ${point.payor}<br/>
+                    Density: ${point.density}
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 14px; height: 14px; background: #cbd5e1; opacity: 0.5; border: 2px solid #64748b; border-radius: 50%;"></div>
-                    <span style="font-weight: 600; color: #1e293b;">Patient Cluster</span>
-                </div>
-            `;
-
-            return div;
-        };
-
-        legend.addTo(map);
+            </div>`,
+            {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -10],
+                className: 'leaflet-tooltip-cluster',
+                opacity: 0.95
+            }
+        );
     }
 
     function initMap() {
         const container = document.getElementById('geoMap');
         if (!container || !data.mapData) return;
 
-        // Clear existing content
-        container.innerHTML = '';
+        // Step 1: Ensure container has proper dimensions BEFORE creating map
+        ensureContainerSized();
         
-        // Destroy existing map instance if present
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#f8fafc;"><p style="color:#81b3d6;">Loading map...</p></div>';
+
+        // Clear any existing timeout
+        if (mapLoadTimeout) {
+            clearTimeout(mapLoadTimeout);
+        }
+
+        // Destroy existing map
         if (map) {
             map.remove();
             map = null;
         }
 
-        // Show loading indicator
-        container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8fafc;"><div style="text-align: center;"><div style="width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div><p style="color: #64748b; font-size: 14px;">Loading map...</p></div></div>';
+        // Set timeout to fallback to static map
+        mapLoadTimeout = setTimeout(() => {
+            console.warn('Map tiles took too long to load, falling back to static map');
+            if (map) {
+                map.remove();
+                map = null;
+            }
+            renderStaticMap();
+        }, MAP_LOAD_TIMEOUT_MS);
 
-        // Initialize map after slight delay to allow UI to update
-        setTimeout(() => {
-            // Initialize Leaflet map centered on Detroit metro area
-            map = L.map('geoMap', {
-                center: [42.4, -83.15],
-                zoom: 9.5,
-                zoomControl: false,
-                scrollWheelZoom: true,
-                preferCanvas: true,  // Use canvas for better performance
-                fadeAnimation: false,  // Disable fade for faster load
-                zoomAnimation: true,
-                markerZoomAnimation: false
-            });
+        try {
+            // Give the DOM time to render the container before initializing Leaflet
+            setTimeout(() => {
+                try {
+                    // Try Leaflet first
+                    map = L.map('geoMap', {
+                        center: [42.4, -83.15],
+                        zoom: 10,
+                        zoomControl: false,
+                        scrollWheelZoom: true,
+                        preferCanvas: true,
+                        fadeAnimation: false,
+                        zoomAnimation: false,
+                        markerZoomAnimation: false,
+                        trackResize: false
+                    });
 
-            // Use faster tile provider with better caching
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-                maxZoom: 18,
-                updateWhenIdle: true,  // Only update tiles when map stops moving
-                updateWhenZooming: false,  // Don't update during zoom
-                keepBuffer: 2  // Keep tiles in memory for faster pan
-            }).addTo(map);
+                    // Simpler, faster tile layer with dark styling
+                    const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                        maxZoom: 18,
+                        updateWhenIdle: true,
+                        updateWhenZooming: false,
+                        keepBuffer: 1,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                    });
 
-            // Create custom pane for patient clusters (renders below facilities)
-            map.createPane('clusters');
-            map.getPane('clusters').style.zIndex = 400;
+                    tileLayer.on('load', () => {
+                        clearTimeout(mapLoadTimeout);
+                        console.log('Map tiles loaded successfully');
+                    });
 
-            // Create custom pane for facilities (renders on top)
-            map.createPane('facilities');
-            map.getPane('facilities').style.zIndex = 450;
+                    tileLayer.on('tileerror', () => {
+                        console.warn('Tile loading error, switching to static map');
+                        clearTimeout(mapLoadTimeout);
+                        if (map) {
+                            map.remove();
+                            map = null;
+                        }
+                        renderStaticMap();
+                    });
 
-            // Render map elements
-            data.mapData.forEach(point => {
-                if (point.type === 'facility') {
-                    renderFacilityMarker(point);
-                } else if (point.type === 'patient_cluster') {
-                    renderPatientCluster(point);
+                    tileLayer.addTo(map);
+
+                    // Create panes
+                    map.createPane('clusters');
+                    map.getPane('clusters').style.zIndex = 400;
+                    map.createPane('facilities');
+                    map.getPane('facilities').style.zIndex = 450;
+
+                    // Render markers (simplified - no tooltips for speed)
+                    data.mapData.forEach(point => {
+                        if (point.type === 'facility') {
+                            renderFacilityMarker(point);
+                        } else if (point.type === 'patient_cluster') {
+                            renderPatientCluster(point);
+                        }
+                    });
+
+                    // Add simple legend
+                    const legend = L.control({ position: 'bottomleft' });
+                    legend.onAdd = function() {
+                        const div = L.DomUtil.create('div', 'map-legend');
+                        div.innerHTML = '<div style="background:rgba(255,255,255,0.95);padding:10px 14px;border-radius:6px;border:1px solid #cbd5e1;font-size:12px;line-height:1.6;"><div style="margin-bottom:4px;"><span style="display:inline-block;width:12px;height:12px;background:#2C3B4D;border:2px solid white;border-radius:2px;margin-right:6px;vertical-align:middle;"></span><strong>Facility</strong></div><div><span style="display:inline-block;width:12px;height:12px;background:#C9C1B1;opacity:0.4;border:2px solid #C9C1B1;border-radius:50%;margin-right:6px;vertical-align:middle;"></span><strong>Patient Cluster</strong></div></div>';
+                        return div;
+                    };
+                    legend.addTo(map);
+
+                    // Hook up zoom buttons
+                    const zoomInBtn = document.querySelector('[data-lucide="plus"]')?.closest('button');
+                    const zoomOutBtn = document.querySelector('[data-lucide="minus"]')?.closest('button');
+                    if (zoomInBtn) zoomInBtn.addEventListener('click', () => map && map.zoomIn());
+                    if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => map && map.zoomOut());
+
+                    // CRITICAL: Invalidate size after map is fully initialized
+                    // This tells Leaflet to recalculate based on container dimensions
+                    setTimeout(() => {
+                        if (map) {
+                            map.invalidateSize(true); // true = animate zoom
+                        }
+                    }, 300);
+
+                    // Clear the timeout since map loaded successfully
+                    if (mapLoadTimeout) {
+                        clearTimeout(mapLoadTimeout);
+                        mapLoadTimeout = null;
+                    }
+
+                } catch (innerError) {
+                    console.error('Error initializing Leaflet map:', innerError);
+                    clearTimeout(mapLoadTimeout);
+                    renderStaticMap();
                 }
-            });
+            }, 100); // Small delay to let DOM render
 
-            // Add custom zoom controls
-            addCustomControls();
-            
-            // Add legend
-            addMapLegend();
-
-            // Force initial render
-            map.invalidateSize();
-        }, 50);
+        } catch (error) {
+            console.error('Error initializing Leaflet map:', error);
+            clearTimeout(mapLoadTimeout);
+            renderStaticMap();
+        }
     }
 
     // Public API
@@ -369,8 +537,27 @@ const GeographyDashboard = (() => {
             initMap();
         },
 
+        // Recalculate map size when view becomes visible
+        // Call this when switching to the geography view
+        resizeMap() {
+            if (map) {
+                try {
+                    const container = document.getElementById('geoMap');
+                    if (container) {
+                        ensureContainerSized();
+                    }
+                    map.invalidateSize(true); // true = animate zoom
+                } catch (error) {
+                    console.warn('Error resizing map:', error);
+                }
+            }
+        },
+
         destroy() {
             destroyCharts();
+            if (mapLoadTimeout) {
+                clearTimeout(mapLoadTimeout);
+            }
             if (map) {
                 map.remove();
                 map = null;

@@ -1,51 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+    ╔════════════════════════════════════════════════════════════════════════════╗
+    ║                   CLINICAL FORECASTING PLATFORM - INDEX                    ║
+    ║                                                                            ║
+    ║  Application: Healthcare Volume Forecasting & Scenario Planning Dashboard  ║
+    ║  Purpose: Provide oncology centers with predictive analytics for         ║
+    ║           capacity planning, market analysis, and strategic forecasting   ║
+    ║                                                                            ║
+    ║  Structure:                                                               ║
+    ║  - Intro Screen (Welcome & Getting Started)                              ║
+    ║  - Login View (Authentication)                                           ║
+    ║  - Data Wizard (Multi-step file/cloud data ingestion)                    ║
+    ║  - Main App Shell (Sidebar + Multiple Dashboard Views)                   ║
+    ║  - Views Include:                                                         ║
+    ║    • Clinical Dashboard (KPI + trends)                                   ║
+    ║    • Cancer Dashboard (Patient journey flows)                            ║
+    ║    • Geography Dashboard (Maps + market analysis)                        ║
+    ║    • Data Pipeline (Active sources & schema)                             ║
+    ║    • Scenario Builder (Model configuration)                              ║
+    ║    • Forecasting (Volume projections)                                    ║
+    ║    • Scenario Comparison (Side-by-side analysis)                         ║
+    ║    • Export & Reports (Data download + executive summaries)              ║
+    ║                                                                            ║
+    ║  Technologies:                                                            ║
+    ║  - Tailwind CSS (Styling)                                                ║
+    ║  - Chart.js (Charts)                                                     ║
+    ║  - D3.js (Advanced visualizations)                                       ║
+    ║  - Leaflet.js (Maps)                                                     ║
+    ║  - Flowbite (Component library)                                          ║
+    ║  - noUiSlider (Range inputs)                                             ║
+    ║  - Lucide Icons (Icon library)                                           ║
+    ║                                                                            ║
+    ║  Color Palette (Customizable in Tailwind config):                        ║
+    ║  - Palladian: #EEE9DF (Cream/Neutral)                                    ║
+    ║  - Oatmeal: #C9C1B1 (Light Neutral)                                      ║
+    ║  - Blue Fantastic: #2C3B4D (Primary/Dark)                                ║
+    ║  - Burning Flame: #FFB162 (Accent/Orange)                                ║
+    ║  - Truffle Trouble: #A35139 (Secondary/Brown)                            ║
+    ║  - Abyssal: #1B2632 (Darkest)                                            ║
+    ║                                                                            ║
+    ║  File Organization Guide:                                                ║
+    ║  - Modify colors in lines 45-50 to change brand colors globally         ║
+    ║  - Update page title in line 8                                           ║
+    ║  - Add/remove views by creating new div ids and adding nav links        ║
+    ║  - All view-specific logic is in src/app.js and related modules         ║
+    ╚════════════════════════════════════════════════════════════════════════════╝
+-->
 <head>
+    <!-- ===================== META INFORMATION ===================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platfrom A</title>
     
+    <!-- ===================== FONT IMPORTS ===================== -->
+    <!-- Inter: Primary font family (UI text)
+         JetBrains Mono: Monospace font (code, data displays) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-
+    <!-- ===================== MAPPING LIBRARY (LEAFLET) ===================== -->
+    <!-- Used for geographic market analysis dashboard (geography-dashboard.js) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
+    <!-- ===================== UI COMPONENT LIBRARY ===================== -->
+    <!-- Flowbite: Pre-built component library with modals, tabs, dropdowns, etc. -->
     <script src="https://unpkg.com/flowbite@2.5.2/dist/flowbite.min.js"></script>
+
+    <!-- ===================== STYLING & UTILITY FRAMEWORKS ===================== -->
+    <!-- Tailwind CSS: Utility-first CSS framework for responsive design -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ===================== CHARTING LIBRARIES ===================== -->
+    <!-- Chart.js: Simple responsive charts (line, bar, donut, etc.) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- ===================== ADVANCED DATA VISUALIZATION ===================== -->
+    <!-- D3.js v7: Advanced data-driven document manipulation
+         D3 Sankey: Plugin for flow diagrams (patient journey visualization) -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+    <!-- ===================== ICONS & ICON LIBRARY ===================== -->
+    <!-- Lucide: Lightweight SVG icon set (feather-style icons) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- ===================== RANGE SLIDER ===================== -->
+    <!-- noUiSlider: Lightweight, accessible range input library
+         Used in: Scenario Builder (parameter sliders) & Date range filters -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+
+    <!-- ===================== CUSTOM STYLES ===================== -->
     <link rel="stylesheet" href="assets/css/styles.css">
 
+    <!-- ===================== TAILWIND CSS CONFIGURATION ===================== -->
+    <!-- 
+        This configuration extends Tailwind with:
+        - Custom font families (Inter, JetBrains Mono)
+        - Custom brand color palette (accessible as Tailwind classes)
+        
+        Usage Examples:
+        - Text: class="text-blue-fantastic"
+        - Background: class="bg-palladian"
+        - Borders: class="border-burning-flame"
+    -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    // =========== FONT FAMILIES ===========
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
+                    
+                    // =========== COLOR PALETTE ===========
+                    // TO CHANGE BRAND COLORS: Update these hex values
                     colors: {
-                        'palladian': '#EEE9DF',
-                        'oatmeal': '#C9C1B1',
-                        'blue-fantastic': '#2C3B4D',
-                        'burning-flame': '#FFB162',
-                        'truffle-trouble': '#A35139',
-                        'abyssal': '#1B2632',
-                        // Map functional roles to palette
-                        'primary': '#2C3B4D', // Blue Fantastic
-                        'accent': '#FFB162',  // Burning Flame
-                        'danger': '#A35139',  // Truffle Trouble
-                        'neutral': '#C9C1B1'  // Oatmeal
+                        'palladian':         '#EEE9DF',  // Cream background
+                        'oatmeal':           '#C9C1B1',  // Light neutral
+                        'blue-fantastic':    '#2C3B4D',  // Primary dark blue
+                        'burning-flame':     '#FFB162',  // Accent orange
+                        'truffle-trouble':   '#A35139',  // Secondary brown
+                        'abyssal':           '#1B2632',  // Darkest variant
+                        
+                        // Semantic aliases for easier maintenance
+                        'primary':           '#2C3B4D',  // Blue Fantastic
+                        'accent':            '#FFB162',  // Burning Flame
+                        'danger':            '#A35139',  // Truffle Trouble
+                        'neutral':           '#C9C1B1'   // Oatmeal
                     }
                 }
             }
         }
     </script>
+
+    <!-- ===================== LEAFLET TOOLTIP STYLING ===================== -->
+    <!-- Custom styles for map hover tooltips -->
+    <style>
+        /* Facility marker tooltip */
+        .leaflet-tooltip-facility {
+            background-color: white !important;
+            border: 2px solid #2563eb !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Patient cluster tooltip */
+        .leaflet-tooltip-cluster {
+            background-color: white !important;
+            border: 2px solid #64748b !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Leaflet tooltip general styling */
+        .leaflet-tooltip {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .leaflet-tooltip-bottom::before {
+            border-bottom-color: white !important;
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden">
 
@@ -217,52 +341,58 @@
 
     <div id="app-shell" class="hidden h-full opacity-0 bg-[var(--color-palladian)]. transition-opacity duration-700">
         
-        <aside class="w-20 lg:w-64 bg-slate-900 text-white flex flex-col justify-between transition-all duration-300 z-20">
+        <aside id="sidebar" class="w-20 hover:w-64 bg-slate-900 text-white flex flex-col justify-between transition-all duration-700 z-20 group">
             <div>     <!--Sidebar-->
-                <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-700 cursor-pointer" onclick="App.showToast('Home Refresh')">
-                    <!-- <i data-lucide="activity" class="text-medical-500 w-8 h-8"></i> -->
-                     <!-- <img src="C:\Users\AtharvaKangane\CIRCULANTS\Forcasting app\Frontend\assets\img\logo.png" alt="Logo" class="w-8 h-8" />  + object-contain-->
-                     <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8">
-                    <span class="ml-3 font-bold text-lg hidden lg:block tracking-tight">Platfrom A</span>
+                <div class="h-16 flex items-center justify-center px-3 border-b border-slate-700 cursor-pointer" onclick="App.showToast('Home Refresh')">
+                    <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8 flex-shrink-0">
+                    <span class="ml-3 font-bold text-lg hidden group-hover:block tracking-tight whitespace-nowrap">Platfrom A</span>
                 </div>
                 <nav class="mt-8 space-y-2 px-2">
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="pipeline">
-                        <i data-lucide="database" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Data Pipeline</span>
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="pipeline">
+                        <i data-lucide="database" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Data Pipeline</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Data Pipeline</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="dashboard">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Clinical Dashboard</span>
-                    </a>
-
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="cancer-dashboard">
-                        <i data-lucide="hospital" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Cancer Dashboard</span>
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative active-nav" data-view="dashboard">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Clinical Dashboard</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Clinical Dashboard</span>
                     </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="geography-dashboard">
-                        <i data-lucide="map" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Geography Dashboard</span>
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative active-nav" data-view="cancer-dashboard">
+                        <i data-lucide="hospital" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Cancer Dashboard</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Cancer Dashboard</span>
+                    </a>
+
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative active-nav" data-view="geography-dashboard">
+                        <i data-lucide="map" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Geography Dashboard</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Geography Dashboard</span>
                     </a>
                     
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="scenario-builder">
-                        <i data-lucide="layers" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Scenario Builder</span>
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="scenario-builder">
+                        <i data-lucide="layers" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Scenario Builder</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Scenario Builder</span>
                     </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="forecasting">
-                        <i data-lucide="trending-up" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Forecasting</span>
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="forecasting">
+                        <i data-lucide="trending-up" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Forecasting</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Forecasting</span>
                     </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="scenario-comparison">
-                        <i data-lucide="copy" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Scenario Comparison</span>
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="scenario-comparison">
+                        <i data-lucide="copy" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Scenario Comparison</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Scenario Comparison</span>
                     </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="Export-&-Reports">
-                        <i data-lucide="file-down" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Export & Reports</span>
+                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="Export-&-Reports">
+                        <i data-lucide="file-down" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
+                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Export & Reports</span>
+                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Export & Reports</span>
                     </a>
 
                 </nav>
@@ -270,12 +400,12 @@
             </div>
             <div class="p-4 border-t border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors" onclick="App.handleLogout()">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center font-bold text-xs relative">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center font-bold text-xs flex-shrink-0 relative">
                         JD <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
                     </div>
-                    <div class="hidden lg:block">
-                        <p class="text-sm font-medium">John Doe</p>
-                        <p class="text-xs text-slate-400">Oncology Admin</p>
+                    <div class="hidden group-hover:block">
+                        <p class="text-sm font-medium whitespace-nowrap">John Doe</p>
+                        <p class="text-xs text-slate-400 whitespace-nowrap">Oncology Admin</p>
                     </div>
                 </div>
             </div>
@@ -285,7 +415,7 @@
             <header class="h-16 bg-white border-b flex items-center justify-between px-8 z-10">
                 <h2 id="page-title" class="text-xl font-bold text-slate-800">Clinical Command Center</h2>
                 <div class="flex items-center gap-4">
-                    <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="bell" class="w-5 h-5"></i></button>
+                    <!-- <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="bell" class="w-5 h-5"></i></button> -->
                     <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="settings" class="w-5 h-5"></i></button>
                 </div>
             </header>
@@ -294,63 +424,36 @@
             <div id="main-scroll-container" class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth bg-[var(--color-palladian)]">
                 
                 <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto animate-fade-in">
+                    <!-- Dashboard Title Section -->
                     <div class="flex flex-col md:flex-row md:items-end gap-6 w-full mb-6"> 
-                </div>
+                    </div>
                     
 
+                    <!-- KPI Cards Container - Dynamically populated by charts.js -->
                     <div id="dashboard-kpi-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="users" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+12.5%</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">NDCC Patients</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">1,284</p>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i data-lucide="timer" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">-2.1 Days</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Avg TTI (Days)</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">14.2</p>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-orange-50 text-orange-600 rounded-lg"><i data-lucide="armchair" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">High Load</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Infusion Chair Util</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">88%</p>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="funnel" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+4%</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Gross Conversion Rate</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">22.4%</p>
-                        </div> -->
+                        <!-- KPI cards are inserted here by JavaScript -->
                     </div>
 
-                    <!-- Top Insights -->
+                    <!-- Key Insights Section -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h3 class="text-lg font-semibold text-slate-800 mb-4">
                             Top Insights
                         </h3>
+                        <!-- Insights list populated dynamically -->
                         <ul id="dashboard-insights-container" class="space-y-3">
                         </ul>
                     </div>
 
+                    <!-- Main Charts Row: Trends + Program Mix -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Patient Volume Trends Chart -->
                         <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                            <!-- Filter Buttons -->
                             <div class="flex gap-2 shrink-0">
                                 <button class="px-4 py-2 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn" data-period="7">7 Days</button>
                             </div>
 
+                            <!-- Date Range Slider -->
                             <div class="flex-1 w-full pb-2 px-2">
                                 <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
                                     <span id="slider-date-start">Jan 1, 2024</span>
@@ -358,60 +461,47 @@
                                 </div>
                                 <div id="date-slider"></div>
                             </div>
+                            
+                            <!-- Chart Title -->
                             <h3 class="font-bold text-slate-800 mb-6">Patient Volume Trends</h3>
+                            
+                            <!-- Chart Container -->
                             <div class="h-72">
                                 <canvas id="mainChart"></canvas>
                             </div>
                         </div>
+                        
+                        <!-- Program Mix Donut Chart -->
                         <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-6">Program Mix</h3>
                             <div class="h-64 relative flex items-center justify-center">
                                 <canvas id="donutChart"></canvas>
+                                <!-- Center text overlay -->
                                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div class="text-center mt-2">
-                                        <!-- <span class="block text-3xl font-bold text-slate-800">1.2K</span> -->
                                         <span id="program-mix-total" class="block text-3xl font-bold text-slate-800">--</span>
                                         <span class="text-[10px] text-slate-400 uppercase tracking-widest">Total Pts</span>
                                     </div>
                                 </div>
                             </div>
+                            <!-- Legend -->
                             <div id="program-mix-legend" class="mt-4 space-y-2 px-4">
-                                <!-- <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-600"></span> MedOnc</span> <span class="font-bold">55%</span></div>
-                                <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-600"></span> SurgOnc</span> <span class="font-bold">25%</span></div>
-                                <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> RadOnc</span> <span class="font-bold">20%</span></div> -->
+                                <!-- Legend items inserted dynamically -->
                             </div>
                         </div>
                     </div>
 
-                    <!--  KPI ROWS          
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <p class="text-sm text-slate-500">Avg Bed Utilization</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-2">78%</h3>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <p class="text-sm text-slate-500">Infusion Chair Utilization</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-2">65%</h3>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <p class="text-sm text-slate-500">Monthly Patient Volume</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-2">1,420</h3>
-                        </div>
-                    </div>
-                    -->
-
-                    <!-- Charts Row -->
+                    <!-- Detailed Charts Row: Capacity & Program Performance -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        
-                        <!-- Capacity Utilization -->
+                        <!-- Capacity Utilization Chart -->
                         <div class="bg-white rounded-xl shadow-sm p-12" style="height: 400px">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4">
                                 Capacity Utilization (Monthly)
                             </h3>
-                            <canvas id="capacityChart" ></canvas>
+                            <canvas id="capacityChart"></canvas>
                         </div>
 
-                        <!-- Program Performance -->
+                        <!-- Program Performance Chart -->
                         <div class="bg-white rounded-xl shadow-sm p-12" style="height: 400px">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4">
                                 Program Performance By Service Line
@@ -420,6 +510,7 @@
                         </div>
                     </div>
                     
+                    <!-- Navigation to Next View -->
                     <div class="flex justify-end pt-8 pb-4">
                         <button onclick="App.switchView('cancer-dashboard')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
                             Next: Cancer Dashboard <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
@@ -427,26 +518,35 @@
                     </div>
                 </div>
                 
+                <!-- ╔════════════════════════════════════════════╗ -->
+                <!-- ║   VIEW: CANCER DASHBOARD                  ║ -->
+                <!-- ║   Purpose: Oncology-specific analytics    ║ -->
+                <!-- ║   Shows: Patient journey, cancer types    ║ -->
+                <!-- ╚════════════════════════════════════════════╝ -->
                 <div id="view-cancer-dashboard" class="hidden space-y-6 max-w-7xl mx-auto animate-fade-in">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-2xl font-bold text-slate-800">Cancer Care Analytics</h2>
-                        <!-- <span class="text-sm text-slate-500">Real-time oncology department metrics</span> -->
                     </div>
 
+                    <!-- Cancer-specific KPI Cards -->
                     <div id="cancer-kpi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        </div>
+                        <!-- KPI cards inserted dynamically -->
+                    </div>
 
+                    <!-- Patient Journey Flow (Sankey Diagram) -->
                     <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                         <h3 class="font-bold text-slate-800 mb-4">Patient Journey Flow</h3>
                         <div id="diagram-container" class="w-full min-h-[600px] bg-slate-50 border border-slate-200 rounded-lg p-4 relative">
+                            <!-- SVG Sankey diagram inserted by cancerDashboard.js -->
                             <svg id="sankey-svg" class="w-full h-full block mx-auto"></svg>
                             
+                            <!-- Journey Stage Legend -->
                             <div class="mt-6 p-4 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-lg">
                                 <h4 class="text-xs font-bold text-slate-500 uppercase mb-3">Journey Stages</h4>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#C9C1B1]"></div>
-                                    <span class=" text-xs text-slate-600">Pre-Diagnosis</span>
+                                        <span class="text-xs text-slate-600">Pre-Diagnosis</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#A35139]"></div>
@@ -454,18 +554,20 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#FFB162]"></div>
-                                        <span class="text-xs text-slate-600">Subsiquent Refferal</span>
+                                        <span class="text-xs text-slate-600">Subsequent Referral</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#1B2632]"></div>
-                                        <span class=" text-xs text-slate-600">Long-term Monitoring</span>
+                                        <span class="text-xs text-slate-600">Long-term Monitoring</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Cancer Types & Disease Distribution -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Cancer Type Distribution -->
                         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-4">Cancer Type Distribution</h3>
                             <div class="h-64 relative w-full">
@@ -473,6 +575,7 @@
                             </div>
                         </div>
 
+                        <!-- Disease Site Grouping -->
                         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-4">Disease Site Grouping</h3>
                             <div class="h-64 relative w-full">
@@ -480,6 +583,7 @@
                             </div>
                         </div>
 
+                        <!-- Infusion Trends (full width) -->
                         <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-4">Infusion Trends Over Time</h3>
                             <div class="h-72 relative w-full">
@@ -487,9 +591,11 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Navigation to Next View -->
                     <div class="flex justify-end pt-8 pb-4">
-                        <button onclick="App.switchView('scenario-builder')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
-                            Next: Scenario Builder <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        <button onclick="App.switchView('geography-dashboard')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Geography Dashboard <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                         </button>
                     </div>
                 </div>
@@ -537,7 +643,7 @@
                                 <p class="text-sm text-slate-800 leading-relaxed" id="geo-insight-text">Loading...</p>
                             </div>
 
-                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-full max-h-[320px] flex flex-col">
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-full max-h-[420px] flex flex-col">
                                 <h3 class="font-bold text-slate-800 mb-6 text-sm flex-shrink-0">Patient Distance Distribution</h3>
                                 <div class="space-y-5 overflow-y-auto pr-2" id="geo-dist-list">
                                     </div>
@@ -577,6 +683,12 @@
                             </table>
                         </div>
                     </div>
+                    <!-- Navigation to Next View -->
+                    <div class="flex justify-end pt-8 pb-4">
+                        <button onclick="App.switchView('scenario-builder')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Scenario Builder <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="view-pipeline" class="hidden space-y-8 max-w-7xl mx-auto">
@@ -605,60 +717,6 @@
                         </div> -->
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-                                <h3 class="font-bold text-slate-800 text-sm">Active Data Sources</h3>
-                                <button class="text-xs text-blue-600 font-bold hover:underline">Refresh</button>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left">
-                                    <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
-                                        <tr>
-                                            <th class="px-6 py-3 font-semibold">Source System</th>
-                                            <th class="px-6 py-3 font-semibold">Data Type</th>
-                                            <th class="px-6 py-3 font-semibold">Load Type</th>
-                                            <th class="px-6 py-3 font-semibold">Status</th>
-                                            <th class="px-6 py-3 font-semibold">Last Sync</th>
-                                            <th class="px-6 py-3 font-semibold text-right">Records</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="pipeline-sources-body" class="divide-y divide-slate-100">
-                                        <!-- <tr class="hover:bg-slate-50">
-                                            <td class="px-6 py-4 font-medium text-slate-900">Hospital EMR</td>
-                                            <td class="px-6 py-4 text-slate-500">Inpatient/Outpatient</td>
-                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
-                                            <td class="px-6 py-4 text-slate-500">2024-02-22</td>
-                                            <td class="px-6 py-4 text-right font-mono">2.4M</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-50">
-                                            <td class="px-6 py-4 font-medium text-slate-900">Cancer Registry</td>
-                                            <td class="px-6 py-4 text-slate-500">Diagnosis/Stage</td>
-                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
-                                            <td class="px-6 py-4 text-slate-500">2024-02-22</td>
-                                            <td class="px-6 py-4 text-right font-mono">856K</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-50">
-                                            <td class="px-6 py-4 font-medium text-slate-900">Referral System</td>
-                                            <td class="px-6 py-4 text-slate-500">Physician Referrals</td>
-                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
-                                            <td class="px-6 py-4 text-slate-500">2024-02-22</td>
-                                            <td class="px-6 py-4 text-right font-mono">423K</td>
-                                        </tr> -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <h3 class="font-bold text-slate-800 mb-4 text-sm">Data Completeness Trend</h3>
-                            <div class="h-64">
-                                <canvas id="ingestionChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    
                     <div id="schema-container" class="bg-[#0f172a] rounded-xl overflow-hidden shadow-2xl relative h-[450px]">
                     <div class="absolute top-4 left-4 z-10 bg-slate-800/80 backdrop-blur px-3 py-1 rounded border border-slate-700 text-xs font-bold text-slate-400">
                         SCHEMA BUILDER (DRAG NODES)
@@ -731,8 +789,62 @@
                     <div class="font-bold text-sm flex items-center justify-center gap-2">
                         <i data-lucide="table" class="w-4"></i> Demographic info
                     </div>
-                    </div>
                 </div>
+                </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                                <h3 class="font-bold text-slate-800 text-sm">Active Data Sources</h3>
+                                <button class="text-xs text-blue-600 font-bold hover:underline">Refresh</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-3 font-semibold">Source System</th>
+                                            <th class="px-6 py-3 font-semibold">Data Type</th>
+                                            <th class="px-6 py-3 font-semibold">Load Type</th>
+                                            <th class="px-6 py-3 font-semibold">Status</th>
+                                            <th class="px-6 py-3 font-semibold">Last Sync</th>
+                                            <th class="px-6 py-3 font-semibold text-right">Records</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pipeline-sources-body" class="divide-y divide-slate-100">
+                                        <!-- <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-4 font-medium text-slate-900">Hospital EMR</td>
+                                            <td class="px-6 py-4 text-slate-500">Inpatient/Outpatient</td>
+                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
+                                            <td class="px-6 py-4 text-slate-500">2024-02-22</td>
+                                            <td class="px-6 py-4 text-right font-mono">2.4M</td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-4 font-medium text-slate-900">Cancer Registry</td>
+                                            <td class="px-6 py-4 text-slate-500">Diagnosis/Stage</td>
+                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
+                                            <td class="px-6 py-4 text-slate-500">2024-02-22</td>
+                                            <td class="px-6 py-4 text-right font-mono">856K</td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-6 py-4 font-medium text-slate-900">Referral System</td>
+                                            <td class="px-6 py-4 text-slate-500">Physician Referrals</td>
+                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Active</span></td>
+                                            <td class="px-6 py-4 text-slate-500">2024-02-22</td>
+                                            <td class="px-6 py-4 text-right font-mono">423K</td>
+                                        </tr> -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4 text-sm">Data Completeness Trend</h3>
+                            <div class="h-64">
+                                <canvas id="ingestionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex justify-end pt-8 pb-4">
                         <button onclick="App.switchView('dashboard')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
                             Next: Clinical Dashboard <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
@@ -740,6 +852,11 @@
                     </div>
             </div>
                 <div id="view-scenario-builder" class="hidden max-w-7xl mx-auto animate-fade-in">
+                    <!-- ╔════════════════════════════════════════════╗ -->
+                    <!-- ║   VIEW: SCENARIO BUILDER                  ║ -->
+                    <!-- ║   Purpose: Configure forecast parameters  ║ -->
+                    <!-- ║   Shows: Model selection, growth rates    ║ -->
+                    <!-- ╚════════════════════════════════════════════╝ -->
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                         
                         <div class="lg:col-span-1 space-y-6">
@@ -897,6 +1014,11 @@
                 </div>
 
   <div id="view-forecasting" class="hidden h-[60vh] flex flex-col items-center justify-start animate-fade-in" >
+  <!-- ╔════════════════════════════════════════════╗ -->
+  <!-- ║   VIEW: FORECASTING                       ║ -->
+  <!-- ║   Purpose: Generate forecast projections  ║ -->
+  <!-- ║   Shows: Volume projections, growth tabs  ║ -->
+  <!-- ╚════════════════════════════════════════════╝ -->
   <div class="space-y-2 w-full max-w-7xl">
 
     <!-- Header / Controls -->
@@ -1029,7 +1151,11 @@
 </div>
 
                 <div id="view-scenario-comparison" class="hidden max-w-7xl mx-auto animate-fade-in pb-10">
-    
+                    <!-- ╔════════════════════════════════════════════╗ -->
+                    <!-- ║   VIEW: SCENARIO COMPARISON               ║ -->
+                    <!-- ║   Purpose: Compare two forecast scenarios ║ -->
+                    <!-- ║   Shows: Side-by-side metrics, insights   ║ -->
+                    <!-- ╚════════════════════════════════════════════╝ -->
                     <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-900">Side-by-Side Scenario Analysis</h2>
@@ -1173,11 +1299,14 @@
                 </div>
 
                 <div id="view-Export-&-Reports" class="hidden max-w-7xl mx-auto animate-fade-in pb-10">
-                    <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold text-slate-900">Export & Strategic Reporting</h2>
-                            <p class="text-slate-500 text-sm mt-1">Generate forecast datasets and executive summaries.</p>
-                        </div>
+                    <!-- ╔════════════════════════════════════════════╗ -->
+                    <!-- ║   VIEW: EXPORT & REPORTS                  ║ -->
+                    <!-- ║   Purpose: Download data & generate docs  ║ -->
+                    <!-- ║   Shows: Export options, report preview   ║ -->
+                    <!-- ╚════════════════════════════════════════════╝ -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Export & Strategic Reporting</h2>
+                        <p class="text-slate-500 text-sm mt-1">Generate forecast datasets and executive summaries.</p>
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -1326,6 +1455,14 @@
         </main>
     </div>
 
+    <!-- ╔════════════════════════════════════════════════════════════════╗ -->
+    <!-- ║                    MODALS & OVERLAYS                          ║ -->
+    <!-- ║  Purpose: Floating dialogs for specific interactions          ║ -->
+    <!-- ║  Hidden by default (shown/hidden via JavaScript)              ║ -->
+    <!-- ╚════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== MODEL TRAINING OVERLAY ========== -->
+    <!-- Shows while forecasting model is training in background -->
     <div id="model-training-overlay" class="fixed inset-0 z-[70] bg-slate-900/80 backdrop-blur-sm hidden flex flex-col items-center justify-center transition-opacity duration-300 opacity-0">
         <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-5 max-w-sm w-full text-center border border-white/10">
             <div class="relative">
@@ -1344,9 +1481,11 @@
         </div>
     </div>
 
-
+    <!-- ========== DATASET INFO MODAL ========== -->
+    <!-- Shows dataset schema reference for file uploads -->
     <div id="dataset-info-modal" class="fixed inset-0 z-[80] bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+            <!-- Modal Header -->
             <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                 <h3 class="font-bold text-slate-800 flex items-center gap-2">
                     <i data-lucide="database" class="w-5 h-5 text-blue-600"></i> Dataset Schema
@@ -1355,8 +1494,10 @@
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
+            <!-- Modal Content -->
             <div class="p-6">
                 <p class="text-sm text-slate-500 mb-6">Supported formats: <strong class="text-slate-700">.xlsx, .csv, .json</strong>. Ensure your upload matches the schema below.</p>
+                <!-- Schema table populated by JavaScript -->
                 <div class="overflow-hidden rounded-lg border border-slate-200">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-slate-50 text-xs font-bold text-slate-500 uppercase">
@@ -1367,28 +1508,36 @@
                             </tr>
                         </thead>
                         <tbody id="dataset-info-body" class="divide-y divide-slate-100 bg-white">
-                            </tbody>
+                            <!-- Rows populated dynamically -->
+                        </tbody>
                     </table>
                 </div>
             </div>
+            <!-- Modal Footer -->
             <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
                 <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition-colors modal-close-btn">Close</button>
             </div>
         </div>
     </div>
 
+    <!-- ========== CREATE NEW SCENARIO MODAL ========== -->
+    <!-- Dialog for creating a new forecast scenario -->
     <div id="new-scenario-modal" class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
             <h3 class="text-xl font-bold text-slate-800 mb-2">Create New Scenario</h3>
             <p class="text-sm text-slate-500 mb-6">Define a unique name for your strategic forecast scenario.</p>
             
+            <!-- Form -->
             <div class="space-y-4">
+                <!-- Name Input -->
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Scenario Name</label>
                     <input type="text" id="new-scenario-name" placeholder="e.g., Optimistic Growth 2026" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 font-medium">
+                    <!-- Error message (hidden by default) -->
                     <p id="new-scenario-error" class="text-xs text-rose-600 mt-2 hidden font-bold flex items-center gap-1"> <i data-lucide="alert-circle" class="w-3"></i> <span>Error message</span> </p>
                 </div>
                 
+                <!-- Action Buttons -->
                 <div class="flex gap-3 mt-6">
                     <button id="btn-cancel-scenario" class="flex-1 py-3 border border-slate-200 text-slate-600 font-bold rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
                     <button id="btn-confirm-scenario" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">Create Scenario</button>
@@ -1397,18 +1546,59 @@
         </div>
     </div>
 
+    <!-- ========== TOAST NOTIFICATION CONTAINER ========== -->
+    <!-- Container for toast alerts (success, error, info messages) -->
     <div id="toast-container"></div>
 
+    <!-- ╔════════════════════════════════════════════════════════════════╗ -->
+    <!-- ║                    JAVASCRIPT MODULES                         ║ -->
+    <!-- ║  Load Order: Service → Charts → Schema → Wizard → Features    ║ -->
+    <!-- ║  Ensure dependencies are loaded before dependent modules      ║ -->
+    <!-- ╚════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- Data Service (Core API & State Management) -->
+    <!-- Provides: Mock data, API endpoints, global state  -->
     <script src="src/dataService.js"></script>
+
+    <!-- Charts Module (Chart.js Configuration) -->
+    <!-- Provides: Chart initialization, rendering utilities -->
     <script src="src/charts.js"></script>
+
+    <!-- Schema Module (Data validation & structure) -->
+    <!-- Provides: Schema definitions, validation rules -->
     <script src="src/schema.js"></script>
+
+    <!-- Wizard Module (Data onboarding flow) -->
+    <!-- Provides: Multi-step wizard logic & file handling -->
     <script src="src/wizard.js"></script>
+
+    <!-- Scenario Module (Forecast scenario management) -->
+    <!-- Provides: Create/edit/delete scenarios, parameter configuration -->
     <script src="src/scenario.js"></script>
+
+    <!-- Forecast Module (Forecasting calculations) -->
+    <!-- Provides: Model training, projection generation -->
     <script src="src/forecast.js"></script>
+
+    <!-- Comparison Module (Scenario comparison logic) -->
+    <!-- Provides: Side-by-side analysis, variance calculations -->
     <script src="src/comparison.js"></script>
+
+    <!-- Reports Module (Export & reporting) -->
+    <!-- Provides: PDF generation, data export, report formatting -->
     <script src="src/reports.js"></script>
+
+    <!-- Cancer Dashboard Module (Oncology-specific views) -->
+    <!-- Provides: Sankey diagrams, journey flows, cancer analytics -->
     <script src="src/cancerDashboard.js"></script>
+
+    <!-- Geography Dashboard Module (Map & location analysis) -->
+    <!-- Provides: Leaflet map setup, payer mix analysis -->
     <script src="src/geographyDashboard.js"></script>
+
+    <!-- Main Application Module (View management & routing) -->
+    <!-- Provides: View switching, page title updates, user interactions -->
+    <!-- Load with defer to ensure DOM is ready -->
     <script src="src/app.js" defer></script>
 
 </body>

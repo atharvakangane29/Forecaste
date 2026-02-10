@@ -505,7 +505,7 @@ const App = {
         if (viewName === 'geography-dashboard') {
             setTimeout(() => {
                 if (typeof GeographyDashboard !== 'undefined') {
-                    GeographyDashboard.chart?.resize(); // Ensure chart fits container
+                    GeographyDashboard.resizeMap(); // Invalidate map size for proper rendering
                 }
             }, 100);
         }

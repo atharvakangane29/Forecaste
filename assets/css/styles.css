@@ -159,7 +159,8 @@ input[type=range]::-webkit-slider-thumb {
     height: 16px;
     width: 16px;
     border-radius: 50%;
-    background: #f43f5e; /* Rose-500 */
+    /* background: var(--color-burning-flame); Burning Flame #FFB162 */
+    background-color: #f87171;
     cursor: pointer;
     margin-top: -6px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
     box-shadow: 0 0 2px rgba(0,0,0,0.2);
@@ -307,7 +308,7 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
 }
 
 .noUi-connect {
-    background: #3b82f6; 
+    background: var(--color-blue-fantastic); 
 }
 
 /* Handle (Circle) Styling */
@@ -316,7 +317,7 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
     height: 24px !important;
     border-radius: 50%;
     background: #ffffff;
-    border: 3px solid #3b82f6; 
+    border: 3px solid var(--color-blue-fantastic); 
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     cursor: grab;
     
@@ -332,7 +333,7 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
 
 .noUi-handle:active {
     cursor: grabbing;
-    background: #3b82f6;
+    background: var(--color-blue-fantastic);
     /* border-color: #white; */
     transform: scale(1.1);
 }
@@ -545,3 +546,34 @@ body.modal-open {
 .leaflet-container {
     font-family: 'Inter', sans-serif;
 }
+
+/* Facility marker tooltip */
+        .leaflet-tooltip-facility {
+            background-color: white !important;
+            border: 2px solid var(--color-blue-fantastic) !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Patient cluster tooltip */
+        .leaflet-tooltip-cluster {
+            background-color: white !important;
+            border: 2px solid #64748b !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Leaflet tooltip general styling */
+        .leaflet-tooltip {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .leaflet-tooltip-bottom::before {
+            border-bottom-color: white !important;
+        }

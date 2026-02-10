@@ -63,9 +63,9 @@
       "byDistance": {
         "labels": ["0-10mi", "10-25mi", "25-50mi", "50+mi"],
         "datasets": [
-          { "label": "Medicare", "data": [40, 35, 50, 60], "color": "#2C3B4D" },
-          { "label": "Commercial", "data": [35, 40, 30, 15], "color": "#9333ea" },
-          { "label": "Medicaid", "data": [25, 25, 20, 25], "color": "#06b6d4" }
+          { "label": "Medicare", "data": [40, 35, 50, 60], "color": "#C9C1B1" },
+          { "label": "Commercial", "data": [35, 40, 30, 15], "color": "#FFB162" },
+          { "label": "Medicaid", "data": [25, 25, 20, 25], "color": "#A35139" }
         ]
       },
       "topCounties": [
