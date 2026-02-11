@@ -545,6 +545,15 @@ body.modal-open {
 
 .leaflet-container {
     font-family: 'Inter', sans-serif;
+    width: 100% !important;
+}
+
+#geoMap {
+    width: 100% !important;
+    height: 500px;
+    display: block;
+    box-sizing: border-box;
+
 }
 
 /* Facility marker tooltip */

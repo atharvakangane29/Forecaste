@@ -17,6 +17,8 @@ const GeographyDashboard = (() => {
         'Medicaid': '#A35139'
     };
 
+    // chart.register(ChartDataLabels);
+
     // Private helper functions
     function destroyCharts() {
         if (chart) chart.destroy();
@@ -112,6 +114,8 @@ const GeographyDashboard = (() => {
             payerCharts.push(payerChart);
         });
     }
+    
+    // Chart.register(ChartDataLabels);
 
     function renderCrossAnalysis() {
         const d = data.crossAnalysis;
@@ -140,7 +144,21 @@ const GeographyDashboard = (() => {
                         x: { stacked: true, grid: { display: false } },
                         y: { stacked: true, max: 100, grid: { borderDash: [2, 4] } }
                     },
-                    plugins: { legend: { position: 'bottom' } }
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                            anchor: 'center',
+                            align: 'center',
+                            formatter: function(value) {
+                                return value + '%';
+                            },
+                            color: '#ffffff',
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -331,7 +349,7 @@ const GeographyDashboard = (() => {
         
         const facilityIcon = L.divIcon({
             className: 'custom-facility-marker',
-            html: `<div style="width:${size}px;height:${size}px;background:#2C3B4D;border:3px solid white;border-radius:3px;box-shadow:0 2px 6px rgba(84, 128, 181, 0.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:${size*0.6}px;">H</div>`,
+            html: `<div style="width:${size}px;height:${size}px;background:#2C3B4D;border:3px solid white;border-radius:3px;box-shadow:0 2px 6px rgba(50, 170, 222, 0.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:${size*0.6}px;">H</div>`,
             iconSize: [size, size],
             iconAnchor: [size/2, size/2]
         });
@@ -463,6 +481,8 @@ const GeographyDashboard = (() => {
                     });
 
                     tileLayer.addTo(map);
+                    map.getContainer().style.backgroundColor = '#2c3b4e';
+                    map.getContainer().style.filter = 'brightness(0.85) contrast(0.95)';
 
                     // Create panes
                     map.createPane('clusters');
@@ -489,10 +509,10 @@ const GeographyDashboard = (() => {
                     legend.addTo(map);
 
                     // Hook up zoom buttons
-                    const zoomInBtn = document.querySelector('[data-lucide="plus"]')?.closest('button');
-                    const zoomOutBtn = document.querySelector('[data-lucide="minus"]')?.closest('button');
-                    if (zoomInBtn) zoomInBtn.addEventListener('click', () => map && map.zoomIn());
-                    if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => map && map.zoomOut());
+                    // const zoomInBtn = document.querySelector('[data-lucide="plus"]')?.closest('button');
+                    // const zoomOutBtn = document.querySelector('[data-lucide="minus"]')?.closest('button');
+                    // if (zoomInBtn) zoomInBtn.addEventListener('click', () => map && map.zoomIn());
+                    // if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => map && map.zoomOut());
 
                     // CRITICAL: Invalidate size after map is fully initialized
                     // This tells Leaflet to recalculate based on container dimensions

@@ -4,11 +4,11 @@
     "lastUpdated": "2026-02-15T12:00:00Z",
     
     "hospitals": [
-      "Main Campus",
-      "North Satellite",
-      "West Wing",
-      "Community Center",
-      "Veterans Memorial Wing"
+      "Community Hospital South",
+      "Community Hospital North",
+      "Community Hospital Anderson",
+      "Community Hospital East",
+      "Community Heart and Vascular Hospital"
     ],
     "services": [
       "Oncology",

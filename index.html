@@ -52,6 +52,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platfrom A</title>
+
+    <!-- ===================== CHARTING LIBRARIES ===================== -->
+    <!-- Chart.js: Simple responsive charts (line, bar, donut, etc.) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     
     <!-- ===================== FONT IMPORTS ===================== -->
     <!-- Inter: Primary font family (UI text)
@@ -71,9 +76,6 @@
     <!-- Tailwind CSS: Utility-first CSS framework for responsive design -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- ===================== CHARTING LIBRARIES ===================== -->
-    <!-- Chart.js: Simple responsive charts (line, bar, donut, etc.) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- ===================== ADVANCED DATA VISUALIZATION ===================== -->
     <!-- D3.js v7: Advanced data-driven document manipulation
@@ -341,75 +343,80 @@
 
     <div id="app-shell" class="hidden h-full opacity-0 bg-[var(--color-palladian)]. transition-opacity duration-700">
         
-        <aside id="sidebar" class="w-20 hover:w-64 bg-slate-900 text-white flex flex-col justify-between transition-all duration-700 z-20 group">
-            <div>     <!--Sidebar-->
-                <div class="h-16 flex items-center justify-center px-3 border-b border-slate-700 cursor-pointer" onclick="App.showToast('Home Refresh')">
-                    <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8 flex-shrink-0">
-                    <span class="ml-3 font-bold text-lg hidden group-hover:block tracking-tight whitespace-nowrap">Platfrom A</span>
-                </div>
-                <nav class="mt-8 space-y-2 px-2">
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="pipeline">
-                        <i data-lucide="database" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Data Pipeline</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Data Pipeline</span>
-                    </a>
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative active-nav" data-view="dashboard">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Clinical Dashboard</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Clinical Dashboard</span>
-                    </a>
+        <aside id="sidebar" class="bg-[#1f2a3a] w-20 hover:w-64 text-white flex flex-col justify-between transition-all duration-300 ease-in-out z-20 group overflow-hidden">
+    <div class="bg-[#1f2a3a]">
+        <!-- Logo Section -->
+        <div class="h-16 flex items-center px-4 border-b border-slate-700 cursor-pointer" onclick="App.showToast('Home Refresh')">
+            <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8 flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+            <span class="ml-3 font-bold text-lg opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap overflow-hidden">Platform A</span>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="bg-[#1f2a3a] mt-8 space-y-2 px-2">
+            <!-- Data Pipeline -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="pipeline">
+                <i data-lucide="database" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Data Pipeline</span>
+            </a>
+            
+            <!-- Clinical Dashboard -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden active-nav" data-view="dashboard">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Clinical Dashboard</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative active-nav" data-view="cancer-dashboard">
-                        <i data-lucide="hospital" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Cancer Dashboard</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Cancer Dashboard</span>
-                    </a>
+            <!-- Cancer Dashboard -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="cancer-dashboard">
+                <i data-lucide="hospital" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Cancer Dashboard</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative active-nav" data-view="geography-dashboard">
-                        <i data-lucide="map" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Geography Dashboard</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Geography Dashboard</span>
-                    </a>
-                    
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="scenario-builder">
-                        <i data-lucide="layers" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Scenario Builder</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Scenario Builder</span>
-                    </a>
+            <!-- Geography Dashboard -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="geography-dashboard">
+                <i data-lucide="map" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Geography Dashboard</span>
+            </a>
+            
+            <!-- Scenario Builder -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="scenario-builder">
+                <i data-lucide="layers" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Scenario Builder</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="forecasting">
-                        <i data-lucide="trending-up" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Forecasting</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Forecasting</span>
-                    </a>
+            <!-- Forecasting -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="forecasting">
+                <i data-lucide="trending-up" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Forecasting</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="scenario-comparison">
-                        <i data-lucide="copy" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Scenario Comparison</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Scenario Comparison</span>
-                    </a>
+            <!-- Scenario Comparison -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="scenario-comparison">
+                <i data-lucide="copy" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Scenario Comparison</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors relative" data-view="Export-&-Reports">
-                        <i data-lucide="file-down" class="w-5 h-5 flex-shrink-0 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden group-hover:block whitespace-nowrap">Export & Reports</span>
-                        <span class="absolute left-12 text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded opacity-0 group-hover:opacity-0 hover:opacity-100 pointer-events-none">Export & Reports</span>
-                    </a>
-
-                </nav>
-
+            <!-- Export & Reports -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="Export-&-Reports">
+                <i data-lucide="file-down" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Export & Reports</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- User Profile Section -->
+    <div class="bg-[#1f2a3a] p-4 border-t border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors duration-200" onclick="App.handleLogout()">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center font-bold text-xs flex-shrink-0 relative">
+                JD 
+                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
             </div>
-            <div class="p-4 border-t border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors" onclick="App.handleLogout()">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center font-bold text-xs flex-shrink-0 relative">
-                        JD <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
-                    </div>
-                    <div class="hidden group-hover:block">
-                        <p class="text-sm font-medium whitespace-nowrap">John Doe</p>
-                        <p class="text-xs text-slate-400 whitespace-nowrap">Oncology Admin</p>
-                    </div>
-                </div>
+            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 overflow-hidden">
+                <p class="text-sm font-medium whitespace-nowrap">John Doe</p>
+                <p class="text-xs text-slate-400 whitespace-nowrap">Oncology Admin</p>
             </div>
-        </aside>
+        </div>
+    </div>
+</aside>
 
         <main class="flex-1 flex flex-col h-full overflow-hidden relative">
             <header class="h-16 bg-white border-b flex items-center justify-between px-8 z-10">
@@ -624,12 +631,12 @@
                         <!-- MODIFY - Remove nested duplicate div, keep only: -->
                         <div class="lg:col-span-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
                             <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
-                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600">
+                                <!-- <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600">
                                     <i data-lucide="plus" class="w-4 h-4"></i>
                                 </button>
                                 <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600">
                                     <i data-lucide="minus" class="w-4 h-4"></i>
-                                </button>
+                                </button> -->
                             </div>
                             <div id="geoMap" class="h-[500px] w-full rounded-lg"></div>
                         </div>
@@ -717,7 +724,7 @@
                         </div> -->
                     </div>
 
-                    <div id="schema-container" class="bg-[#0f172a] rounded-xl overflow-hidden shadow-2xl relative h-[450px]">
+                    <div id="schema-container" class="bg-[#1f2a3a] rounded-xl overflow-hidden shadow-2xl relative h-[450px]">
                     <div class="absolute top-4 left-4 z-10 bg-slate-800/80 backdrop-blur px-3 py-1 rounded border border-slate-700 text-xs font-bold text-slate-400">
                         SCHEMA BUILDER (DRAG NODES)
                     </div>
@@ -881,18 +888,18 @@
                         </div>
 
                         <div class="lg:col-span-3">
-                            <div class="bg-[#0f172a] rounded-xl shadow-lg p-8 text-white relative overflow-hidden">
+                            <div class="bg-[#1f2a3a] rounded-xl shadow-lg p-8 text-white relative overflow-hidden">
                                 <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
 
                                 <div class="flex justify-between items-center mb-8 relative z-10">
                                     <h2 id="config-title" class="text-2xl font-bold">Configure: Conservative</h2>
                                     
-                                    <div class="flex items-center gap-3 bg-slate-800/50 rounded-lg px-4 py-2 border border-slate-700/50 backdrop-blur-sm ml-auto mr-4">
-                                        <label for="scenario-horizon" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Horizon:</label>
-                                        <select id="scenario-horizon" class="bg-transparent text-sm font-bold text-white outline-none cursor-pointer focus:ring-0 border-none p-0">
-                                            <option value="5" class = "bg-[#1B2632] text-white">5 Years</option>
-                                            <option value="7" class="bg-[#1B2632] text-white">7 Years</option>
-                                            <option value="10" class="bg-[#1B2632] text-white" selected>10 Years</option>
+                                    <div class="flex items-center gap-3 bg-[#2c3b4e] rounded-lg px-4 py-2 border border-slate-700/50 backdrop-blur-sm ml-auto mr-4">
+                                        <label for="scenario-horizon" class="bg-[#2c3b4e] text-xs font-bold text-slate-400 uppercase tracking-wider text-white">Horizon:</label>
+                                        <select id="scenario-horizon" class=" bg-[#2c3b4e] bg-transparent text-sm font-bold text-white outline-none cursor-pointer focus:ring-0 border-none p-0">
+                                            <option value="5" class = "bg-[#2c3b4e] text-white">5 Years</option>
+                                            <option value="7" class="bg-[#2c3b4e] text-white">7 Years</option>
+                                            <option value="10" class="bg-[#2c3b4e] text-white" selected>10 Years</option>
                                         </select>
                                     </div>
 
@@ -900,16 +907,16 @@
                                         <i data-lucide="save" class="w-4"></i> Save Configuration
                                     </button>
                                 </div>
-                                
-                                <div class="relative z-10 mb-8 bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                               
+                                <div class="relative z-10 mb-8 bg-[#2c3b4e] p-4 rounded-xl border border-slate-700/50">
                                     <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Select Forecasting Model</label>
-                                    <select id="model-selector" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all hover:border-slate-600">
-                                        <option value="deterministic">Deterministic Throughput Models</option>
-                                        <option value="littles-law">Little’s Law Based Flow Models (Hospital Specific)</option>
-                                        <option value="time-series">Time Series (SARIMA/ETS)</option>
-                                        <option value="piecewise">Piecewise Linear Model (Trend + Seasonality + Changepoints)</option>
-                                        <option value="ml-sim">Decision Tree/ Behavioural Simulation (Machine Learning)</option>
-                                        <option value="stock-flow">Stock and Flow Model</option>
+                                    <select id="model-selector" class="w-full p-3 bg-[#2c3b4e] border border-slate-700 rounded-lg text-sm text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all hover:border-slate-600">
+                                        <option value="deterministic" class = "bg-[#2c3b4e] text-white">Deterministic Throughput Models</option>
+                                        <option value="littles-law" class = "bg-[#2c3b4e] text-white">Little’s Law Based Flow Models (Hospital Specific)</option>
+                                        <option value="time-series" class = "bg-[#2c3b4e] text-white">Time Series (SARIMA/ETS)</option>
+                                        <option value="piecewise" class = "bg-[#2c3b4e] text-white">Piecewise Linear Model (Trend + Seasonality + Changepoints)</option>
+                                        <option value="ml-sim" class = "bg-[#2c3b4e] text-white">Decision Tree/ Behavioural Simulation (Machine Learning)</option>
+                                        <option value="stock-flow" class = "bg-[#2c3b4e] text-white">Stock and Flow Model</option>
                                     </select>
                                 </div>
 
@@ -1209,13 +1216,13 @@
                             </div>
                         </div>
 
-                        <div class="bg-slate-900 p-6 rounded-xl shadow-lg text-white relative overflow-hidden">
-                            <div class="absolute -right-6 -top-6 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
+                        <div class="bg-[#1f2a3a] p-6 rounded-xl shadow-lg text-white relative overflow-hidden ">
+                            <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full blur-2xl bg-[#1f2a3a]"></div>
                             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 Variance <i data-lucide="arrow-right-left" class="w-3 h-3"></i>
                             </h3>
 
-                            <div class="mb-6">
+                            <div class="mb-6 bg-[#1f2a3a]">
                                 <div class="flex justify-between items-end">
                                     <div>
                                         <p class="text-xs text-slate-400 mb-1">Inpatient Δ</p>
@@ -1255,7 +1262,7 @@
                             </table>
                         </div>
 
-                        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-lg p-6 text-white">
+                        <div class="bg-[#1f2a3a] rounded-xl shadow-lg p-6 text-white">
                             <div class="flex items-center gap-3 mb-6">
                                 <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
                                     <i data-lucide="lightbulb" class="w-5 h-5 text-yellow-400"></i>
