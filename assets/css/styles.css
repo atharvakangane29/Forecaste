@@ -586,3 +586,15 @@ body.modal-open {
         .leaflet-tooltip-bottom::before {
             border-bottom-color: white !important;
         }
+
+/* Fix for Forecasting Model Dropdown Z-Index */
+#model-dropdown-menu {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    /* Ensures it sits above other relative containers */
+    z-index: 100 !important; 
+}
+
+/* Ensure checkbox click area is comfortable */
+.model-checkbox {
+    cursor: pointer;
+}

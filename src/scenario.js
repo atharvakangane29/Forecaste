@@ -109,6 +109,54 @@ const ScenarioManager = {
                 input.value = val;
             });
         });
+        this.bindModelDropdown();
+    },
+
+    bindModelDropdown() {
+        const btn = document.getElementById('model-dropdown-btn');
+        const menu = document.getElementById('model-dropdown-menu');
+        const label = document.getElementById('model-label');
+        const btnText = document.getElementById('model-btn-text');
+        const checkboxes = document.querySelectorAll('.model-checkbox');
+
+        if (!btn || !menu) return;
+
+        // Toggle Menu
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        };
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Update Label Logic
+        const updateLabel = () => {
+            const selected = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            if (selected.length > 0) {
+                // Update the red label
+                label.innerHTML = `SELECTED: <span class="text-white">${selected.join(' + ')}</span>`;
+                // Update button text
+                btnText.innerText = `${selected.length} Models Selected`;
+                btnText.classList.add('text-white', 'font-bold');
+            } else {
+                label.innerText = 'SELECT FORECASTING MODEL';
+                btnText.innerText = 'Choose Models...';
+                btnText.classList.remove('text-white', 'font-bold');
+            }
+        };
+
+        // Attach listener to checkboxes
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateLabel);
+        });
     },
 
     renderScenarioList() {
@@ -151,10 +199,24 @@ const ScenarioManager = {
         setSlider('marketShare', d.marketShare);
         setSlider('referralGrowth', d.referralGrowth);
 
-        // Set Model Dropdown
-        const modelSelect = document.getElementById('model-selector');
-        if (modelSelect) {
-            modelSelect.value = d.selectedModel || 'deterministic'; 
+        // Set Model Dropdown (Multi-select)
+        const savedModels = d.selectedModel || 'Deterministic Throughput';
+        const checkboxes = document.querySelectorAll('.model-checkbox');
+        
+        checkboxes.forEach(cb => {
+            // Check if the checkbox value is present in the saved string
+            cb.checked = savedModels.includes(cb.value);
+        });
+        
+        // Trigger visual update
+        const label = document.getElementById('model-label');
+        const btnText = document.getElementById('model-btn-text');
+        
+        const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+        if (selected.length > 0 && label && btnText) {
+            label.innerHTML = `SELECTED: <span class="text-white">${selected.join(' + ')}</span>`;
+            btnText.innerText = `${selected.length} Models Selected`;
+            btnText.classList.add('text-white', 'font-bold');
         }
 
         // Boolean/Counters
@@ -189,7 +251,7 @@ const ScenarioManager = {
             const getData = (id) => parseFloat(document.getElementById(id).value);
             
             const newData = {
-                selectedModel: document.getElementById('model-selector').value,
+                selectedModel: Array.from(document.querySelectorAll('.model-checkbox:checked')).map(cb => cb.value).join(' + '),
                 inpatientGrowth: getData('inpatientGrowth'),
                 outpatientGrowth: getData('outpatientGrowth'),
                 newPatientGrowth: getData('newPatientGrowth'),

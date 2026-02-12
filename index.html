@@ -908,55 +908,51 @@
                                     </button>
                                 </div>
                                
-                                <div class="relative z-10 mb-8 bg-[#2c3b4e] p-4 rounded-xl border border-slate-700/50">
-    
-                                    <!-- Dynamic Label -->
-                                    <label id="model-label" 
-                                        class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-2">
+                                <div class="relative z-50 mb-8 bg-[#2c3b4e] p-4 rounded-xl border border-slate-700/50"> 
+                                    <label id="model-label" class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-2">
                                         Select Forecasting Model
                                     </label>
 
-                                    <!-- Dropdown Button -->
-                                    <button id="dropdown-btn" type="button"
-                                        class="relative z-[1000] pointer-events-auto w-full p-3 bg-[#2c3b4e] border border-slate-700 rounded-lg text-sm text-slate-200 
-                                        focus:ring-2 focus:ring-blue-500 outline-none transition-all hover:border-slate-600 text-left">
-                                        Choose Models
-                                    </button>
+                                    <div class="relative">
+                                        <button id="model-dropdown-btn" type="button" 
+                                            class="w-full p-3 bg-[#2c3b4e] border border-slate-700 rounded-lg text-sm text-slate-200 flex justify-between items-center focus:ring-2 focus:ring-blue-500 outline-none hover:border-slate-500 transition-colors">
+                                            <span id="model-btn-text">Choose Models...</span>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                                        </button>
 
-                                    <!-- Dropdown Options -->
-                                    <div id="dropdown-menu" 
-                                        class="hidden fixed bg-[#2c3b4e] border border-slate-700 rounded-lg shadow-2xl z-[9999] w-96">
+                                        <div id="model-dropdown-menu" 
+                                            class="hidden absolute top-full left-0 right-0 mt-2 bg-[#1f2a3a] border border-slate-600 rounded-lg shadow-2xl z-[100] max-h-60 overflow-y-auto w-full">
+                                            <div class="p-2 space-y-1">
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Deterministic Throughput" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Deterministic Throughput</span>
+                                                </label>
+                                                
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Little’s Law" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Little’s Law Based Flow</span>
+                                                </label>
 
-                                        <div class="p-2 space-y-2 text-sm text-white">
-                                            <label class="flex items-center space-x-2">
-                                                <input type="checkbox" value="Deterministic Throughput Models" class="model-option">
-                                                <span>Deterministic Throughput Models</span>
-                                            </label>
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="SARIMA/ETS" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Time Series (SARIMA/ETS)</span>
+                                                </label>
 
-                                            <label class="flex items-center space-x-2">
-                                                <input type="checkbox" value="Little’s Law Based Flow Models" class="model-option">
-                                                <span>Little’s Law Based Flow Models</span>
-                                            </label>
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Piecewise Linear Model" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Piecewise Linear Model (Trend + Seasonality + Changepoints)</span>
+                                                </label>
 
-                                            <label class="flex items-center space-x-2">
-                                                <input type="checkbox" value="Time Series (SARIMA/ETS)" class="model-option">
-                                                <span>Time Series (SARIMA/ETS)</span>
-                                            </label>
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Decision Tree" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Decision Tree/ Behavioural Simulation ( Machine Learning)</span>
+                                                </label>
 
-                                            <label class="flex items-center space-x-2">
-                                                <input type="checkbox" value="Piecewise Linear Model" class="model-option">
-                                                <span>Piecewise Linear Model</span>
-                                            </label>
-
-                                            <label class="flex items-center space-x-2">
-                                                <input type="checkbox" value="Decision Tree / Simulation" class="model-option">
-                                                <span>Decision Tree / Behavioural Simulation</span>
-                                            </label>
-
-                                            <label class="flex items-center space-x-2">
-                                                <input type="checkbox" value="Stock and Flow Model" class="model-option">
-                                                <span>Stock and Flow Model</span>
-                                            </label>
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Stock & Flow" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Stock and Flow Model</span>
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1055,52 +1051,6 @@
                             </div>
                         </div>
                     </div>
-
-
-                    <script>
-                        const dropdownBtn = document.getElementById("dropdown-btn");
-                        const dropdownMenu = document.getElementById("dropdown-menu");
-                        const modelOptions = document.querySelectorAll(".model-option");
-                        const modelLabel = document.getElementById("model-label");
-
-                        dropdownBtn.addEventListener("click", () => {
-                            const rect = dropdownBtn.getBoundingClientRect();
-                            
-                            dropdownMenu.style.top = rect.bottom + "px";
-                            dropdownMenu.style.left = rect.left + "px";
-                            
-                            dropdownMenu.classList.toggle("hidden");
-                        });
-
-
-                        // Toggle dropdown
-                        dropdownBtn.addEventListener("click", () => {
-                            dropdownMenu.classList.toggle("hidden");
-                        });
-
-                        // Close when clicking outside
-                        document.addEventListener("click", (e) => {
-                            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                                dropdownMenu.classList.add("hidden");
-                            }
-                        });
-
-                        // Update label
-                        modelOptions.forEach(option => {
-                            option.addEventListener("change", () => {
-                                const selected = Array.from(modelOptions)
-                                    .filter(o => o.checked)
-                                    .map(o => o.value);
-
-                                if (selected.length === 0) {
-                                    modelLabel.innerText = "Select Forecasting Model";
-                                } else {
-                                    modelLabel.innerText = "Select Forecasting Model: " + selected.join(" + ");
-                                }
-                            });
-                        });
-                    </script>
-
 
                     <div class="flex justify-end pt-8 pb-4">
                         <button onclick="App.switchView('forecasting')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
