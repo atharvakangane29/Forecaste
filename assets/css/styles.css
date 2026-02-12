@@ -159,7 +159,8 @@ input[type=range]::-webkit-slider-thumb {
     height: 16px;
     width: 16px;
     border-radius: 50%;
-    background: #f43f5e; /* Rose-500 */
+    /* background: var(--color-burning-flame); Burning Flame #FFB162 */
+    background-color: #f87171;
     cursor: pointer;
     margin-top: -6px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
     box-shadow: 0 0 2px rgba(0,0,0,0.2);
@@ -307,7 +308,7 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
 }
 
 .noUi-connect {
-    background: #3b82f6; 
+    background: var(--color-blue-fantastic); 
 }
 
 /* Handle (Circle) Styling */
@@ -316,7 +317,7 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
     height: 24px !important;
     border-radius: 50%;
     background: #ffffff;
-    border: 3px solid #3b82f6; 
+    border: 3px solid var(--color-blue-fantastic); 
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     cursor: grab;
     
@@ -332,7 +333,7 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
 
 .noUi-handle:active {
     cursor: grabbing;
-    background: #3b82f6;
+    background: var(--color-blue-fantastic);
     /* border-color: #white; */
     transform: scale(1.1);
 }
@@ -350,31 +351,24 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
     stroke-width: 2px;
 }
 
+/* Increased font size for better readability */
 .sankey-node text {
     pointer-events: none;
-    font-size: 11px;
+    font-size: 14px; /* Updated from 11px */
     font-family: 'Inter', sans-serif;
     fill: #334155;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.9);
+}
+
+/* New class for link percentage labels */
+.sankey-link-label {
+    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    fill: #475569;
     font-weight: 600;
-    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
-}
-
-.sankey-link {
-    fill: none;
-    stroke-opacity: 0.2;
-    transition: stroke-opacity 0.2s;
-}
-
-.sankey-link:hover {
-    stroke-opacity: 0.5;
-}
-
-#sankey-tooltip {
-    position: absolute;
     pointer-events: none;
-    z-index: 50;
-    opacity: 0;
-    transition: opacity 0.1s;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
 }
 
 /* --- Loading Animations --- */
@@ -386,4 +380,221 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
 
 .animate-progress-indeterminate {
     animation: progressIndeterminate 1.5s infinite linear;
+}
+
+/* --- Modals & Overlays --- */
+/* Lock body scroll when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+}
+
+/* --- Schema Table Styling (Info Modal) --- */
+.schema-table-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.schema-table th {
+    background-color: var(--color-palladian);
+    color: var(--color-blue-fantastic);
+    font-size: 0.75rem; /* text-xs */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.schema-table td {
+    padding: 0.75rem 1rem;
+    color: var(--color-abyssal);
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.schema-table tr:last-child td {
+    border-bottom: none;
+}
+
+.schema-table tr:nth-child(even) {
+    background-color: #f8fafc; /* Slate-50 */
+}
+
+.schema-table tr:hover {
+    background-color: #f1f5f9; /* Slate-100 */
+}
+
+/* --- Horizon Selector Customization --- */
+/* Removes default browser arrow and adds a clean custom SVG arrow */
+#scenario-horizon {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0 center;
+    background-repeat: no-repeat;
+    background-size: 1.2em 1.2em;
+    padding-right: 1.5rem;
+    text-align: right;
+    cursor: pointer;
+    transition: background-image 0.2s;
+}
+
+#scenario-horizon:hover {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    color: white;
+}
+
+/* --- Validation Error Animation --- */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+.input-error {
+    animation: shake 0.3s ease-in-out;
+    border-color: #e11d48 !important; /* Rose-600 */
+    background-color: #fff1f2 !important; /* Rose-50 */
+}
+
+#scenario-horizon {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    /* Custom White SVG Arrow */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0 center;
+    background-repeat: no-repeat;
+    background-size: 1.2em 1.2em;
+    padding-right: 1.5rem;
+}
+
+#scenario-horizon:hover {
+    color: #1B2632;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* --- Geography Dashboard Additions --- */
+.bg-coral-100 { background-color: #ffedd5; } /* Tailwind orange-100 equivalent */
+.border-coral-200 { border-color: #fed7aa; } /* Tailwind orange-200 equivalent */
+.text-coral-800 { color: #9a3412; }          /* Tailwind orange-800 equivalent */
+
+/* Custom bullet for list items */
+.geo-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+/* Hover lift effect for payer cards */
+.payer-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.payer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ... existing styles ... */
+
+/* Geography Dashboard Updates */
+.bg-us-map {
+    /* Placeholder US Map - Replace URL with your local asset if needed */
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/1a/Blank_US_Map_%28states_only%29.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #f8fafc; /* Slate-50 fallback */
+}
+
+/* Custom Scrollbar for the Distance List */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+
+/* @keyframes spin {
+    to { transform: rotate(360deg); }
+} */
+
+.custom-tooltip {
+    background: white !important;
+    border: 2px solid #2563eb !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+    padding: 0 !important;
+}
+
+.custom-tooltip::before {
+    border-top-color: #2563eb !important;
+}
+
+.custom-facility-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.leaflet-container {
+    font-family: 'Inter', sans-serif;
+    width: 100% !important;
+}
+
+#geoMap {
+    width: 100% !important;
+    height: 500px;
+    display: block;
+    box-sizing: border-box;
+
+}
+
+/* Facility marker tooltip */
+        .leaflet-tooltip-facility {
+            background-color: white !important;
+            border: 2px solid var(--color-blue-fantastic) !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Patient cluster tooltip */
+        .leaflet-tooltip-cluster {
+            background-color: white !important;
+            border: 2px solid #64748b !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Leaflet tooltip general styling */
+        .leaflet-tooltip {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .leaflet-tooltip-bottom::before {
+            border-bottom-color: white !important;
+        }
+
+/* Fix for Forecasting Model Dropdown Z-Index */
+#model-dropdown-menu {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    /* Ensures it sits above other relative containers */
+    z-index: 100 !important; 
+}
+
+/* Ensure checkbox click area is comfortable */
+.model-checkbox {
+    cursor: pointer;
 }

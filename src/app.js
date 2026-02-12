@@ -1,8 +1,9 @@
 /* src/app.js */
 
 window.AuthFlow = {
+    isDataLoaded: false, // Flag to track status
+
     init() {
-        // Ensure Intro is visible, others hidden on fresh load
         document.getElementById('view-intro').classList.remove('hidden');
         document.getElementById('view-login').classList.add('hidden');
         document.getElementById('view-wizard').classList.add('hidden');
@@ -11,13 +12,10 @@ window.AuthFlow = {
     goToLogin() {
         const intro = document.getElementById('view-intro');
         const login = document.getElementById('view-login');
-
-        // Transition
         intro.classList.add('opacity-0');
         setTimeout(() => {
             intro.classList.add('hidden');
             login.classList.remove('hidden');
-            // Animate login entrance
             login.classList.add('animate-fade-in');
         }, 500);
     },
@@ -25,17 +23,23 @@ window.AuthFlow = {
     handleLogin() {
         const login = document.getElementById('view-login');
         const btn = login.querySelector('button');
+        const originalContent = btn.innerHTML; // Save original text
         
-        // Simulate loading
-        const originalContent = btn.innerHTML;
         btn.innerHTML = `<i data-lucide="loader-2" class="w-5 animate-spin"></i>`;
         
         setTimeout(() => {
-            // Success transition
             login.classList.add('opacity-0');
             setTimeout(() => {
                 login.classList.add('hidden');
-                this.startWizard();
+                btn.innerHTML = originalContent; // Reset button text
+
+                // CHECK: If data is already loaded, skip wizard
+                if (this.isDataLoaded) {
+                    App.showAppShell();
+                    App.switchView('pipeline');
+                } else {
+                    this.startWizard();
+                }
             }, 500);
         }, 1000);
     },
@@ -45,8 +49,6 @@ window.AuthFlow = {
         wizard.classList.remove('hidden');
         wizard.classList.add('flex', 'flex-col');
         wizard.classList.add('animate-fade-in');
-        
-        // Ensure Lucide icons render in the newly visible wizard
         if (window.lucide) lucide.createIcons();
     }
 };
@@ -64,6 +66,7 @@ const App = {
 
             // 2. Bind UI events
             this.bindEvents();
+            this.bindModalEvents(); // New modal handlers
             this.initDateSlider();
 
             // 3. Render Static Data (KPIs, Tables, Insights)
@@ -94,6 +97,62 @@ const App = {
         } catch (error) {
             console.error("App Init Failed:", error);
             document.body.innerHTML = `<div class="p-10 text-red-600 font-bold">Critical Error: Failed to load application data.</div>`;
+        }
+    },
+
+    handleLogout() {
+        const shell = document.getElementById('app-shell');
+        const login = document.getElementById('view-login');
+        
+        // 1. Immediate Visual Feedback
+        if (shell) {
+            shell.classList.add('opacity-100'); // Fade out dashboard
+            shell.classList.add('pointer-events-none'); // Prevent clicks during fade
+        }
+
+        setTimeout(() => {
+            // 2. Hard Reset of Views
+            if (shell) {
+                shell.classList.add('hidden');
+                shell.classList.remove('flex', 'opacity-100', 'pointer-events-none'); // Clean up classes
+            }
+
+            if (login) {
+                // Remove hidden and ensure it's visible
+                login.classList.remove('hidden');
+                
+                // Reset opacity to ensure it's visible
+                login.classList.remove('opacity-100', 'pointer-events-none');
+                
+                // Add animation class for smooth entry
+                login.classList.add('animate-fade-in');
+            }
+            
+            // 3. Reset State if needed (Optional)
+            this.state.view = 'dashboard'; 
+            
+        }, 300); // Match transition duration
+    },
+
+    // --- PHASE 4: Global Event Bus Helper ---
+    // Use this to trigger updates across independent modules
+    refreshAllModules() {
+        console.log("App: Refreshing all modules...");
+        
+        // Refresh specific views if they are active or cached
+        if (typeof ScenarioManager !== 'undefined') {
+             // Re-render lists if needed (usually handled internally by ScenarioManager)
+        }
+        
+        if (typeof ComparisonManager !== 'undefined') {
+            ComparisonManager.updateComparison();
+        }
+        
+        if (typeof ForecastManager !== 'undefined') {
+            // Only update charts if visible to save performance
+            if (this.state.view === 'forecasting') {
+                ForecastManager.updateCharts();
+            }
         }
     },
 
@@ -209,12 +268,15 @@ const App = {
         if (!shell) return;
 
         shell.classList.remove('hidden');
-        shell.classList.add('flex');
+        shell.classList.add('flex'); // Ensures sidebar and content align side-by-side
+        
+        // Fix: Properly remove opacity-0 to make it visible
         requestAnimationFrame(() => {
             shell.classList.remove('opacity-100');
+            // shell.classList.add('opacity-100');
         });
     },
-
+    
     bindEvents() {
         // Sidebar Navigation
         document.querySelectorAll('[data-view]').forEach(link => {
@@ -342,6 +404,11 @@ const App = {
     },
 
     switchView(viewName) {
+
+        // Reset scroll position
+        const scrollContainer = document.getElementById('main-scroll-container');
+        if (scrollContainer) scrollContainer.scrollTop = 0;
+
         const views = [
             'dashboard',
             'pipeline',
@@ -364,6 +431,19 @@ const App = {
         if (target) {
             target.classList.remove('hidden');
             target.classList.add('animate-fade-in');
+        }
+
+        document.querySelectorAll('aside nav a').forEach(link => {
+            // Reset all links
+            link.classList.remove('active-nav', 'bg-slate-800', 'text-white');
+            link.classList.add('text-slate-300'); // Reset text color
+        });
+
+        // Find the specific link for this view and highlight it
+        const activeLink = document.querySelector(`aside nav a[data-view="${viewName}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active-nav', 'bg-slate-800', 'text-white');
+            activeLink.classList.remove('text-slate-300');
         }
 
         // Update page title
@@ -425,7 +505,7 @@ const App = {
         if (viewName === 'geography-dashboard') {
             setTimeout(() => {
                 if (typeof GeographyDashboard !== 'undefined') {
-                    GeographyDashboard.chart?.resize(); // Ensure chart fits container
+                    GeographyDashboard.resizeMap(); // Invalidate map size for proper rendering
                 }
             }, 100);
         }
@@ -442,6 +522,84 @@ const App = {
 
         // Persist state
         this.state.view = viewName;
+    },
+
+    bindModalEvents() {
+        // 1. Info Button -> Open Modal
+        const infoBtn = document.getElementById('btn-dataset-info');
+        if (infoBtn) {
+            infoBtn.addEventListener('click', () => {
+                this.toggleModal('dataset-info-modal', true);
+                this.populateDatasetInfo();
+            });
+        }
+
+        // 2. Generic Close Buttons (for all modals)
+        document.querySelectorAll('.modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modal = e.target.closest('.fixed');
+                if (modal) this.toggleModal(modal.id, false);
+            });
+        });
+
+        // 3. Close on clicking outside (backdrop)
+        ['dataset-info-modal', 'new-scenario-modal'].forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) this.toggleModal(id, false);
+                });
+            }
+        });
+    },
+
+    toggleModal(modalId, show) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        if (show) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex'); // Add flex display
+            document.body.classList.add('modal-open');
+            // Small delay to allow display to apply before opacity transition
+            setTimeout(() => {
+                modal.classList.remove('opacity-0'); // Fixed: was opacity-100
+                modal.firstElementChild.classList.remove('scale-95');
+                modal.firstElementChild.classList.add('scale-100');
+            }, 10);
+        } else {
+            modal.classList.add('opacity-0'); // Fixed: was opacity-100
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex'); // Remove flex when hiding
+                document.body.classList.remove('modal-open');
+            }, 300);
+        }
+    },
+
+    populateDatasetInfo() {
+        const tbody = document.getElementById('dataset-info-body');
+        if (!tbody) return;
+
+        // Fallback data if JSON isn't updated yet (Phase 5 dependency)
+        // Checks DataService first, then falls back to hardcoded defaults
+        const metadata = DataService.get('meta.schema') || [
+            { col: "PatientID", type: "String", desc: "Unique patient identifier (Masked)" },
+            { col: "AdmitDate", type: "Date", desc: "YYYY-MM-DD format" },
+            { col: "DischargeDate", type: "Date", desc: "YYYY-MM-DD (Null if active)" },
+            { col: "ServiceLine", type: "String", desc: "Oncology, Cardiology, etc." },
+            { col: "FacilityID", type: "Integer", desc: "Hospital/Clinic ID code" }
+        ];
+
+        tbody.innerHTML = metadata.map(row => `
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-xs text-rose-600 font-bold">${row.col}</td>
+                <td class="px-4 py-3 text-xs text-slate-500 font-bold bg-slate-100/50 rounded">${row.type}</td>
+                <td class="px-4 py-3 text-xs text-slate-600">${row.desc}</td>
+            </tr>
+        `).join('');
     },
 
     showToast(message, type = 'info') {

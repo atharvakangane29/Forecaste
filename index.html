@@ -1,47 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+    ╔════════════════════════════════════════════════════════════════════════════╗
+    ║                   CLINICAL FORECASTING PLATFORM - INDEX                    ║
+    ║                                                                            ║
+    ║  Application: Healthcare Volume Forecasting & Scenario Planning Dashboard  ║
+    ║  Purpose: Provide oncology centers with predictive analytics for         ║
+    ║           capacity planning, market analysis, and strategic forecasting   ║
+    ║                                                                            ║
+    ║  Structure:                                                               ║
+    ║  - Intro Screen (Welcome & Getting Started)                              ║
+    ║  - Login View (Authentication)                                           ║
+    ║  - Data Wizard (Multi-step file/cloud data ingestion)                    ║
+    ║  - Main App Shell (Sidebar + Multiple Dashboard Views)                   ║
+    ║  - Views Include:                                                         ║
+    ║    • Clinical Dashboard (KPI + trends)                                   ║
+    ║    • Cancer Dashboard (Patient journey flows)                            ║
+    ║    • Geography Dashboard (Maps + market analysis)                        ║
+    ║    • Data Pipeline (Active sources & schema)                             ║
+    ║    • Scenario Builder (Model configuration)                              ║
+    ║    • Forecasting (Volume projections)                                    ║
+    ║    • Scenario Comparison (Side-by-side analysis)                         ║
+    ║    • Export & Reports (Data download + executive summaries)              ║
+    ║                                                                            ║
+    ║  Technologies:                                                            ║
+    ║  - Tailwind CSS (Styling)                                                ║
+    ║  - Chart.js (Charts)                                                     ║
+    ║  - D3.js (Advanced visualizations)                                       ║
+    ║  - Leaflet.js (Maps)                                                     ║
+    ║  - Flowbite (Component library)                                          ║
+    ║  - noUiSlider (Range inputs)                                             ║
+    ║  - Lucide Icons (Icon library)                                           ║
+    ║                                                                            ║
+    ║  Color Palette (Customizable in Tailwind config):                        ║
+    ║  - Palladian: #EEE9DF (Cream/Neutral)                                    ║
+    ║  - Oatmeal: #C9C1B1 (Light Neutral)                                      ║
+    ║  - Blue Fantastic: #2C3B4D (Primary/Dark)                                ║
+    ║  - Burning Flame: #FFB162 (Accent/Orange)                                ║
+    ║  - Truffle Trouble: #A35139 (Secondary/Brown)                            ║
+    ║  - Abyssal: #1B2632 (Darkest)                                            ║
+    ║                                                                            ║
+    ║  File Organization Guide:                                                ║
+    ║  - Modify colors in lines 45-50 to change brand colors globally         ║
+    ║  - Update page title in line 8                                           ║
+    ║  - Add/remove views by creating new div ids and adding nav links        ║
+    ║  - All view-specific logic is in src/app.js and related modules         ║
+    ╚════════════════════════════════════════════════════════════════════════════╝
+-->
 <head>
+    <!-- ===================== META INFORMATION ===================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platfrom A</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <script src="https://unpkg.com/flowbite@2.5.2/dist/flowbite.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ===================== CHARTING LIBRARIES ===================== -->
+    <!-- Chart.js: Simple responsive charts (line, bar, donut, etc.) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    
+    <!-- ===================== FONT IMPORTS ===================== -->
+    <!-- Inter: Primary font family (UI text)
+         JetBrains Mono: Monospace font (code, data displays) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- ===================== MAPPING LIBRARY (LEAFLET) ===================== -->
+    <!-- Used for geographic market analysis dashboard (geography-dashboard.js) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <!-- ===================== UI COMPONENT LIBRARY ===================== -->
+    <!-- Flowbite: Pre-built component library with modals, tabs, dropdowns, etc. -->
+    <script src="https://unpkg.com/flowbite@2.5.2/dist/flowbite.min.js"></script>
+
+    <!-- ===================== STYLING & UTILITY FRAMEWORKS ===================== -->
+    <!-- Tailwind CSS: Utility-first CSS framework for responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+    <!-- ===================== ADVANCED DATA VISUALIZATION ===================== -->
+    <!-- D3.js v7: Advanced data-driven document manipulation
+         D3 Sankey: Plugin for flow diagrams (patient journey visualization) -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+    <!-- ===================== ICONS & ICON LIBRARY ===================== -->
+    <!-- Lucide: Lightweight SVG icon set (feather-style icons) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- ===================== RANGE SLIDER ===================== -->
+    <!-- noUiSlider: Lightweight, accessible range input library
+         Used in: Scenario Builder (parameter sliders) & Date range filters -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+
+    <!-- ===================== CUSTOM STYLES ===================== -->
     <link rel="stylesheet" href="assets/css/styles.css">
 
+    <!-- ===================== TAILWIND CSS CONFIGURATION ===================== -->
+    <!-- 
+        This configuration extends Tailwind with:
+        - Custom font families (Inter, JetBrains Mono)
+        - Custom brand color palette (accessible as Tailwind classes)
+        
+        Usage Examples:
+        - Text: class="text-blue-fantastic"
+        - Background: class="bg-palladian"
+        - Borders: class="border-burning-flame"
+    -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    // =========== FONT FAMILIES ===========
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
+                    
+                    // =========== COLOR PALETTE ===========
+                    // TO CHANGE BRAND COLORS: Update these hex values
                     colors: {
-                        'palladian': '#EEE9DF',
-                        'oatmeal': '#C9C1B1',
-                        'blue-fantastic': '#2C3B4D',
-                        'burning-flame': '#FFB162',
-                        'truffle-trouble': '#A35139',
-                        'abyssal': '#1B2632',
-                        // Map functional roles to palette
-                        'primary': '#2C3B4D', // Blue Fantastic
-                        'accent': '#FFB162',  // Burning Flame
-                        'danger': '#A35139',  // Truffle Trouble
-                        'neutral': '#C9C1B1'  // Oatmeal
+                        'palladian':         '#EEE9DF',  // Cream background
+                        'oatmeal':           '#C9C1B1',  // Light neutral
+                        'blue-fantastic':    '#2C3B4D',  // Primary dark blue
+                        'burning-flame':     '#FFB162',  // Accent orange
+                        'truffle-trouble':   '#A35139',  // Secondary brown
+                        'abyssal':           '#1B2632',  // Darkest variant
+                        
+                        // Semantic aliases for easier maintenance
+                        'primary':           '#2C3B4D',  // Blue Fantastic
+                        'accent':            '#FFB162',  // Burning Flame
+                        'danger':            '#A35139',  // Truffle Trouble
+                        'neutral':           '#C9C1B1'   // Oatmeal
                     }
                 }
             }
         }
     </script>
+
+    <!-- ===================== LEAFLET TOOLTIP STYLING ===================== -->
+    <!-- Custom styles for map hover tooltips -->
+    <style>
+        /* Facility marker tooltip */
+        .leaflet-tooltip-facility {
+            background-color: white !important;
+            border: 2px solid #2563eb !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Patient cluster tooltip */
+        .leaflet-tooltip-cluster {
+            background-color: white !important;
+            border: 2px solid #64748b !important;
+            border-radius: 6px !important;
+            padding: 6px 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            font-family: Inter, sans-serif !important;
+        }
+
+        /* Leaflet tooltip general styling */
+        .leaflet-tooltip {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .leaflet-tooltip-bottom::before {
+            border-bottom-color: white !important;
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden">
 
@@ -133,24 +263,25 @@
             <div class="max-w-3xl w-full">
                 
                 <div id="wizard-step-1" class="wizard-step active">
-                    <button id="info-btn" class="text-blue-600 hover:text-blue-800 ml-2" title="Dataset Information">
-                    <i class="fas fa-info-circle"></i> </button>
                     <h1 class="text-3xl font-bold text-slate-900 mb-2 text-center">How would you like to ingest data?</h1>
+                    <button id="btn-dataset-info" class="text-slate-400 hover:text-blue-600 transition-colors" title="Dataset Information">
+                            <i data-lucide="info" class="w-6 h-6"></i>
+                    </button>
                     <p class="text-slate-500 text-center mb-10">Select a source to begin the pipeline configuration.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group" onclick="Wizard.goToStep(2, 'file')">
-                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                <i data-lucide="file-up" class="w-7"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-slate-800 mb-2">File Upload</h3>
-                            <p class="text-sm text-slate-500 mb-4">Upload local datasets directly.</p>
-                        </div>
                         <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-purple-500 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group" onclick="Wizard.goToStep(2, 'cloud')">
                             <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                                 <i data-lucide="cloud-cog" class="w-7"></i>
                             </div>
                             <h3 class="text-xl font-bold text-slate-800 mb-2">Cloud Warehouse</h3>
                             <p class="text-sm text-slate-500 mb-4">Connect to enterprise data lakes.</p>
+                        </div>
+                        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group" onclick="Wizard.goToStep(2, 'file')">
+                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i data-lucide="file-up" class="w-7"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">File Upload</h3>
+                            <p class="text-sm text-slate-500 mb-4">Upload local datasets directly.</p>
                         </div>
                     </div>
                 </div>
@@ -212,238 +343,225 @@
 
     <div id="app-shell" class="hidden h-full opacity-0 bg-[var(--color-palladian)]. transition-opacity duration-700">
         
-        <aside class="w-20 lg:w-64 bg-slate-900 text-white flex flex-col justify-between transition-all duration-300 z-20">
-            <div>     <!--Sidebar-->
-                <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-700 cursor-pointer" onclick="App.showToast('Home Refresh')">
-                    <!-- <i data-lucide="activity" class="text-medical-500 w-8 h-8"></i> -->
-                     <!-- <img src="C:\Users\AtharvaKangane\CIRCULANTS\Forcasting app\Frontend\assets\img\logo.png" alt="Logo" class="w-8 h-8" />  + object-contain-->
-                     <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8">
-                    <span class="ml-3 font-bold text-lg hidden lg:block tracking-tight">Platfrom A</span>
-                </div>
-                <nav class="mt-8 space-y-2 px-2">
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="pipeline">
-                        <i data-lucide="database" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Data Pipeline</span>
-                    </a>
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="dashboard">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Clinical Dashboard</span>
-                    </a>
+        <aside id="sidebar" class="bg-[#1f2a3a] w-20 hover:w-64 text-white flex flex-col justify-between transition-all duration-300 ease-in-out z-20 group overflow-hidden">
+    <div class="bg-[#1f2a3a]">
+        <!-- Logo Section -->
+        <div class="h-16 flex items-center px-4 border-b border-slate-700 cursor-pointer" onclick="App.showToast('Home Refresh')">
+            <img src="assets/img/logo.png" alt="Logo" class="w-8 h-8 flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+            <span class="ml-3 font-bold text-lg opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap overflow-hidden">Platform A</span>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="bg-[#1f2a3a] mt-8 space-y-2 px-2">
+            <!-- Data Pipeline -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="pipeline">
+                <i data-lucide="database" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Data Pipeline</span>
+            </a>
+            
+            <!-- Clinical Dashboard -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden active-nav" data-view="dashboard">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Clinical Dashboard</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="cancer-dashboard">
-                        <i data-lucide="hospital" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Cancer Dashboard</span>
-                    </a>
+            <!-- Cancer Dashboard -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="cancer-dashboard">
+                <i data-lucide="hospital" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Cancer Dashboard</span>
+            </a>
 
-                    <!-- <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors active-nav" data-view="geography-dashboard">
-                        <i data-lucide="map" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Geography Dashboard</span>
-                    </a> -->
-                    
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="scenario-builder">
-                        <i data-lucide="layers" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Scenario Builder</span>
-                    </a>
+            <!-- Geography Dashboard -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="geography-dashboard">
+                <i data-lucide="map" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Geography Dashboard</span>
+            </a>
+            
+            <!-- Scenario Builder -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="scenario-builder">
+                <i data-lucide="layers" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Scenario Builder</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="forecasting">
-                        <i data-lucide="trending-up" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Forecasting</span>
-                    </a>
+            <!-- Forecasting -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="forecasting">
+                <i data-lucide="trending-up" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Forecasting</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="scenario-comparison">
-                        <i data-lucide="copy" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Scenario Comparison</span>
-                    </a>
+            <!-- Scenario Comparison -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="scenario-comparison">
+                <i data-lucide="copy" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Scenario Comparison</span>
+            </a>
 
-                    <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 rounded-lg group transition-colors" data-view="Export-&-Reports">
-                        <i data-lucide="file-down" class="w-5 h-5 group-hover:text-white"></i>
-                        <span class="ml-3 font-medium hidden lg:block">Export & Reports</span>
-                    </a>
-
-                </nav>
-
+            <!-- Export & Reports -->
+            <a href="#" class="flex items-center p-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-all duration-200 relative overflow-hidden" data-view="Export-&-Reports">
+                <i data-lucide="file-down" class="w-5 h-5 flex-shrink-0 transition-transform duration-200"></i>
+                <span class="ml-3 font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 whitespace-nowrap">Export & Reports</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- User Profile Section -->
+    <div class="bg-[#1f2a3a] p-4 border-t border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors duration-200" onclick="App.handleLogout()">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center font-bold text-xs flex-shrink-0 relative">
+                JD 
+                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
             </div>
-            <div class="p-4 border-t border-slate-700">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center font-bold text-xs relative">
-                        JD <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
-                    </div>
-                    <div class="hidden lg:block">
-                        <p class="text-sm font-medium">Dr. John Doe</p>
-                        <p class="text-xs text-slate-400">Oncology Admin</p>
-                    </div>
-                </div>
+            <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 delay-100 overflow-hidden">
+                <p class="text-sm font-medium whitespace-nowrap">John Doe</p>
+                <p class="text-xs text-slate-400 whitespace-nowrap">Oncology Admin</p>
             </div>
-        </aside>
+        </div>
+    </div>
+</aside>
 
         <main class="flex-1 flex flex-col h-full overflow-hidden relative">
             <header class="h-16 bg-white border-b flex items-center justify-between px-8 z-10">
                 <h2 id="page-title" class="text-xl font-bold text-slate-800">Clinical Command Center</h2>
                 <div class="flex items-center gap-4">
-                    <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="bell" class="w-5 h-5"></i></button>
+                    <!-- <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="bell" class="w-5 h-5"></i></button> -->
                     <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><i data-lucide="settings" class="w-5 h-5"></i></button>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth bg-[var(--color-palladian)]">
+            <!-- <div class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth bg-[var(--color-palladian)]"> -->
+            <div id="main-scroll-container" class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth bg-[var(--color-palladian)]">
                 
                 <div id="view-dashboard" class="space-y-6 max-w-7xl mx-auto animate-fade-in">
-                    <div class="flex flex-col md:flex-row md:items-end gap-6 w-full mb-6">
-                <div class="flex gap-2 shrink-0">
-                    <button class="px-4 py-2 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn" data-period="7">7 Days</button>
-                    <!-- <button class="px-4 py-2 text-xs font-bold rounded bg-slate-100 text-slate-500 hover:bg-slate-200 filter-btn" data-period="30">30 Days</button> -->
-                </div>
-
-                <div class="flex-1 w-full pb-2 px-2">
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-                        <span id="slider-date-start">Jan 1, 2024</span>
-                        <span id="slider-date-end">Dec 31, 2024</span>
+                    <!-- Dashboard Title Section -->
+                    <div class="flex flex-col md:flex-row md:items-end gap-6 w-full mb-6"> 
                     </div>
-                    <div id="date-slider"></div>
-                </div>
-            </div>
                     
 
+                    <!-- KPI Cards Container - Dynamically populated by charts.js -->
                     <div id="dashboard-kpi-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="users" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+12.5%</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">NDCC Patients</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">1,284</p>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i data-lucide="timer" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">-2.1 Days</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Avg TTI (Days)</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">14.2</p>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-orange-50 text-orange-600 rounded-lg"><i data-lucide="armchair" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">High Load</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Infusion Chair Util</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">88%</p>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="funnel" class="w-5 h-5"></i></div>
-                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+4%</span>
-                            </div>
-                            <h4 class="text-slate-500 text-xs font-bold uppercase tracking-wide">Gross Conversion Rate</h4>
-                            <p class="text-3xl font-bold text-slate-800 mt-2">22.4%</p>
-                        </div> -->
+                        <!-- KPI cards are inserted here by JavaScript -->
                     </div>
 
-                    <!-- Top Insights -->
+                    <!-- Key Insights Section -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h3 class="text-lg font-semibold text-slate-800 mb-4">
                             Top Insights
                         </h3>
+                        <!-- Insights list populated dynamically -->
                         <ul id="dashboard-insights-container" class="space-y-3">
                         </ul>
                     </div>
 
+                    <!-- Main Charts Row: Trends + Program Mix -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Patient Volume Trends Chart -->
                         <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                            <!-- Filter Buttons -->
+                            <div class="flex gap-2 shrink-0">
+                                <button class="px-4 py-2 text-xs font-bold rounded bg-blue-100 text-blue-700 filter-btn" data-period="7">7 Days</button>
+                            </div>
+
+                            <!-- Date Range Slider -->
+                            <div class="flex-1 w-full pb-2 px-2">
+                                <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+                                    <span id="slider-date-start">Jan 1, 2024</span>
+                                    <span id="slider-date-end">Dec 31, 2024</span>
+                                </div>
+                                <div id="date-slider"></div>
+                            </div>
+                            
+                            <!-- Chart Title -->
                             <h3 class="font-bold text-slate-800 mb-6">Patient Volume Trends</h3>
+                            
+                            <!-- Chart Container -->
                             <div class="h-72">
                                 <canvas id="mainChart"></canvas>
                             </div>
                         </div>
+                        
+                        <!-- Program Mix Donut Chart -->
                         <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-6">Program Mix</h3>
                             <div class="h-64 relative flex items-center justify-center">
                                 <canvas id="donutChart"></canvas>
+                                <!-- Center text overlay -->
                                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div class="text-center mt-2">
-                                        <!-- <span class="block text-3xl font-bold text-slate-800">1.2K</span> -->
                                         <span id="program-mix-total" class="block text-3xl font-bold text-slate-800">--</span>
                                         <span class="text-[10px] text-slate-400 uppercase tracking-widest">Total Pts</span>
                                     </div>
                                 </div>
                             </div>
+                            <!-- Legend -->
                             <div id="program-mix-legend" class="mt-4 space-y-2 px-4">
-                                <!-- <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-600"></span> MedOnc</span> <span class="font-bold">55%</span></div>
-                                <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-600"></span> SurgOnc</span> <span class="font-bold">25%</span></div>
-                                <div class="flex justify-between text-xs items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-500"></span> RadOnc</span> <span class="font-bold">20%</span></div> -->
+                                <!-- Legend items inserted dynamically -->
                             </div>
                         </div>
                     </div>
 
-                    <!--  KPI ROWS          
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <p class="text-sm text-slate-500">Avg Bed Utilization</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-2">78%</h3>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <p class="text-sm text-slate-500">Infusion Chair Utilization</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-2">65%</h3>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm p-6">
-                            <p class="text-sm text-slate-500">Monthly Patient Volume</p>
-                            <h3 class="text-3xl font-bold text-slate-800 mt-2">1,420</h3>
-                        </div>
-                    </div>
-                    -->
-
-                    <!-- Charts Row -->
+                    <!-- Detailed Charts Row: Capacity & Program Performance -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        
-                        <!-- Capacity Utilization -->
-                        <div class="bg-white rounded-xl shadow-sm p-6" style="height: 400px">
+                        <!-- Capacity Utilization Chart -->
+                        <div class="bg-white rounded-xl shadow-sm p-12" style="height: 400px">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4">
                                 Capacity Utilization (Monthly)
                             </h3>
-                            <canvas id="capacityChart" ></canvas>
+                            <canvas id="capacityChart"></canvas>
                         </div>
 
-                        <!-- Program Performance -->
-                        <div class="bg-white rounded-xl shadow-sm p-6" style="height: 400px">
+                        <!-- Program Performance Chart -->
+                        <div class="bg-white rounded-xl shadow-sm p-12" style="height: 400px">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4">
                                 Program Performance By Service Line
                             </h3>
                             <canvas id="programChart"></canvas>
                         </div>
                     </div>
+                    
+                    <!-- Navigation to Next View -->
+                    <div class="flex justify-end pt-8 pb-4">
+                        <button onclick="App.switchView('cancer-dashboard')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Cancer Dashboard <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
                 </div>
                 
+                <!-- ╔════════════════════════════════════════════╗ -->
+                <!-- ║   VIEW: CANCER DASHBOARD                  ║ -->
+                <!-- ║   Purpose: Oncology-specific analytics    ║ -->
+                <!-- ║   Shows: Patient journey, cancer types    ║ -->
+                <!-- ╚════════════════════════════════════════════╝ -->
                 <div id="view-cancer-dashboard" class="hidden space-y-6 max-w-7xl mx-auto animate-fade-in">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-2xl font-bold text-slate-800">Cancer Care Analytics</h2>
-                        <!-- <span class="text-sm text-slate-500">Real-time oncology department metrics</span> -->
                     </div>
 
+                    <!-- Cancer-specific KPI Cards -->
                     <div id="cancer-kpi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        </div>
+                        <!-- KPI cards inserted dynamically -->
+                    </div>
 
+                    <!-- Patient Journey Flow (Sankey Diagram) -->
                     <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                         <h3 class="font-bold text-slate-800 mb-4">Patient Journey Flow</h3>
                         <div id="diagram-container" class="w-full min-h-[600px] bg-slate-50 border border-slate-200 rounded-lg p-4 relative">
+                            <!-- SVG Sankey diagram inserted by cancerDashboard.js -->
                             <svg id="sankey-svg" class="w-full h-full block mx-auto"></svg>
                             
+                            <!-- Journey Stage Legend -->
                             <div class="mt-6 p-4 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-lg">
                                 <h4 class="text-xs font-bold text-slate-500 uppercase mb-3">Journey Stages</h4>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#C9C1B1]"></div>
-                                        <span class="text-xs text-slate-600">Initial Visit</span>
+                                        <span class="text-xs text-slate-600">Pre-Diagnosis</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#A35139]"></div>
-                                        <span class="text-xs text-slate-600">Diagnosis & Treatment</span>
+                                        <span class="text-xs text-slate-600">Initial Diagnosis & Treatment</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#FFB162]"></div>
-                                        <span class="text-xs text-slate-600">Follow-up Care</span>
+                                        <span class="text-xs text-slate-600">Subsequent Referral</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-3 h-3 rounded bg-[#1B2632]"></div>
@@ -454,7 +572,9 @@
                         </div>
                     </div>
 
+                    <!-- Cancer Types & Disease Distribution -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Cancer Type Distribution -->
                         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-4">Cancer Type Distribution</h3>
                             <div class="h-64 relative w-full">
@@ -462,6 +582,7 @@
                             </div>
                         </div>
 
+                        <!-- Disease Site Grouping -->
                         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-4">Disease Site Grouping</h3>
                             <div class="h-64 relative w-full">
@@ -469,6 +590,7 @@
                             </div>
                         </div>
 
+                        <!-- Infusion Trends (full width) -->
                         <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                             <h3 class="font-bold text-slate-800 mb-4">Infusion Trends Over Time</h3>
                             <div class="h-72 relative w-full">
@@ -476,58 +598,109 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div id="view-geography-dashboard" class="hidden space-y-6 max-w-7xl mx-auto animate-fade-in">
                     
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-2xl font-bold text-slate-800">Geographic Market Analysis</h2>
-                            <span class="text-sm text-slate-500">Patient distribution and facility catchment areas</span>
-                        </div>
-                        <div class="bg-white p-1 rounded-lg border border-slate-200 flex" id="geo-filters">
-                            <button class="px-3 py-1 text-xs font-bold rounded bg-slate-800 text-white shadow-sm transition-all" data-filter="all">All</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="0-10mi">0-10mi</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="10-25mi">10-25mi</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="25-50mi">25-50mi</button>
-                            <button class="px-3 py-1 text-xs font-bold rounded text-slate-500 hover:bg-slate-50 transition-all" data-filter="50+mi">50+mi</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-blue-600 rounded-xl p-4 shadow-lg flex items-center gap-4 text-white">
-                        <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                            <i data-lucide="map-pin" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <!-- <div class="flex-1">
-                            <h4 class="text-xs font-bold uppercase tracking-wider opacity-80 mb-1">Strategic Insight</h4>
-                            <p class="text-lg leading-tight" id="geo-insight-text">Loading insights...</p>
-                        </div> -->
-                        <button class="px-4 py-2 bg-white text-blue-700 text-xs font-bold rounded-lg hover:bg-blue-50 transition-colors">
-                            View Details
+                    <!-- Navigation to Next View -->
+                    <div class="flex justify-end pt-8 pb-4">
+                        <button onclick="App.switchView('geography-dashboard')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Geography Dashboard <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                         </button>
                     </div>
+                </div>
 
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-slate-800">Patient Heat Map & Facility Locations</h3>
-                            
-                            <div class="flex gap-4 text-xs font-medium text-slate-600">
-                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#2C3B4D]"></span> Medicare</span>
-                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#FFB162]"></span> Commercial</span>
-                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#A35139]"></span> Medicaid</span>
+                <div id="view-geography-dashboard" class="hidden space-y-8 max-w-7xl mx-auto animate-fade-in pb-10">
+    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">Healthcare Market Intelligence</h2>
+                            <!-- <span class="text-sm text-slate-500">Geographic Analysis & Payer Mix Strategy</span> -->
+                        </div>
+                        </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- <div class="lg:col-span-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                            </div>
+                            <div class="lg:col-span-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group z-0">
+                                <div class="h-[450px] w-full bg-slate-50 rounded-lg relative z-0" id="geoMap">
+                                </div>
+                            </div>
+                        </div> -->
+
+                        <!-- MODIFY - Remove nested duplicate div, keep only: -->
+                        <div class="lg:col-span-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                                <!-- <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                                <button class="p-2 bg-white shadow-md rounded-lg text-slate-600 hover:text-blue-600">
+                                    <i data-lucide="minus" class="w-4 h-4"></i>
+                                </button> -->
+                            </div>
+                            <div id="geoMap" class="h-[500px] w-full rounded-lg"></div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="bg-orange-50 border border-orange-200 p-5 rounded-xl shadow-sm relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-16 h-16 bg-orange-400 opacity-10 rounded-bl-full"></div>
+                                <h4 class="text-xs font-bold text-orange-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> Strategic Insight
+                                </h4>
+                                <p class="text-sm text-slate-800 leading-relaxed" id="geo-insight-text">Loading...</p>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-full max-h-[420px] flex flex-col">
+                                <h3 class="font-bold text-slate-800 mb-6 text-sm flex-shrink-0">Patient Distance Distribution</h3>
+                                <div class="space-y-5 overflow-y-auto pr-2" id="geo-dist-list">
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-4 text-lg">Payer Mix Analysis</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="payer-mix-container">
+                            </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-6 text-sm">Payer Mix by Distance Band</h3>
+                            <div class="h-64">
+                                <canvas id="geoCrossChart"></canvas>
                             </div>
                         </div>
 
-                        <div class="h-[500px] w-full bg-slate-50 rounded-xl border border-slate-100 relative">
-                            <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 20px 20px;"></div>
-                            <canvas id="geoMapChart"></canvas>
+                        <div class="bg-white p-0 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                                <h3 class="font-bold text-slate-800 text-sm">Top Counties by Volume</h3>
+                            </div>
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-6 py-3 font-semibold">County</th>
+                                        <th class="px-6 py-3 font-semibold text-right">Volume</th>
+                                        <th class="px-6 py-3 font-semibold">Primary Payer</th>
+                                        </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100" id="geo-county-body">
+                                    </tbody>
+                            </table>
                         </div>
+                    </div>
+                    <!-- Navigation to Next View -->
+                    <div class="flex justify-end pt-8 pb-4">
+                        <button onclick="App.switchView('scenario-builder')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Scenario Builder <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
                     </div>
                 </div>
 
                 <div id="view-pipeline" class="hidden space-y-8 max-w-7xl mx-auto">
                     
-                    <div id="pipeline-kpi-container" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div id="pipeline-kpi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                             <div>
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Completeness</p>
@@ -550,6 +723,81 @@
                             <span class="bg-red-50 text-red-500 text-xs font-bold px-2 py-1 rounded border border-red-100">-0.3%</span>
                         </div> -->
                     </div>
+
+                    <div id="schema-container" class="bg-[#1f2a3a] rounded-xl overflow-hidden shadow-2xl relative h-[450px]">
+                    <div class="absolute top-4 left-4 z-10 bg-slate-800/80 backdrop-blur px-3 py-1 rounded border border-slate-700 text-xs font-bold text-slate-400">
+                        SCHEMA BUILDER (DRAG NODES)
+                    </div>
+
+                    <!-- SVG lines layer -->
+                    <svg id="schema-lines" class="absolute inset-0 w-full h-full pointer-events-none"  width="100%" height="100%"
+                    style="position:absolute; inset:0; pointer-events:none; z-index:0"></svg>
+
+                    <!-- SOURCES -->
+                    <div id="source-emr" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-24 left-24" data-role="source">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Source</div>
+                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="database" class="w-4"></i> Hospital EMR</div>
+                    </div>
+
+                    <div id="source-registry" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-44 left-24" data-role="source">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Source</div>
+                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="database" class="w-4"></i> Cancer Registry</div>
+                    </div>
+
+                    <div id="source-referrals" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-64 left-24" data-role="source">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Source</div>
+                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="database" class="w-4"></i> Referral System</div>
+                    </div>
+
+                    <!-- PROCESS (node-2) -->
+                    <div id="process" class="schema-node bg-blue-600 text-white p-5 rounded-lg shadow-xl w-48 text-center top-40 left-[40%]" data-role="process">
+                        <div class="text-[10px] text-blue-200 font-bold uppercase mb-1">Process</div>
+                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="cpu" class="w-4"></i> Spark Cleaner</div>
+                    </div>
+
+                    <!-- TABLES -->
+                    <div id="table-fact-patients" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-24 right-32" data-role="table">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
+                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Fact Patients</div>
+                    </div>
+
+                    <div id="table-dim-diagnosis" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-64 right-32" data-role="table">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
+                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Oncology Diagnosis</div>
+                    </div>
+
+                    <div id="table-hcp" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-[22rem] right-32" data-role="table">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
+                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> HCP Data</div>
+                    </div>
+
+                    <!-- Trial button  -->
+                    <!-- <div id="table-hcp" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-[22rem] right-32" data-role="table"> --> -->
+                    <!-- Info button -->
+                        <!-- <button class="absolute top-2 right-2 text-red-600 hover:text-red-800" -->
+                                <!-- title="More info"> -->
+                            <!-- <i data-lucide="info" class="w-4 h-4"></i> -->
+                        <!-- </button> -->
+                        <!-- <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div> -->
+                        <!-- <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Demographic info</div> -->
+                    <!-- </div> -->
+                    <!-- Trial button ends-->
+                    <div id="table-hcp" class="schema-node table-danger" data-role="table">
+                        <!-- Info button -->
+                        <button class="info-btn group relative">
+                            <i data-lucide="info" class="w-4 h-4"></i>
+                        <span class="absolute top-[-32px] right-0 hidden group-hover:block
+                                        bg-slate-900 text-white text-[10px] px-2 py-1 rounded">
+                                Missing or inconsistent data types detected in the ZIP column.
+                        </span>
+                        </button>
+
+                    <div class="text-[10px] font-bold uppercase mb-1">Table</div>
+                    <div class="font-bold text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="table" class="w-4"></i> Demographic info
+                    </div>
+                </div>
+                </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -604,82 +852,18 @@
                         </div>
                     </div>
 
-                    
-                    <div id="schema-container" class="bg-[#0f172a] rounded-xl overflow-hidden shadow-2xl relative h-[450px]">
-                    <div class="absolute top-4 left-4 z-10 bg-slate-800/80 backdrop-blur px-3 py-1 rounded border border-slate-700 text-xs font-bold text-slate-400">
-                        SCHEMA BUILDER (DRAG NODES)
-                    </div>
-
-                    <!-- SVG lines layer -->
-                    <svg id="schema-lines" class="absolute inset-0 w-full h-full pointer-events-none"></svg>
-
-                    <!-- SOURCES -->
-                    <div id="source-emr" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-24 left-24" data-role="source">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Source</div>
-                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="database" class="w-4"></i> Hospital EMR</div>
-                    </div>
-
-                    <div id="source-registry" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-44 left-24" data-role="source">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Source</div>
-                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="database" class="w-4"></i> Cancer Registry</div>
-                    </div>
-
-                    <div id="source-referrals" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-64 left-24" data-role="source">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Source</div>
-                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="database" class="w-4"></i> Referral System</div>
-                    </div>
-
-                    <!-- PROCESS (node-2) -->
-                    <div id="process" class="schema-node bg-blue-600 text-white p-5 rounded-lg shadow-xl w-48 text-center top-40 left-[40%]" data-role="process">
-                        <div class="text-[10px] text-blue-200 font-bold uppercase mb-1">Process</div>
-                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="cpu" class="w-4"></i> Spark Cleaner</div>
-                    </div>
-
-                    <!-- TABLES -->
-                    <div id="table-fact-patients" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-24 right-32" data-role="table">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
-                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Fact Patients</div>
-                    </div>
-
-                    <div id="table-dim-diagnosis" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-64 right-32" data-role="table">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
-                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Dim Diagnosis</div>
-                    </div>
-
-                    <div id="table-hcp" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-[22rem] right-32" data-role="table">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div>
-                        <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> HCP Data</div>
-                    </div>
-
-                    <!-- Trial button  -->
-                    <!-- <div id="table-hcp" class="schema-node bg-white p-4 rounded shadow-lg w-40 text-center top-[22rem] right-32" data-role="table"> --> -->
-                    <!-- Info button -->
-                        <!-- <button class="absolute top-2 right-2 text-red-600 hover:text-red-800" -->
-                                <!-- title="More info"> -->
-                            <!-- <i data-lucide="info" class="w-4 h-4"></i> -->
-                        <!-- </button> -->
-                        <!-- <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Table</div> -->
-                        <!-- <div class="font-bold text-sm flex items-center justify-center gap-2"><i data-lucide="table" class="w-4"></i> Demographic info</div> -->
-                    <!-- </div> -->
-                    <!-- Trial button ends-->
-                    <div id="table-hcp" class="schema-node table-danger" data-role="table">
-                        <!-- Info button -->
-                        <button class="info-btn group relative">
-                            <i data-lucide="info" class="w-4 h-4"></i>
-                        <span class="absolute top-[-32px] right-0 hidden group-hover:block
-                                        bg-slate-900 text-white text-[10px] px-2 py-1 rounded">
-                                Missing or inconsistent data types detected in the ZIP column.
-                        </span>
+                    <div class="flex justify-end pt-8 pb-4">
+                        <button onclick="App.switchView('dashboard')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Clinical Dashboard <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                         </button>
-
-                    <div class="text-[10px] font-bold uppercase mb-1">Table</div>
-                    <div class="font-bold text-sm flex items-center justify-center gap-2">
-                        <i data-lucide="table" class="w-4"></i> Demographic info
                     </div>
-                    </div>
-                </div>
             </div>
                 <div id="view-scenario-builder" class="hidden max-w-7xl mx-auto animate-fade-in">
+                    <!-- ╔════════════════════════════════════════════╗ -->
+                    <!-- ║   VIEW: SCENARIO BUILDER                  ║ -->
+                    <!-- ║   Purpose: Configure forecast parameters  ║ -->
+                    <!-- ║   Shows: Model selection, growth rates    ║ -->
+                    <!-- ╚════════════════════════════════════════════╝ -->
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                         
                         <div class="lg:col-span-1 space-y-6">
@@ -693,7 +877,7 @@
                                                 </select>
                                         </div>
                                     </div>
-                                    <button id="btn-new-scenario" class="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors">
+                                    <button id="btn-new-scenario" type = button class="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors">
                                         <i data-lucide="plus" class="w-4"></i> Create New
                                     </button>
                                     <button id="btn-delete-scenario" class="w-full py-2 px-4 border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors">
@@ -704,35 +888,75 @@
                         </div>
 
                         <div class="lg:col-span-3">
-                            <div class="bg-[#0f172a] rounded-xl shadow-lg p-8 text-white relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                            <div class="bg-[#1f2a3a] rounded-xl shadow-lg p-8 text-white relative">
+                                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
 
                                 <div class="flex justify-between items-center mb-8 relative z-10">
                                     <h2 id="config-title" class="text-2xl font-bold">Configure: Conservative</h2>
-                                    <div class="flex items-center gap-2">
-                                    <label for="forecast-horizon" class="text-sm font-medium text-slate-600">Horizon:</label>
-                                    <select id="forecast-horizon" class="border border-slate-300 rounded px-2 py-1 text-sm">
-                                        <option value="5">5 Years</option>
-                                        <option value="7">7 Years</option>
-                                        <option value="10">10 Years</option>
-                                    </select>
+                                    
+                                    <div class="flex items-center gap-3 bg-[#2c3b4e] rounded-lg px-4 py-2 border border-slate-700/50 backdrop-blur-sm ml-auto mr-4">
+                                        <label for="scenario-horizon" class="bg-[#2c3b4e] text-xs font-bold text-slate-400 uppercase tracking-wider text-white">Horizon:</label>
+                                        <select id="scenario-horizon" class=" bg-[#2c3b4e] bg-transparent text-sm font-bold text-white outline-none cursor-pointer focus:ring-0 border-none p-0">
+                                            <option value="5" class = "bg-[#2c3b4e] text-white">5 Years</option>
+                                            <option value="7" class="bg-[#2c3b4e] text-white">7 Years</option>
+                                            <option value="10" class="bg-[#2c3b4e] text-white" selected>10 Years</option>
+                                        </select>
                                     </div>
-                                    <button id="btn-save-scenario" class="bg-rose-700 hover:bg-rose-900 text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-lg ">
+
+                                    <button id="btn-save-scenario" class="bg-rose-700 hover:bg-rose-900 text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-lg">
                                         <i data-lucide="save" class="w-4"></i> Save Configuration
                                     </button>
                                 </div>
-                                
-                                <div class="relative z-10 mb-8 bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
-                                    <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Select Forecasting Model</label>
-                                    <select id="model-selector" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all hover:border-slate-600">
-                                        <option value="deterministic">Deterministic Throughput Models</option>
-                                        <option value="littles-law">Little’s Law Based Flow Models (Hospital Specific)</option>
-                                        <option value="time-series">Time Series (SARIMA/ETS)</option>
-                                        <option value="piecewise">Piecewise Linear Model (Trend + Seasonality + Changepoints)</option>
-                                        <option value="ml-sim">Decision Tree/ Behavioural Simulation (Machine Learning)</option>
-                                        <option value="stock-flow">Stock and Flow Model</option>
-                                    </select>
+                               
+                                <div class="relative z-50 mb-8 bg-[#2c3b4e] p-4 rounded-xl border border-slate-700/50"> 
+                                    <label id="model-label" class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-2">
+                                        Select Forecasting Model
+                                    </label>
+
+                                    <div class="relative">
+                                        <button id="model-dropdown-btn" type="button" 
+                                            class="w-full p-3 bg-[#2c3b4e] border border-slate-700 rounded-lg text-sm text-slate-200 flex justify-between items-center focus:ring-2 focus:ring-blue-500 outline-none hover:border-slate-500 transition-colors">
+                                            <span id="model-btn-text">Choose Models...</span>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                                        </button>
+
+                                        <div id="model-dropdown-menu" 
+                                            class="hidden absolute top-full left-0 right-0 mt-2 bg-[#1f2a3a] border border-slate-600 rounded-lg shadow-2xl z-[100] max-h-60 overflow-y-auto w-full">
+                                            <div class="p-2 space-y-1">
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Deterministic Throughput" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Deterministic Throughput</span>
+                                                </label>
+                                                
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Little’s Law" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Little’s Law Based Flow</span>
+                                                </label>
+
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="SARIMA/ETS" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Time Series (SARIMA/ETS)</span>
+                                                </label>
+
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Piecewise Linear Model" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Piecewise Linear Model (Trend + Seasonality + Changepoints)</span>
+                                                </label>
+
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Decision Tree" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Decision Tree/ Behavioural Simulation ( Machine Learning)</span>
+                                                </label>
+
+                                                <label class="flex items-center space-x-3 p-2 hover:bg-slate-700 rounded cursor-pointer group transition-colors">
+                                                    <input type="checkbox" value="Stock & Flow" class="model-checkbox w-4 h-4 rounded border-slate-500 bg-slate-800 text-blue-500 focus:ring-offset-slate-900">
+                                                    <span class="text-sm text-slate-300 group-hover:text-white">Stock and Flow Model</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
                                     
@@ -827,9 +1051,20 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="flex justify-end pt-8 pb-4">
+                        <button onclick="App.switchView('forecasting')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Forecasting <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
                 </div>
 
   <div id="view-forecasting" class="hidden h-[60vh] flex flex-col items-center justify-start animate-fade-in" >
+  <!-- ╔════════════════════════════════════════════╗ -->
+  <!-- ║   VIEW: FORECASTING                       ║ -->
+  <!-- ║   Purpose: Generate forecast projections  ║ -->
+  <!-- ║   Shows: Volume projections, growth tabs  ║ -->
+  <!-- ╚════════════════════════════════════════════╝ -->
   <div class="space-y-2 w-full max-w-7xl">
 
     <!-- Header / Controls -->
@@ -954,10 +1189,19 @@
     <!-- /Tabs Content -->
 
   </div>
+    <div class="flex justify-end pt-8 pb-4 w-full">
+        <button onclick="App.switchView('scenario-comparison')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+            Next: Scenario Comparison <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+    </div>
 </div>
 
                 <div id="view-scenario-comparison" class="hidden max-w-7xl mx-auto animate-fade-in pb-10">
-    
+                    <!-- ╔════════════════════════════════════════════╗ -->
+                    <!-- ║   VIEW: SCENARIO COMPARISON               ║ -->
+                    <!-- ║   Purpose: Compare two forecast scenarios ║ -->
+                    <!-- ║   Shows: Side-by-side metrics, insights   ║ -->
+                    <!-- ╚════════════════════════════════════════════╝ -->
                     <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-900">Side-by-Side Scenario Analysis</h2>
@@ -1011,13 +1255,13 @@
                             </div>
                         </div>
 
-                        <div class="bg-slate-900 p-6 rounded-xl shadow-lg text-white relative overflow-hidden">
-                            <div class="absolute -right-6 -top-6 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
+                        <div class="bg-[#1f2a3a] p-6 rounded-xl shadow-lg text-white relative overflow-hidden ">
+                            <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full blur-2xl bg-[#1f2a3a]"></div>
                             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 Variance <i data-lucide="arrow-right-left" class="w-3 h-3"></i>
                             </h3>
 
-                            <div class="mb-6">
+                            <div class="mb-6 bg-[#1f2a3a]">
                                 <div class="flex justify-between items-end">
                                     <div>
                                         <p class="text-xs text-slate-400 mb-1">Inpatient Δ</p>
@@ -1057,7 +1301,7 @@
                             </table>
                         </div>
 
-                        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-lg p-6 text-white">
+                        <div class="bg-[#1f2a3a] rounded-xl shadow-lg p-6 text-white">
                             <div class="flex items-center gap-3 mb-6">
                                 <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
                                     <i data-lucide="lightbulb" class="w-5 h-5 text-yellow-400"></i>
@@ -1087,20 +1331,28 @@
                                 </li>
                             </ul>
 
-                            <button class="w-full mt-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold text-sm transition-colors">
+                            <button class="w-full mt-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold text-sm transition-colors" onclick="App.switchView('Export-&-Reports')">
                                 Generate Full Report
                             </button>
                         </div>
 
                     </div>
+                    <!-- <div class="flex justify-end pt-8 pb-4">
+                        <button onclick="App.switchView('Export-&-Reports')" class="group flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                            Next: Export & Reports <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div> -->
                 </div>
 
                 <div id="view-Export-&-Reports" class="hidden max-w-7xl mx-auto animate-fade-in pb-10">
-                    <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold text-slate-900">Export & Strategic Reporting</h2>
-                            <p class="text-slate-500 text-sm mt-1">Generate forecast datasets and executive summaries.</p>
-                        </div>
+                    <!-- ╔════════════════════════════════════════════╗ -->
+                    <!-- ║   VIEW: EXPORT & REPORTS                  ║ -->
+                    <!-- ║   Purpose: Download data & generate docs  ║ -->
+                    <!-- ║   Shows: Export options, report preview   ║ -->
+                    <!-- ╚════════════════════════════════════════════╝ -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Export & Strategic Reporting</h2>
+                        <p class="text-slate-500 text-sm mt-1">Generate forecast datasets and executive summaries.</p>
                     </div>
 
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -1249,6 +1501,14 @@
         </main>
     </div>
 
+    <!-- ╔════════════════════════════════════════════════════════════════╗ -->
+    <!-- ║                    MODALS & OVERLAYS                          ║ -->
+    <!-- ║  Purpose: Floating dialogs for specific interactions          ║ -->
+    <!-- ║  Hidden by default (shown/hidden via JavaScript)              ║ -->
+    <!-- ╚════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== MODEL TRAINING OVERLAY ========== -->
+    <!-- Shows while forecasting model is training in background -->
     <div id="model-training-overlay" class="fixed inset-0 z-[70] bg-slate-900/80 backdrop-blur-sm hidden flex flex-col items-center justify-center transition-opacity duration-300 opacity-0">
         <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-5 max-w-sm w-full text-center border border-white/10">
             <div class="relative">
@@ -1267,18 +1527,124 @@
         </div>
     </div>
 
+    <!-- ========== DATASET INFO MODAL ========== -->
+    <!-- Shows dataset schema reference for file uploads -->
+    <div id="dataset-info-modal" class="fixed inset-0 z-[80] bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+            <!-- Modal Header -->
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="database" class="w-5 h-5 text-blue-600"></i> Dataset Schema
+                </h3>
+                <button class="text-slate-400 hover:text-slate-600 transition-colors modal-close-btn">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <!-- Modal Content -->
+            <div class="p-6">
+                <p class="text-sm text-slate-500 mb-6">Supported formats: <strong class="text-slate-700">.xlsx, .csv, .json</strong>. Ensure your upload matches the schema below.</p>
+                <!-- Schema table populated by JavaScript -->
+                <div class="overflow-hidden rounded-lg border border-slate-200">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-xs font-bold text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-4 py-3">Column Name</th>
+                                <th class="px-4 py-3">Data Type</th>
+                                <th class="px-4 py-3">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataset-info-body" class="divide-y divide-slate-100 bg-white">
+                            <!-- Rows populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-lg transition-colors modal-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CREATE NEW SCENARIO MODAL ========== -->
+    <!-- Dialog for creating a new forecast scenario -->
+    <div id="new-scenario-modal" class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Create New Scenario</h3>
+            <p class="text-sm text-slate-500 mb-6">Define a unique name for your strategic forecast scenario.</p>
+            
+            <!-- Form -->
+            <div class="space-y-4">
+                <!-- Name Input -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Scenario Name</label>
+                    <input type="text" id="new-scenario-name" placeholder="e.g., Optimistic Growth 2026" class="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 font-medium">
+                    <!-- Error message (hidden by default) -->
+                    <p id="new-scenario-error" class="text-xs text-rose-600 mt-2 hidden font-bold flex items-center gap-1"> <i data-lucide="alert-circle" class="w-3"></i> <span>Error message</span> </p>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button id="btn-cancel-scenario" class="flex-1 py-3 border border-slate-200 text-slate-600 font-bold rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+                    <button id="btn-confirm-scenario" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">Create Scenario</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TOAST NOTIFICATION CONTAINER ========== -->
+    <!-- Container for toast alerts (success, error, info messages) -->
     <div id="toast-container"></div>
 
+    <!-- ╔════════════════════════════════════════════════════════════════╗ -->
+    <!-- ║                    JAVASCRIPT MODULES                         ║ -->
+    <!-- ║  Load Order: Service → Charts → Schema → Wizard → Features    ║ -->
+    <!-- ║  Ensure dependencies are loaded before dependent modules      ║ -->
+    <!-- ╚════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- Data Service (Core API & State Management) -->
+    <!-- Provides: Mock data, API endpoints, global state  -->
     <script src="src/dataService.js"></script>
+
+    <!-- Charts Module (Chart.js Configuration) -->
+    <!-- Provides: Chart initialization, rendering utilities -->
     <script src="src/charts.js"></script>
+
+    <!-- Schema Module (Data validation & structure) -->
+    <!-- Provides: Schema definitions, validation rules -->
     <script src="src/schema.js"></script>
+
+    <!-- Wizard Module (Data onboarding flow) -->
+    <!-- Provides: Multi-step wizard logic & file handling -->
     <script src="src/wizard.js"></script>
+
+    <!-- Scenario Module (Forecast scenario management) -->
+    <!-- Provides: Create/edit/delete scenarios, parameter configuration -->
     <script src="src/scenario.js"></script>
+
+    <!-- Forecast Module (Forecasting calculations) -->
+    <!-- Provides: Model training, projection generation -->
     <script src="src/forecast.js"></script>
+
+    <!-- Comparison Module (Scenario comparison logic) -->
+    <!-- Provides: Side-by-side analysis, variance calculations -->
     <script src="src/comparison.js"></script>
+
+    <!-- Reports Module (Export & reporting) -->
+    <!-- Provides: PDF generation, data export, report formatting -->
     <script src="src/reports.js"></script>
+
+    <!-- Cancer Dashboard Module (Oncology-specific views) -->
+    <!-- Provides: Sankey diagrams, journey flows, cancer analytics -->
     <script src="src/cancerDashboard.js"></script>
+
+    <!-- Geography Dashboard Module (Map & location analysis) -->
+    <!-- Provides: Leaflet map setup, payer mix analysis -->
     <script src="src/geographyDashboard.js"></script>
+
+    <!-- Main Application Module (View management & routing) -->
+    <!-- Provides: View switching, page title updates, user interactions -->
+    <!-- Load with defer to ensure DOM is ready -->
     <script src="src/app.js" defer></script>
 
 </body>

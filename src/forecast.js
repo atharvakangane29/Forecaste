@@ -92,6 +92,7 @@ const ForecastManager = {
         // Don't override colors with JSON palette - keep hardcoded colors
         
         this.bindEvents();
+        this.populateFilters();
         
         // Select defaults if empty
         if (typeof ScenarioManager !== 'undefined' && this.selectedScenarios.length === 0) {
@@ -99,6 +100,37 @@ const ForecastManager = {
              defaults.forEach(id => this.addScenario(id));
         }
     },
+
+    populateFilters() {
+        // 1. Get data from the loaded JSON via DataService
+        // Safe access: defaults to empty array if data isn't ready
+        const hospitals = DataService.get('meta.hospitals') || [];
+        const services = DataService.get('meta.services') || [];
+
+        // 2. Define a helper to fill any dropdown
+        const fillSelect = (elementId, items) => {
+            const select = document.getElementById(elementId);
+            if (!select) return;
+
+            // Clear existing options but keep the first one (e.g., "All Hospitals")
+            const defaultOption = select.firstElementChild;
+            select.innerHTML = '';
+            if (defaultOption) select.appendChild(defaultOption);
+
+            // Create and append new options
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item; // Use the name as the value
+                option.textContent = item;
+                select.appendChild(option);
+            });
+        };
+
+        // 3. Execute for your specific IDs
+        fillSelect('hospital-filter', hospitals);
+        fillSelect('service-line-filter', services);
+    },
+    
 
     bindEvents() {
         const input = document.getElementById('scenario-input');
@@ -119,7 +151,33 @@ const ForecastManager = {
                 dropdown.classList.add('hidden');
             }
         });
+
+        // Forecast Filters
+        const hospFilter = document.getElementById('forecast-filter-hospital');
+        const servFilter = document.getElementById('forecast-filter-service');
+
+        const handleFilterChange = () => {
+            // Placeholder: In a real app, this would filter the chart datasets
+            const h = hospFilter.value;
+            const s = servFilter.value;
+            // console.log(`Filters applied: Hospital=${h}, Service=${s}`);
+            App.showToast(`Filters Applied`, 'info');
+            this.updateCharts(); // Trigger chart refresh
+        };
+
+        if(hospFilter) hospFilter.addEventListener('change', handleFilterChange);
+        if(servFilter) servFilter.addEventListener('change', handleFilterChange);
+
+        // 1. Horizon Selector Listener
+        const horizonSelect = document.getElementById('scenario-horizon');
+        if (horizonSelect) {
+            horizonSelect.addEventListener('change', () => {
+                App.showToast(`Forecast Horizon: ${horizonSelect.value} Years`);
+                this.updateCharts();
+            });
+        }
     },
+
 
     renderDropdownOptions() {
         const dropdown = document.getElementById('forecast-scenario-dropdown');
@@ -207,12 +265,33 @@ const ForecastManager = {
 
     updateCharts() {
         if (typeof Chart === 'undefined') return;
-
         Object.values(this.charts).forEach(chart => chart && chart.destroy());
 
         if (this.selectedScenarios.length === 0) return;
 
-        const years = ForecastEngine.getYears(this.config);
+        // --- PHASE 4: Horizon & Filter Logic ---
+        
+        // 1. Get Horizon Limit
+        const horizonEl = document.getElementById('scenario-horizon');
+        const horizonYears = horizonEl ? parseInt(horizonEl.value) : 10;
+        
+        // 2. Get Active Filters (Used as "Salt" for data simulation)
+        const hospFilter = document.getElementById('forecast-filter-hospital')?.value || 'all';
+        const servFilter = document.getElementById('forecast-filter-service')?.value || 'all';
+        const filterSalt = `${hospFilter}_${servFilter}`;
+
+        // 3. Calculate Date Range
+        // Logic: Always start at config.startYear (2020). 
+        // Show History (5 years to 2025) + Horizon (Selected years into future)
+        const historyLen = this.config.historyCutoff - this.config.startYear; // e.g. 5
+        const totalPoints = historyLen + 1 + horizonYears; // +1 for the cutoff year itself
+
+        let years = ForecastEngine.getYears(this.config);
+        // Slice years array to match selected horizon
+        if (years.length > totalPoints) {
+            years = years.slice(0, totalPoints);
+        }
+
         const datasets = [];
 
         // Inside ForecastManager.updateCharts ...
@@ -224,31 +303,55 @@ const ForecastManager = {
             const color = this.colors[index % this.colors.length];
             const d = scenario.data;
 
-            // UPDATED: Pass 'scenario.id' as the 4th argument (the seed)
+            // --- PHASE 4: Apply Filters to Seed ---
+            // We append the 'filterSalt' to the seed. 
+            // This ensures consistent data for the same filter combo, but different data when filters change.
+            
+            const seed = `${scenario.id}_${filterSalt}`;
+
             const inpatientSeries = ForecastEngine.generateSeries(
                 this.baseParams.inpatient, 
                 d.inpatientGrowth, 
                 this.config, 
-                scenario.id // <--- SEED
+                seed 
             );
+
+            // Slice data to match the Horizon
+            const inpatientSliced = inpatientSeries.slice(0, years.length);
 
             const outpatientSeries = ForecastEngine.generateSeries(
                 this.baseParams.outpatient, 
                 d.outpatientGrowth, 
                 this.config, 
-                scenario.id // <--- SEED
+                seed
             );
+            const outpatientSliced = outpatientSeries.slice(0, years.length);
             
-            const gapSeries = ForecastEngine.calculateGap(inpatientSeries, this.baseParams.bedCapacity, d.addBeds, this.config);
+            // Recalculate Gap based on sliced data
+            const gapSeries = ForecastEngine.calculateGap(
+                inpatientSliced, 
+                this.baseParams.bedCapacity, 
+                d.addBeds, 
+                this.config
+            );
 
             datasets.push({
                 label: scenario.name,
                 color: color,
-                inpatientData: inpatientSeries,
-                outpatientData: outpatientSeries,
-                growthData: inpatientSeries,
+                inpatientData: inpatientSliced,
+                outpatientData: outpatientSliced,
+                growthData: inpatientSliced, // Growth derived from sliced
                 gapData: gapSeries
             });
+
+            // datasets.push({
+            //     label: scenario.name,
+            //     color: color,
+            //     inpatientData: inpatientSeries,
+            //     outpatientData: outpatientSeries,
+            //     growthData: inpatientSeries,
+            //     gapData: gapSeries
+            // });
         });
 
         if(document.getElementById('chart-forecast-inpatient')) this.renderInpatientChart(years, datasets);

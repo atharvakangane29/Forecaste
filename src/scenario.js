@@ -26,9 +26,47 @@ const ScenarioManager = {
             });
         }
 
-        // New Scenario Button
-        document.getElementById('btn-new-scenario')?.addEventListener('click', () => {
-            this.createNewScenario();
+        // New Scenario Button (Opens Modal)
+        document.getElementById('btn-new-scenario')?.addEventListener('click', (e) => {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Reset input and error state
+            const input = document.getElementById('new-scenario-name');
+            const error = document.getElementById('new-scenario-error');
+            if(input) input.value = '';
+            if(error) error.classList.add('hidden');
+
+        //     setTimeout(()=> input?.focus(), 100);
+        // },50);
+            
+            App.toggleModal('new-scenario-modal', true);
+            setTimeout(() => input?.focus(), 350); // Focus input for UX
+        });
+
+        // Modal: Cancel
+        document.getElementById('btn-cancel-scenario')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            App.toggleModal('new-scenario-modal', false);
+        });
+
+        // Modal: Confirm
+        document.getElementById('btn-confirm-scenario')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleModalCreation();
+        });
+
+        // Modal: Enter Key Support
+        document.getElementById('new-scenario-name')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.handleModalCreation();
+        });
+        
+        // Horizon Selector
+        document.getElementById('scenario-horizon')?.addEventListener('change', (e) => {
+            const years = parseInt(e.target.value);
+            // In a real app, this would update the forecast configuration state
+            App.showToast(`Forecast horizon updated to ${years} years`, 'info');
         });
 
         // Delete Scenario Button
@@ -70,6 +108,54 @@ const ScenarioManager = {
                 
                 input.value = val;
             });
+        });
+        this.bindModelDropdown();
+    },
+
+    bindModelDropdown() {
+        const btn = document.getElementById('model-dropdown-btn');
+        const menu = document.getElementById('model-dropdown-menu');
+        const label = document.getElementById('model-label');
+        const btnText = document.getElementById('model-btn-text');
+        const checkboxes = document.querySelectorAll('.model-checkbox');
+
+        if (!btn || !menu) return;
+
+        // Toggle Menu
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        };
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Update Label Logic
+        const updateLabel = () => {
+            const selected = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            if (selected.length > 0) {
+                // Update the red label
+                label.innerHTML = `SELECTED: <span class="text-white">${selected.join(' + ')}</span>`;
+                // Update button text
+                btnText.innerText = `${selected.length} Models Selected`;
+                btnText.classList.add('text-white', 'font-bold');
+            } else {
+                label.innerText = 'SELECT FORECASTING MODEL';
+                btnText.innerText = 'Choose Models...';
+                btnText.classList.remove('text-white', 'font-bold');
+            }
+        };
+
+        // Attach listener to checkboxes
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateLabel);
         });
     },
 
@@ -113,10 +199,24 @@ const ScenarioManager = {
         setSlider('marketShare', d.marketShare);
         setSlider('referralGrowth', d.referralGrowth);
 
-        // Set Model Dropdown
-        const modelSelect = document.getElementById('model-selector');
-        if (modelSelect) {
-            modelSelect.value = d.selectedModel || 'deterministic'; 
+        // Set Model Dropdown (Multi-select)
+        const savedModels = d.selectedModel || 'Deterministic Throughput';
+        const checkboxes = document.querySelectorAll('.model-checkbox');
+        
+        checkboxes.forEach(cb => {
+            // Check if the checkbox value is present in the saved string
+            cb.checked = savedModels.includes(cb.value);
+        });
+        
+        // Trigger visual update
+        const label = document.getElementById('model-label');
+        const btnText = document.getElementById('model-btn-text');
+        
+        const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+        if (selected.length > 0 && label && btnText) {
+            label.innerHTML = `SELECTED: <span class="text-white">${selected.join(' + ')}</span>`;
+            btnText.innerText = `${selected.length} Models Selected`;
+            btnText.classList.add('text-white', 'font-bold');
         }
 
         // Boolean/Counters
@@ -151,7 +251,7 @@ const ScenarioManager = {
             const getData = (id) => parseFloat(document.getElementById(id).value);
             
             const newData = {
-                selectedModel: document.getElementById('model-selector').value,
+                selectedModel: Array.from(document.querySelectorAll('.model-checkbox:checked')).map(cb => cb.value).join(' + '),
                 inpatientGrowth: getData('inpatientGrowth'),
                 outpatientGrowth: getData('outpatientGrowth'),
                 newPatientGrowth: getData('newPatientGrowth'),
@@ -185,8 +285,42 @@ const ScenarioManager = {
         }, 2500); // 2.5 seconds wait time
     },
 
-    createNewScenario() {
-        const name = prompt("Enter scenario name:", "New Scenario");
+    handleModalCreation() {
+        const input = document.getElementById('new-scenario-name');
+        const error = document.getElementById('new-scenario-error');
+        const name = input.value.trim();
+
+        // Validation 1: Empty
+        if (!name) {
+            this.showError(input, error, "Scenario name cannot be empty");
+            return;
+        }
+
+        // Validation 2: Duplicate
+        if (this.scenarios.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+            this.showError(input, error, "A scenario with this name already exists");
+            return;
+        }
+
+        // Success
+        this.createNewScenario(name); // Pass name explicitly
+        App.toggleModal('new-scenario-modal', false);
+    },
+
+    showError(input, errorMsgEl, msg) {
+        input.classList.add('input-error');
+        errorMsgEl.querySelector('span').innerText = msg;
+        errorMsgEl.classList.remove('hidden');
+        
+        // Remove error style on next input
+        input.addEventListener('input', () => {
+            input.classList.remove('input-error');
+            errorMsgEl.classList.add('hidden');
+        }, { once: true });
+    },
+
+    createNewScenario(nameProvided) {
+        const name = nameProvided;
         if (!name) return;
 
         const id = name.toLowerCase().replace(/\s+/g, '-');
@@ -208,9 +342,26 @@ const ScenarioManager = {
         document.getElementById('scenario-selector').value = id;
         App.showToast(`Created scenario: ${name}`, 'success');
 
-        // --- INTEGRATION: Update Dropdowns ---
+        // Select the new option in dropdown
+        document.getElementById('scenario-selector').value = id;
+        App.showToast(`Created scenario: ${name}`, 'success');
+
+        // --- PHASE 4: Global Module Refresh ---
+        // When a new scenario is added, all modules need to know about it.
+        
+        // 1. Forecast Module: Update dropdowns
         if (typeof ForecastManager !== 'undefined') {
             ForecastManager.renderDropdownOptions();
+        }
+
+        // 2. Comparison Module: Update Selectors A & B
+        if (typeof ComparisonManager !== 'undefined') {
+            ComparisonManager.populateDropdowns();
+        }
+
+        // 3. Reports Module: Update selector
+        if (typeof ReportManager !== 'undefined') {
+            ReportManager.populateDropdown();
         }
     },
 

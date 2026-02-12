@@ -1,12 +1,14 @@
 /* src/charts.js */
 
+
 const Palette = {
     palladian: '#EEE9DF',
     oatmeal: '#C9C1B1',
     blueFantastic: '#2C3B4D',
     burningFlame: '#FFB162',
     truffleTrouble: '#A35139',
-    abyssal: '#1B2632'
+    abyssal: '#1B2632',
+    sageWhisper: '#7E8F7C'
 };
 
 const ChartManager = {
@@ -80,7 +82,7 @@ const ChartManager = {
         if (this.donutChart instanceof Chart) this.donutChart.destroy();
 
         // Use Palette for segments
-        const colors = [Palette.blueFantastic, Palette.burningFlame, Palette.truffleTrouble, Palette.oatmeal];
+        const colors = [Palette.blueFantastic, Palette.burningFlame, Palette.truffleTrouble, Palette.oatmeal,Palette.abyssal,Palette.palladian,Palette.sageWhisper];
 
         this.donutChart = new Chart(ctx.getContext('2d'), {
             type: 'doughnut',
@@ -168,16 +170,19 @@ const ChartManager = {
         this.capacityChart = new Chart(ctx.getContext('2d'), {
             type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                // labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                labels: this.data.dashboard.charts.capacityUtilization.labels,
                 datasets: [
                     {
                         label: 'Bed Utilization (%)',
-                        data: [70, 75, 72, 80, 85, 90],
+                        // data: [72, 78, 82, 88, 91, 94, 71, 76, 83, 88, 92, 72],
+                        data: this.data.dashboard.charts.capacityUtilization.bedUtil,
                         backgroundColor: Palette.blueFantastic
                     },
                     {
                         label: 'Infusion Chair Utilization (%)',
-                        data: [55, 60, 58, 62, 65, 68],
+                        // data: [65, 71, 76, 83, 88, 92, 72, 78, 82, 88, 91, 94],
+                        data : this.data.dashboard.charts.capacityUtilization.chairUtil,
                         backgroundColor: Palette.burningFlame // Accent
                     }
                 ]
@@ -193,6 +198,7 @@ const ChartManager = {
             }
         });
     },
+    
         initProgramChart() {
         const ctx = document.getElementById('programChart');
         if (!ctx) return;
@@ -204,15 +210,19 @@ const ChartManager = {
         this.programChart = new Chart(ctx.getContext('2d'), {
             type: 'pie',
             data: {
-                labels: ['Chemotherapy', 'Radiation', 'Immunotherapy', 'Surgery'],
+                // labels: ['Chemotherapy', 'Radiation', 'Immunotherapy', 'Surgery'],
+                labels : this.data.dashboard.charts.programPerformance.labels,
+                
                 datasets: [{
-                    data: [420, 310, 520, 170],
-                    backgroundColor: [
-                        Palette.palladian,
-                        Palette.oatmeal,
-                        Palette.blueFantastic,
-                        Palette.burningFlame
-                    ],
+                    // data: [420, 310, 520, 170],
+                    data : this.data.dashboard.charts.programPerformance.data,
+                    // backgroundColor: [
+                    //     Palette.palladian,
+                    //     Palette.oatmeal,
+                    //     Palette.blueFantastic,
+                    //     Palette.burningFlame
+                    // ],
+                    backgroundColor: this.data.dashboard.charts.programPerformance.colors,
                     borderWidth: 0
                 }]
             },
@@ -220,9 +230,60 @@ const ChartManager = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom' }
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) label += ': ';
+                                let value = context.raw;
+                                let total = context.chart._metasets[context.datasetIndex].total;
+                                let percentage = ((value / total) * 100).toFixed(1) + "%";
+                                return label + value + " (" + percentage + ")";
+                            }
+                        }
+                    }
                 }
-            }
+            },
+            plugins: [{
+                id: 'percentageLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    
+                    chart.data.datasets.forEach((dataset, i) => {
+                        const meta = chart.getDatasetMeta(i);
+                        const total = meta.total || dataset.data.reduce((a, b) => a + b, 0);
+
+                        if (!total || total === 0) return;
+
+                        meta.data.forEach((element, index) => {
+                            // FIX: Strictly check visibility
+                            if (typeof chart.getDataVisibility === 'function' && !chart.getDataVisibility(index)) {
+                                return;
+                            }
+                            if (element.hidden) return;
+                            
+                            const value = dataset.data[index];
+                            if (value / total < 0.05) return;
+                            
+                            const percentage = ((value / total) * 100).toFixed(1) + '%';
+                            const { x, y } = element.tooltipPosition();
+                            
+                            ctx.save();
+                            ctx.font = 'bold 11px Inter';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            
+                            const hex = dataset.backgroundColor[index];
+                            const isLight = ['#EEE9DF', '#C9C1B1', '#FFB162'].includes(hex);
+                            ctx.fillStyle = isLight ? '#1B2632' : '#FFFFFF';
+                            
+                            ctx.fillText(percentage, x, y);
+                            ctx.restore();
+                        });
+                    });
+                }
+            }]
         });
     },
 

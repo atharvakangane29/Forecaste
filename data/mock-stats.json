@@ -1,20 +1,162 @@
 {
-  "meta": {
-    "version": "1.0",
-    "lastUpdated": "2026-01-29T12:00:00Z"
+"meta": {
+    "version": "1.1",
+    "lastUpdated": "2026-02-15T12:00:00Z",
+    
+    "hospitals": [
+      "Community Hospital South",
+      "Community Hospital North",
+      "Community Hospital Anderson",
+      "Community Hospital East",
+      "Community Heart and Vascular Hospital"
+    ],
+    "services": [
+      "Oncology",
+      "Cardiology",
+      "Neurology",
+      "Orthopedics",
+      "Pediatrics",
+      "Emergency Medicine"
+    ],
+    "schema": [
+      { "col": "PatientID", "type": "String", "desc": "Unique patient identifier (Masked)" },
+      { "col": "AdmitDate", "type": "Date", "desc": "YYYY-MM-DD format" },
+      { "col": "DischargeDate", "type": "Date", "desc": "YYYY-MM-DD (Null if active)" },
+      { "col": "ServiceLine", "type": "String", "desc": "Standardized service line code" },
+      { "col": "FacilityID", "type": "Integer", "desc": "Internal facility mapping ID" },
+      { "col": "PrimaryDx", "type": "String", "desc": "ICD-10 Primary Diagnosis Code" },
+      { "col": "TotalCharges", "type": "Currency", "desc": "Gross charges before adjustments" }
+    ]
   },
 
   "geographyDashboard": {
-    "insight": "<strong>23%</strong> of patients travel <strong>>50 miles</strong> – significant opportunity for a satellite clinic in <strong>Wayne County</strong>.",
-    "filters": ["0-10mi", "10-25mi", "25-50mi", "50+mi"],
+    "insight": "⚠️ <strong>23%</strong> of patients travel <strong>>50 miles</strong> – opportunity for satellite clinic in <strong>Jefferson County</strong>.",
     "mapData": [
-      { "x": 10, "y": 20, "r": 15, "payor": "Medicare", "distance": "0-10mi", "label": "Facility Hub" },
-      { "x": 15, "y": 25, "r": 8, "payor": "Commercial", "distance": "0-10mi", "label": "Downtown Clinic" },
-      { "x": 40, "y": 50, "r": 20, "payor": "Medicaid", "distance": "10-25mi", "label": "North District" },
-      { "x": 30, "y": 45, "r": 12, "payor": "Medicare", "distance": "10-25mi", "label": "West End" },
-      { "x": 60, "y": 70, "r": 25, "payor": "Commercial", "distance": "25-50mi", "label": "Suburban Center" },
-      { "x": 80, "y": 80, "r": 30, "payor": "Medicare", "distance": "50+mi", "label": "Rural Outpost" },
-      { "x": 85, "y": 75, "r": 10, "payor": "Medicaid", "distance": "50+mi", "label": "Wayne County Target" }
+      { "id": "fac_1", "type": "facility", "lat": 42.3314, "lng": -83.0458, "label": "Main Campus Hub", "volume": "High" },
+      { "id": "fac_2", "type": "facility", "lat": 42.48, "lng": -83.15, "label": "North Satellite", "volume": "Medium" },
+      { "id": "fac_3", "type": "facility", "lat": 42.30, "lng": -83.25, "label": "West Wing Clinic", "volume": "Medium" },
+      { "id": "fac_4", "type": "facility", "lat": 42.38, "lng": -83.10, "label": "East Side Center", "volume": "Low" },
+      
+      { "id": "pt_1", "type": "patient_cluster", "lat": 42.35, "lng": -83.05, "radius": 2000, "density": "High", "payor": "Medicare" },
+      { "id": "pt_2", "type": "patient_cluster", "lat": 42.42, "lng": -83.02, "radius": 1500, "density": "Medium", "payor": "Commercial" },
+      { "id": "pt_3", "type": "patient_cluster", "lat": 42.28, "lng": -83.18, "radius": 3000, "density": "High", "payor": "Medicaid" },
+      { "id": "pt_4", "type": "patient_cluster", "lat": 42.52, "lng": -83.10, "radius": 1200, "density": "Low", "payor": "Commercial" },
+      { "id": "pt_5", "type": "patient_cluster", "lat": 42.25, "lng": -83.35, "radius": 2500, "density": "Medium", "payor": "Medicare" },
+      { "id": "pt_6", "type": "patient_cluster", "lat": 42.37, "lng": -83.15, "radius": 1800, "density": "High", "payor": "Commercial" },
+      { "id": "pt_7", "type": "patient_cluster", "lat": 42.45, "lng": -83.25, "radius": 2200, "density": "Medium", "payor": "Medicaid" },
+      { "id": "pt_8", "type": "patient_cluster", "lat": 42.32, "lng": -82.98, "radius": 1600, "density": "Medium", "payor": "Medicare" }
+    ],
+    "marketAnalysis": {
+      "distanceBands": [
+        { "label": "0-10 miles", "count": "2,847", "pct": 45, "color": "#2C3B4D" },
+        { "label": "10-25 miles", "count": "1,523", "pct": 24, "color": "#FFB162" },
+        { "label": "25-50 miles", "count": "734", "pct": 12, "color": "#A35139" },
+        { "label": "50+ miles", "count": "1,196", "pct": 19, "color": "#C9C1B1" }
+      ]
+    },
+    "payerMix": [
+      { "type": "Medicare", "pct": 42, "volume": "2,652", "color": "#2C3B4D", "reimbursement": "$850", "trend": "+3%", "topPayers": ["Medicare A", "Medicare Advantage", "Humana"] },
+      { "type": "Medicaid", "pct": 28, "volume": "1,769", "color": "#06b6d4", "reimbursement": "$420", "trend": "+1.2%", "topPayers": ["State Medicaid", "Molina", "United Comm."] },
+      { "type": "Commercial", "pct": 30, "volume": "1,896", "color": "#9333ea", "reimbursement": "$1,250", "trend": "+5.4%", "topPayers": ["BCBS", "Aetna", "Cigna"] }
+    ],
+    "crossAnalysis": {
+      "byDistance": {
+        "labels": ["0-10mi", "10-25mi", "25-50mi", "50+mi"],
+        "datasets": [
+          { "label": "Medicare", "data": [40, 35, 50, 60], "color": "#C9C1B1" },
+          { "label": "Commercial", "data": [35, 40, 30, 15], "color": "#FFB162" },
+          { "label": "Medicaid", "data": [25, 25, 20, 25], "color": "#A35139" }
+        ]
+      },
+      "topCounties": [
+        { "county": "Jefferson", "volume": 1240, "primaryPayer": "Medicare", "trend": "up" },
+        { "county": "Shelby", "volume": 850, "primaryPayer": "Commercial", "trend": "up" },
+        { "county": "Baldwin", "volume": 620, "primaryPayer": "Medicare", "trend": "stable" },
+        { "county": "Mobile", "volume": 410, "primaryPayer": "Medicaid", "trend": "down" }
+      ]
+    }
+  },
+
+  "dashboard": {
+    "kpis": [
+      {
+        "id": "Total Patients",
+        "label": "Total Patients",
+        "value": "2,847",
+        "trend": "+18.3%",
+        "trendDirection": "up",
+        "icon": "users"
+      },
+      {
+        "id": "Avg Length of Stay",
+        "label": "Avg Length of Stay (Days)",
+        "value": "8",
+        "trend": "-1.8 Days",
+        "trendDirection": "down",
+        "icon": "timer"
+      },
+      {
+        "id": "infusion-chair",
+        "label": "Infusion Chair Util",
+        "value": "92%",
+        "trend": "Near Capacity",
+        "trendDirection": "warning",
+        "icon": "armchair"
+      },
+      {
+        "id": "gross-conversion",
+        "label": "Gross Conversion Rate",
+        "value": "34.7%",
+        "trend": "+6.2%",
+        "trendDirection": "up",
+        "icon": "funnel"
+      }
+    ],
+    "charts": {
+      "patientVolume": {
+        "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "datasets": {
+          "7days": {
+            "outpatient": [245, 312, 298, 325, 285, 156, 98],
+            "inpatient": [78, 92, 88, 95, 82, 54, 38]
+          },
+          "30days": {
+            "outpatient": [890, 1120, 1350, 1580, 1420, 980, 720],
+            "inpatient": [320, 410, 480, 540, 510, 365, 285]
+          }
+        }
+      },
+      "programMix": {
+        "totalPatients": "2.8K",
+        "labels": ["Medical Oncology", "Rehabilitaion Medicine", "Intervention Radiology", "Pathology", "Genitourinary oncology", "Gynecology oncology", "Colon and Reactal Surgery"],
+        "data": [18, 7, 12, 21, 14, 9, 19],
+        "colors": ["#2563eb","#9333ea","#06b6d4","#ef4444","#f59e0b","#10b981","#f43f5e"]
+
+      },
+      "capacityUtilization": {
+        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "bedUtil": [72, 78, 82, 88, 91, 94, 71, 76, 83, 88, 92, 72],
+        "chairUtil": [65, 71, 76, 83, 88, 92, 72, 78, 82, 88, 91, 94]
+      },
+      "programPerformance": {
+        "labels": ["Chemotherapy", "Radiation", "Immunotherapy", "Surgery"],
+        "data": [1245, 875, 1680, 520],
+        "colors": ["#EEE9DF", "#C9C1B1", "#2C3B4D", "#FFB162"]
+      }
+    },
+    "insights": [
+      {
+        "type": "positive",
+        "text": "Bed utilization peaks during <strong>Q2</strong>, indicating seasonal oncology demand."
+      },
+      {
+        "type": "warning",
+        "text": "Infusion chair utilization at 92% suggests immediate capacity expansion needed."
+      },
+      {
+        "type": "info",
+        "text": "<strong>Immunotherapy</strong> drives the highest patient volume across programs with 40% growth YoY."
+      }
     ]
   },
   
@@ -22,7 +164,7 @@
     "kpis": [
       {
         "label": "Total Cancer Patients",
-        "value": "2,450",
+        "value": "1162",
         "trend": "+5.2%",
         "icon": "users"
       },
@@ -49,8 +191,8 @@
         "data": [22, 18, 15, 30, 8, 7]
       },
       "infusionTrends": {
-        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        "data": [1100, 1150, 1220, 1180, 1350, 1400]
+        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "data": [1100, 1150, 1220, 1180, 1350, 1400, 1430, 1501, 1390,1450, 1570, 1590 ]
       }
     },
     "patientJourney": {
@@ -89,87 +231,6 @@
     }
   },
 
-  "dashboard": {
-    "kpis": [
-      {
-        "id": "ndcc-patients",
-        "label": "NDCC Patients",
-        "value": "2,847",
-        "trend": "+18.3%",
-        "trendDirection": "up",
-        "icon": "users"
-      },
-      {
-        "id": "avg-tti",
-        "label": "Avg TTI (Days)",
-        "value": "3.2",
-        "trend": "-1.8 Days",
-        "trendDirection": "down",
-        "icon": "timer"
-      },
-      {
-        "id": "infusion-chair",
-        "label": "Infusion Chair Util",
-        "value": "92%",
-        "trend": "Near Capacity",
-        "trendDirection": "warning",
-        "icon": "armchair"
-      },
-      {
-        "id": "gross-conversion",
-        "label": "Gross Conversion Rate",
-        "value": "34.7%",
-        "trend": "+6.2%",
-        "trendDirection": "up",
-        "icon": "funnel"
-      }
-    ],
-    "charts": {
-      "patientVolume": {
-        "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        "datasets": {
-          "7days": {
-            "outpatient": [245, 312, 298, 325, 285, 156, 98],
-            "inpatient": [78, 92, 88, 95, 82, 54, 38]
-          },
-          "30days": {
-            "outpatient": [890, 1120, 1350, 1580, 1420, 980, 720],
-            "inpatient": [320, 410, 480, 540, 510, 365, 285]
-          }
-        }
-      },
-      "programMix": {
-        "totalPatients": "2.8K",
-        "labels": ["MedOnc", "SurgOnc", "RadOnc"],
-        "data": [58, 27, 15],
-        "colors": ["#2563eb", "#9333ea", "#06b6d4"]
-      },
-      "capacityUtilization": {
-        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        "bedUtil": [72, 78, 82, 88, 91, 94],
-        "chairUtil": [65, 71, 76, 83, 88, 92]
-      },
-      "programPerformance": {
-        "labels": ["Chemotherapy", "Radiation", "Immunotherapy", "Surgery"],
-        "data": [1245, 875, 1680, 520],
-        "colors": ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"]
-      }
-    },
-    "insights": [
-      {
-        "type": "positive",
-        "text": "Bed utilization peaks during <strong>Q2</strong>, indicating seasonal oncology demand."
-      },
-      {
-        "type": "warning",
-        "text": "Infusion chair utilization at 92% suggests immediate capacity expansion needed."
-      },
-      {
-        "type": "info",
-        "text": "<strong>Immunotherapy</strong> drives the highest patient volume across programs with 40% growth YoY."
-      }
-    ]
-  },
   "pipeline": {
     "kpis": [
       {
@@ -184,12 +245,7 @@
         "trend": "Quaterly",
         "trendColor": "emerald"
       },
-      {
-        "label": "Data Shape (Row x Col)",
-        "value": "6.2M x 48",
-        "trend": "Wide",
-        "trendColor": "blue"
-      },
+
       {
         "label": "Date Range",
         "value": "2020-2026",

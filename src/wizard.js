@@ -70,6 +70,9 @@ const Wizard = {
 
     // --- Completion Handoff ---
     finishWizard() {
+
+        AuthFlow.isDataLoaded = true;
+        
         const wizardOverlay = document.getElementById('view-wizard');
         const mainApp = document.getElementById('app-shell');
         
