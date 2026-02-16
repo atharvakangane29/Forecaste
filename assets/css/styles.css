@@ -275,6 +275,7 @@ input[type=range]:focus {
 /* Print simulation for report paper */
 #report-paper {
     font-family: 'Times New Roman', Times, serif; /* Serif font for report look */
+    transition: opacity 0.2s ease-in-out;
 }
 #report-paper h1, #report-paper h2, #report-paper h3, #report-paper h4 {
     font-family: 'Inter', sans-serif; /* Keep headers modern sans-serif */
@@ -597,4 +598,14 @@ body.modal-open {
 /* Ensure checkbox click area is comfortable */
 .model-checkbox {
     cursor: pointer;
+}
+
+.chart-updating {
+    opacity: 0.5;
+    filter: blur(2px);
+    transition: all 0.2s ease-in-out;
+}
+
+.chart-container {
+    transition: opacity 0.3s ease;
 }
