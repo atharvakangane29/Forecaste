@@ -95,6 +95,52 @@ const ReportManager = {
         return new Intl.NumberFormat('en-US').format(Math.round(num));
     },
 
+    // Helper: Calculate metrics dynamically if they don't exist (for custom scenarios)
+    calculateMetrics(scenario) {
+        // 1. If static metrics exist (Default Scenarios), use them
+        if (scenario.forecast && scenario.forecast.metrics) {
+            return scenario.forecast.metrics;
+        }
+
+        // 2. Otherwise, calculate on the fly (Custom Scenarios)
+        if (typeof ForecastEngine === 'undefined' || typeof ForecastManager === 'undefined') {
+            console.warn("ReportManager: Forecast Engine not available for calculation.");
+            return null;
+        }
+
+        const config = ForecastManager.config;
+        const base = ForecastManager.baseParams;
+        const d = scenario.data;
+        
+        // Use a report-specific seed
+        const seed = `${scenario.id}_report`; 
+
+        // Generate the full series using the Engine
+        const inpatientSeries = ForecastEngine.generateSeries(base.inpatient, d.inpatientGrowth, config, seed);
+        const outpatientSeries = ForecastEngine.generateSeries(base.outpatient, d.outpatientGrowth, config, seed);
+
+        // Get Terminal Values (The last year in the series)
+        const termIn = inpatientSeries[inpatientSeries.length - 1];
+        const termOut = outpatientSeries[outpatientSeries.length - 1];
+
+        // Calculate Growth %
+        const pctIn = ((termIn - base.inpatient) / base.inpatient * 100).toFixed(1);
+        const pctOut = ((termOut - base.outpatient) / base.outpatient * 100).toFixed(1);
+
+        // Calculate Deltas
+        const deltaIn = termIn - base.inpatient;
+        const deltaOut = termOut - base.outpatient;
+
+        // Return object matching the mock-stats.json structure
+        return {
+            terminalInpatient: termIn,
+            terminalOutpatient: termOut,
+            totalInpatientGrowthPct: pctIn,
+            totalOutpatientGrowthPct: pctOut,
+            totalPatientDelta: deltaIn + deltaOut
+        };
+    },
+
     // --- Logic similar to comparison.js (Projection) ---
     // calculateProjection(current, rate, years = 10) {
     //     return Math.round(current * Math.pow((1 + rate / 100), years));
@@ -104,34 +150,35 @@ const ReportManager = {
         const scenario = ScenarioManager.scenarios.find(s => s.id === scenarioId);
         if (!scenario) return;
 
-        // DIRECT READ from JSON source-of-truth
-        const m = scenario.forecast.metrics;
+        // --- FIX: Use the helper to get metrics (Static or Calculated) ---
+        const m = this.calculateMetrics(scenario);
+        if (!m) {
+            console.error("Could not calculate metrics for scenario:", scenarioId);
+            return;
+        }
 
-        const targetIn = m.terminalInpatient;
-        const targetOut = m.terminalOutpatient;
-        const totalDelta = m.totalPatientDelta;
-        
-        const pctIn = m.totalInpatientGrowthPct;
-        const pctOut = m.totalOutpatientGrowthPct;
-        
-        const deltaIn = Math.round(targetIn - 1200); // Optional: Simple subtract is allowed for UI delta
-        const deltaOut = Math.round(targetOut - 4500);
+        // Visual feedback (Fade out/in)
+        const paper = document.getElementById('report-paper');
+        if (paper) {
+            paper.style.opacity = '0.7';
+            setTimeout(() => paper.style.opacity = '1', 200);
+        }
 
-        // Update DOM
+        // Update DOM elements using 'm' (metrics object)
         if(this.rptName) this.rptName.innerText = scenario.name + " Scenario";
         
         // KPIs
-        if(this.rptInpatientGrowth) this.rptInpatientGrowth.innerText = `+${pctIn}%`;
-        if(this.rptInpatientDelta) this.rptInpatientDelta.innerText = `+${this.formatNumber(deltaIn)} patients`;
+        if(this.rptInpatientGrowth) this.rptInpatientGrowth.innerText = `+${m.totalInpatientGrowthPct}%`;
+        if(this.rptInpatientDelta) this.rptInpatientDelta.innerText = `+${this.formatNumber(m.terminalInpatient - ForecastManager.baseParams.inpatient)} patients`;
         
-        if(this.rptOutpatientGrowth) this.rptOutpatientGrowth.innerText = `+${pctOut}%`;
-        if(this.rptOutpatientDelta) this.rptOutpatientDelta.innerText = `+${this.formatNumber(deltaOut)} patients`;
+        if(this.rptOutpatientGrowth) this.rptOutpatientGrowth.innerText = `+${m.totalOutpatientGrowthPct}%`;
+        if(this.rptOutpatientDelta) this.rptOutpatientDelta.innerText = `+${this.formatNumber(m.terminalOutpatient - ForecastManager.baseParams.outpatient)} patients`;
 
         // Text Content
         if(this.rptTextScenario) this.rptTextScenario.innerText = scenario.name;
-        if(this.rptTextInpatientVol) this.rptTextInpatientVol.innerText = this.formatNumber(targetIn);
-        if(this.rptTextOutpatientVol) this.rptTextOutpatientVol.innerText = this.formatNumber(targetOut);
-        if(this.rptTextTotalDelta) this.rptTextTotalDelta.innerText = this.formatNumber(totalDelta);
+        if(this.rptTextInpatientVol) this.rptTextInpatientVol.innerText = this.formatNumber(m.terminalInpatient);
+        if(this.rptTextOutpatientVol) this.rptTextOutpatientVol.innerText = this.formatNumber(m.terminalOutpatient);
+        if(this.rptTextTotalDelta) this.rptTextTotalDelta.innerText = this.formatNumber(m.totalPatientDelta);
     },
 
     updateExportPreview() {

@@ -3,58 +3,78 @@
 // --- Pure Calculation Engine ---
 // src/forecast.js
 
+/* src/forecast.js - Engine Update */
+
 const ForecastEngine = {
     getYears(config) {
         const count = config.endYear - config.startYear + 1;
         return Array.from({ length: count }, (_, i) => config.startYear + i);
     },
 
-    // NEW: Deterministic Random Helper
-    // Returns a consistent number between 0 and 1 based on the input string.
+    // 1. Deterministic Random Generator (0.0 to 1.0)
     pseudoRandom(input) {
-        let h = 0xdeadbeef;
-        for(let i = 0; i < input.length; i++)
-            h = Math.imul(h ^ input.charCodeAt(i), 2654435761);
-        return ((h ^ h >>> 16) >>> 0) / 4294967296;
+        let h = 0x811c9dc5;
+        for (let i = 0; i < input.length; i++) {
+            h ^= input.charCodeAt(i);
+            h = Math.imul(h, 0x01000193);
+        }
+        return ((h >>> 0) / 4294967296);
     },
 
-    // UPDATED: Now accepts 'seedStr' to ensure consistent volatility
+    // 2. Main Generation Function
     generateSeries(baseValue, targetGrowthRate, config, seedStr = '') {
-        // console.log("Generating deterministic series for:", seedStr);
-        
-        let data = [];
+        const data = [];
         let currentValue = baseValue;
         const { startYear, endYear, historyCutoff } = config;
         const totalYears = endYear - startYear + 1;
 
+        // A. Calculate Deterministic Modifiers based on "Seed" (Hospital + Service)
+        // If seed is "all_all", scalar is 1.0 (No change)
+        // Otherwise, scalar is between 0.4x (small clinic) and 1.6x (large hub)
+        const isDefault = seedStr.includes('all_all');
+        const seedHash = this.pseudoRandom(seedStr);
+        
+        const volumeScalar = isDefault ? 1.0 : 0.4 + (seedHash * 1.2); 
+        
+        // B. Determine Seasonality / Volatility Profile
+        const volatility = 0.02 + (this.pseudoRandom(seedStr + "_vol") * 0.05); // 2% to 7% noise
+        const hasSeasonality = this.pseudoRandom(seedStr + "_seas") > 0.5;
+        const seasonPhase = this.pseudoRandom(seedStr + "_phase") * Math.PI;
+
+        // Apply Scalar to Start Value
+        currentValue = Math.round(currentValue * volumeScalar);
+
         for (let i = 0; i < totalYears; i++) {
             const year = startYear + i;
             
-            // Generate a unique seed for this specific year + scenario
+            // 1. Base Growth (Compound)
+            let rate = parseFloat(targetGrowthRate);
+
+            // 2. Apply History Noise vs Forecast Noise
             const yearSeed = seedStr + "_" + year;
+            const yearRandom = this.pseudoRandom(yearSeed); // 0.0 - 1.0
             
-            // Deterministic Variance: result is consistent for the same Scenario + Year
-            // Range: -1.2 to +1.2
-            const rawRandom = this.pseudoRandom(yearSeed); 
-            const variance = (rawRandom - 0.5) * 2.4; 
+            // Variance: map 0.0-1.0 to -range to +range
+            const variance = (yearRandom - 0.5) * 2 * (volatility * 100);
+
+            // 3. Apply Seasonality (Sine Wave impact on growth rate)
+            let seasonalEffect = 0;
+            if (hasSeasonality) {
+                // Sine wave oscillating every ~4 years for business cycles
+                seasonalEffect = Math.sin((i * 0.5) + seasonPhase) * 1.5;
+            }
 
             if (year <= historyCutoff) {
-                // Historical Volatility
-                // Range: 0.5% to 3.5%
-                const histRandom = this.pseudoRandom("hist_" + yearSeed);
-                const historicalRate = (histRandom * 3.0) + 0.5;
-                
-                if (i > 0) { 
-                   currentValue = currentValue * (1 + (historicalRate / 100));
-                }
-                data.push(Math.round(currentValue));
-
+                // History: More chaotic, uses "actual" simulated randomness
+                const histRate = (variance * 1.5) + (rate * 0.5); // Dampen growth, increase noise
+                if (i > 0) currentValue = currentValue * (1 + (histRate / 100));
             } else {
-                // Forecast Volatility
-                const appliedRate = parseFloat(targetGrowthRate) + variance;
+                // Forecast: Smoother, blends trend + seasonality + variance
+                const appliedRate = rate + variance + seasonalEffect;
                 currentValue = currentValue * (1 + (appliedRate / 100));
-                data.push(Math.round(currentValue));
             }
+
+            data.push(Math.round(currentValue));
         }
         return data;
     },
@@ -102,31 +122,28 @@ const ForecastManager = {
     },
 
     populateFilters() {
-        // 1. Get data from the loaded JSON via DataService
         // Safe access: defaults to empty array if data isn't ready
         const hospitals = DataService.get('meta.hospitals') || [];
         const services = DataService.get('meta.services') || [];
 
-        // 2. Define a helper to fill any dropdown
         const fillSelect = (elementId, items) => {
             const select = document.getElementById(elementId);
             if (!select) return;
 
-            // Clear existing options but keep the first one (e.g., "All Hospitals")
+            // Clear existing options but keep the first one
             const defaultOption = select.firstElementChild;
             select.innerHTML = '';
             if (defaultOption) select.appendChild(defaultOption);
 
-            // Create and append new options
             items.forEach(item => {
                 const option = document.createElement('option');
-                option.value = item; // Use the name as the value
+                option.value = item; 
                 option.textContent = item;
                 select.appendChild(option);
             });
         };
 
-        // 3. Execute for your specific IDs
+        // CORRECTED IDs to match index.html
         fillSelect('hospital-filter', hospitals);
         fillSelect('service-line-filter', services);
     },
@@ -153,16 +170,18 @@ const ForecastManager = {
         });
 
         // Forecast Filters
-        const hospFilter = document.getElementById('forecast-filter-hospital');
-        const servFilter = document.getElementById('forecast-filter-service');
+        const hospFilter = document.getElementById('hospital-filter');
+        const servFilter = document.getElementById('service-line-filter');
 
         const handleFilterChange = () => {
-            // Placeholder: In a real app, this would filter the chart datasets
             const h = hospFilter.value;
             const s = servFilter.value;
-            // console.log(`Filters applied: Hospital=${h}, Service=${s}`);
-            App.showToast(`Filters Applied`, 'info');
-            this.updateCharts(); // Trigger chart refresh
+            
+            // Visual feedback
+            App.showToast(`Updating Projection: ${h} / ${s}`, 'info');
+            
+            // Trigger Chart Refresh
+            this.updateCharts(); 
         };
 
         if(hospFilter) hospFilter.addEventListener('change', handleFilterChange);
@@ -275,26 +294,24 @@ const ForecastManager = {
         const horizonEl = document.getElementById('scenario-horizon');
         const horizonYears = horizonEl ? parseInt(horizonEl.value) : 10;
         
-        // 2. Get Active Filters (Used as "Salt" for data simulation)
-        const hospFilter = document.getElementById('forecast-filter-hospital')?.value || 'all';
-        const servFilter = document.getElementById('forecast-filter-service')?.value || 'all';
-        const filterSalt = `${hospFilter}_${servFilter}`;
+        // 2. Get Active Filters & Create "Seed"
+        // CORRECTED IDs
+        const hospFilter = document.getElementById('hospital-filter')?.value || 'all';
+        const servFilter = document.getElementById('service-line-filter')?.value || 'all';
+        
+        // This 'filterSalt' is what drives the Engine's volumeScalar and seasonality
+        const filterSalt = `${hospFilter}_${servFilter}`; 
 
         // 3. Calculate Date Range
-        // Logic: Always start at config.startYear (2020). 
-        // Show History (5 years to 2025) + Horizon (Selected years into future)
-        const historyLen = this.config.historyCutoff - this.config.startYear; // e.g. 5
-        const totalPoints = historyLen + 1 + horizonYears; // +1 for the cutoff year itself
+        const historyLen = this.config.historyCutoff - this.config.startYear;
+        const totalPoints = historyLen + 1 + horizonYears;
 
         let years = ForecastEngine.getYears(this.config);
-        // Slice years array to match selected horizon
         if (years.length > totalPoints) {
             years = years.slice(0, totalPoints);
         }
 
         const datasets = [];
-
-        // Inside ForecastManager.updateCharts ...
 
         this.selectedScenarios.forEach((id, index) => {
             const scenario = ScenarioManager.scenarios.find(s => s.id === id);
@@ -303,17 +320,14 @@ const ForecastManager = {
             const color = this.colors[index % this.colors.length];
             const d = scenario.data;
 
-            // --- PHASE 4: Apply Filters to Seed ---
-            // We append the 'filterSalt' to the seed. 
-            // This ensures consistent data for the same filter combo, but different data when filters change.
-            
-            const seed = `${scenario.id}_${filterSalt}`;
+            // Combine Scenario ID with Filter Salt for unique curves per scenario + hospital combo
+            const uniqueSeed = `${scenario.id}_${filterSalt}`;
 
             const inpatientSeries = ForecastEngine.generateSeries(
                 this.baseParams.inpatient, 
                 d.inpatientGrowth, 
                 this.config, 
-                seed 
+                uniqueSeed // Passing the unique seed
             );
 
             // Slice data to match the Horizon
@@ -323,11 +337,11 @@ const ForecastManager = {
                 this.baseParams.outpatient, 
                 d.outpatientGrowth, 
                 this.config, 
-                seed
+                uniqueSeed
             );
             const outpatientSliced = outpatientSeries.slice(0, years.length);
             
-            // Recalculate Gap based on sliced data
+            // ... rest of the function remains the same (Gap calculation, datasets.push)
             const gapSeries = ForecastEngine.calculateGap(
                 inpatientSliced, 
                 this.baseParams.bedCapacity, 
@@ -340,18 +354,9 @@ const ForecastManager = {
                 color: color,
                 inpatientData: inpatientSliced,
                 outpatientData: outpatientSliced,
-                growthData: inpatientSliced, // Growth derived from sliced
+                growthData: inpatientSliced,
                 gapData: gapSeries
             });
-
-            // datasets.push({
-            //     label: scenario.name,
-            //     color: color,
-            //     inpatientData: inpatientSeries,
-            //     outpatientData: outpatientSeries,
-            //     growthData: inpatientSeries,
-            //     gapData: gapSeries
-            // });
         });
 
         if(document.getElementById('chart-forecast-inpatient')) this.renderInpatientChart(years, datasets);
