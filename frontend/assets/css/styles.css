@@ -609,3 +609,42 @@ body.modal-open {
 .chart-container {
     transition: opacity 0.3s ease;
 }
+
+/* --- Print / PDF Styling --- */
+@media print {
+    /* Hide everything by default */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Isolate the Report Paper */
+    #report-paper, #report-paper * {
+        visibility: visible;
+    }
+
+    /* Position the paper to fill the page */
+    #report-paper {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+        background: white;
+    }
+
+    /* Reset layout constraints */
+    #app-shell, main, .overflow-y-auto {
+        overflow: visible !important;
+        height: auto !important;
+        width: 100% !important;
+        position: static !important;
+    }
+
+    /* Hide scrollbars during print */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+}

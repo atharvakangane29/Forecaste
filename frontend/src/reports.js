@@ -43,6 +43,24 @@ const ReportManager = {
     },
 
     bindEvents() {
+
+
+        // Data Export Button
+        if (this.downloadBtn) {
+            // Remove old mock listener if present, replace with real handler
+            this.downloadBtn.replaceWith(this.downloadBtn.cloneNode(true)); 
+            this.downloadBtn = document.getElementById('btn-download-data'); // Re-select
+            
+            this.downloadBtn.addEventListener('click', () => {
+                this.handleDataDownload();
+            });
+        }
+
+        // Report Export Buttons
+        document.getElementById('btn-export-pdf')?.addEventListener('click', () => window.print());
+        document.getElementById('btn-export-word')?.addEventListener('click', () => this.handleDocDownload('word'));
+        document.getElementById('btn-export-html')?.addEventListener('click', () => this.handleDocDownload('html'));
+
         // Export Format Toggles
         this.exportFmtBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -93,6 +111,116 @@ const ReportManager = {
 
     formatNumber(num) {
         return new Intl.NumberFormat('en-US').format(Math.round(num));
+    },
+
+    // 1. Core Download Helper
+    triggerDownload(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    // 2. Handle Data Export (CSV/JSON/Excel)
+    handleDataDownload() {
+        const activeBtn = document.querySelector('.export-fmt-btn.active-format');
+        const format = activeBtn ? activeBtn.dataset.format : 'csv';
+        const scenarioId = ScenarioManager.activeScenarioId;
+        const scenario = ScenarioManager.scenarios.find(s => s.id === scenarioId);
+        
+        if (!scenario) return;
+
+        App.showToast(`Generating ${format.toUpperCase()} file...`, 'info');
+
+        // Generate Data Series
+        // Note: Re-using the calculation logic to get array data
+        const config = ForecastManager.config;
+        const base = ForecastManager.baseParams;
+        const seed = `${scenarioId}_export`; // Unique seed
+        
+        // Use full range based on checkbox
+        const includeHistory = document.getElementById('export-include-history').checked;
+        const startYear = includeHistory ? config.startYear : 2026;
+        const years = ForecastEngine.getYears(config).filter(y => y >= startYear);
+        
+        // Generate full series then slice to match years
+        const fullInpatient = ForecastEngine.generateSeries(base.inpatient, scenario.data.inpatientGrowth, config, seed);
+        const fullOutpatient = ForecastEngine.generateSeries(base.outpatient, scenario.data.outpatientGrowth, config, seed);
+        
+        // Offset to find where to start slicing
+        const offset = startYear - config.startYear;
+        const dataIn = fullInpatient.slice(offset);
+        const dataOut = fullOutpatient.slice(offset);
+
+        if (format === 'json') {
+            const exportObj = {
+                scenario: scenario.name,
+                generated: new Date().toISOString(),
+                data: years.map((yr, i) => ({
+                    year: yr,
+                    inpatient: dataIn[i],
+                    outpatient: dataOut[i]
+                }))
+            };
+            this.triggerDownload(JSON.stringify(exportObj, null, 2), `forecast_${scenarioId}.json`, 'application/json');
+        } 
+        else {
+            // CSV / Excel (CSV)
+            let csvContent = "Year,Scenario,Inpatient Volume,Outpatient Volume\n";
+            years.forEach((yr, i) => {
+                csvContent += `${yr},${scenario.name},${dataIn[i]},${dataOut[i]}\n`;
+            });
+            
+            const ext = format === 'xlsx' ? 'csv' : 'csv'; // Using CSV for Excel compatibility
+            this.triggerDownload(csvContent, `forecast_${scenarioId}.${ext}`, 'text/csv');
+        }
+        
+        setTimeout(() => App.showToast('Download complete', 'success'), 800);
+    },
+
+    // 3. Handle Report Document Export
+    handleDocDownload(type) {
+        const paper = document.getElementById('report-paper');
+        if (!paper) return;
+
+        const scenarioName = ScenarioManager.scenarios.find(s => s.id === ScenarioManager.activeScenarioId)?.name || 'Report';
+
+        if (type === 'html') {
+            // Wrap in basic HTML structure for standalone viewing
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${scenarioName}</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 40px; background: #f8fafc; }
+                        #report-wrapper { background: white; padding: 40px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                    </style>
+                </head>
+                <body>
+                    <div id="report-wrapper">
+                        ${paper.innerHTML}
+                    </div>
+                </body>
+                </html>
+            `;
+            this.triggerDownload(htmlContent, `${scenarioName}_Report.html`, 'text/html');
+        } 
+        else if (type === 'word') {
+            // Word handles HTML with a specific Mime header
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word Document with JavaScript</title></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + paper.innerHTML + footer;
+            
+            this.triggerDownload(sourceHTML, `${scenarioName}_Report.doc`, 'application/msword');
+        }
+        
+        App.showToast(`Report downloaded as ${type.toUpperCase()}`, 'success');
     },
 
     // Helper: Calculate metrics dynamically if they don't exist (for custom scenarios)

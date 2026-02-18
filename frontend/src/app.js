@@ -1,47 +1,162 @@
 /* src/app.js */
 
 window.AuthFlow = {
-    isDataLoaded: false, // Flag to track status
+    isDataLoaded: false,
+    apiBase: 'http://127.0.0.1:8000', // Ensure this matches your Python port
 
     init() {
-        document.getElementById('view-intro').classList.remove('hidden');
-        document.getElementById('view-login').classList.add('hidden');
-        document.getElementById('view-wizard').classList.add('hidden');
+        // --- 1. NEW LOGIC: Check URL for Session (Fixes Login Loop) ---
+        const params = new URLSearchParams(window.location.search);
+        const urlUsername = params.get('username');
+        const urlRole = params.get('role');
+
+        if (urlUsername) {
+            console.log(`Session found for: ${urlUsername}`);
+            
+            // Set User State
+            if (App && App.state) {
+                App.state.user = { 
+                    username: urlUsername, 
+                    role: urlRole || 'Viewer' 
+                };
+            }
+
+            // Hide ALL Intro/Login/Register Screens immediately
+            document.getElementById('view-intro').classList.add('hidden');
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-register').classList.add('hidden'); 
+            document.getElementById('view-wizard').classList.add('hidden');
+
+            // Show App Shell immediately
+            setTimeout(() => {
+                App.showAppShell();
+                App.switchView('dashboard');
+                if (window.lucide) lucide.createIcons();
+            }, 100);
+
+        } else {
+            // --- STANDARD LOGIC: No Session, show Intro ---
+            document.getElementById('view-intro').classList.remove('hidden');
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-register').classList.add('hidden');
+            document.getElementById('view-wizard').classList.add('hidden');
+        }
     },
 
     goToLogin() {
         const intro = document.getElementById('view-intro');
         const login = document.getElementById('view-login');
+        const register = document.getElementById('view-register');
+        
         intro.classList.add('opacity-0');
+        
+        // Handle Register View Transition
+        if(!register.classList.contains('hidden')) {
+            register.classList.add('opacity-0');
+            setTimeout(() => register.classList.add('hidden'), 300);
+        }
+
         setTimeout(() => {
             intro.classList.add('hidden');
             login.classList.remove('hidden');
+            
+            // Force reflow and animate
+            void login.offsetWidth; 
             login.classList.add('animate-fade-in');
+            login.classList.remove('opacity-0'); 
         }, 500);
     },
 
-    handleLogin() {
+    goToRegister() {
         const login = document.getElementById('view-login');
-        const btn = login.querySelector('button');
-        const originalContent = btn.innerHTML; // Save original text
+        const register = document.getElementById('view-register');
         
+        login.classList.add('opacity-0');
+        setTimeout(() => {
+            login.classList.add('hidden');
+            register.classList.remove('hidden');
+            register.classList.remove('opacity-0');
+            register.classList.add('animate-fade-in');
+        }, 300);
+    },
+
+    async handleLogin() {
+        const usernameInput = document.querySelector('#view-login input[type="text"]');
+        const passwordInput = document.querySelector('#view-login input[type="password"]');
+        const btn = document.querySelector('#view-login button');
+        const originalContent = btn.innerHTML;
+
         btn.innerHTML = `<i data-lucide="loader-2" class="w-5 animate-spin"></i>`;
         
-        setTimeout(() => {
-            login.classList.add('opacity-0');
-            setTimeout(() => {
-                login.classList.add('hidden');
-                btn.innerHTML = originalContent; // Reset button text
+        try {
+            const response = await fetch(`${this.apiBase}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: usernameInput.value,
+                    password: passwordInput.value
+                })
+            });
 
-                // CHECK: If data is already loaded, skip wizard
-                if (this.isDataLoaded) {
-                    App.showAppShell();
-                    App.switchView('pipeline');
-                } else {
-                    this.startWizard();
-                }
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.detail || 'Login failed');
+
+            App.showToast(`Welcome, ${data.username}!`, 'success');
+            
+            // --- CRITICAL: Redirect to URL (Fixes Jinja/Blank Screen) ---
+            setTimeout(() => {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('username', data.username);
+                newUrl.searchParams.set('role', data.role);
+                window.location.href = newUrl.toString();
             }, 500);
-        }, 1000);
+
+        } catch (error) {
+            console.error("Login Error:", error);
+            App.showToast(error.message, 'info'); 
+            btn.innerHTML = originalContent; 
+        }
+    },
+
+    async handleRegister() {
+        const usernameInput = document.getElementById('reg-username');
+        const passwordInput = document.getElementById('reg-password');
+        const roleInput = document.getElementById('reg-role');
+        const btn = document.querySelector('#view-register button');
+        const originalContent = btn.innerHTML;
+
+        if(!usernameInput.value || !passwordInput.value) {
+            App.showToast('Please fill all fields', 'info');
+            return;
+        }
+
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 animate-spin"></i> Processing...`;
+
+        try {
+            const response = await fetch(`${this.apiBase}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: usernameInput.value,
+                    password: passwordInput.value,
+                    role: roleInput.value
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || 'Registration failed');
+
+            App.showToast('Account created! Please log in.', 'success');
+            
+            // Switch back to login
+            this.goToLogin();
+
+        } catch (error) {
+            App.showToast(error.message, 'info');
+        } finally {
+            btn.innerHTML = originalContent;
+        }
     },
 
     startWizard() {
@@ -56,7 +171,8 @@ window.AuthFlow = {
 const App = {
     state: {
         view: 'dashboard',
-        ignoreSliderUpdate: false
+        ignoreSliderUpdate: false,
+        user: {username: "Guest", role: "viewer"} // Default user state
     },
 
     async init() {
@@ -101,37 +217,43 @@ const App = {
     },
 
     handleLogout() {
+        // 1. Clear URL Parameters (remove username/role)
+        const url = new URL(window.location);
+        url.search = ""; // clear query string
+        window.history.pushState({}, '', url);
+
+        // 2. Reset State
+        this.state.user = null;
+
+        // 3. UI Transition (Fade out)
         const shell = document.getElementById('app-shell');
         const login = document.getElementById('view-login');
+        const intro = document.getElementById('view-intro');
         
-        // 1. Immediate Visual Feedback
         if (shell) {
-            shell.classList.add('opacity-100'); // Fade out dashboard
-            shell.classList.add('pointer-events-none'); // Prevent clicks during fade
+            shell.classList.add('opacity-100');
+            shell.classList.add('pointer-events-none');
         }
 
         setTimeout(() => {
-            // 2. Hard Reset of Views
+            // 4. Hide App, Show Intro
             if (shell) {
                 shell.classList.add('hidden');
-                shell.classList.remove('flex', 'opacity-100', 'pointer-events-none'); // Clean up classes
+                shell.classList.remove('flex', 'opacity-0', 'pointer-events-none');
             }
 
-            if (login) {
-                // Remove hidden and ensure it's visible
-                login.classList.remove('hidden');
-                
-                // Reset opacity to ensure it's visible
-                login.classList.remove('opacity-100', 'pointer-events-none');
-                
-                // Add animation class for smooth entry
-                login.classList.add('animate-fade-in');
+            // Show Intro Screen (not login) for a clean restart
+            if (intro) {
+                intro.classList.remove('hidden', 'opacity-0');
+                intro.classList.add('animate-fade-in');
             }
             
-            // 3. Reset State if needed (Optional)
+            // Ensure login is hidden
+            if (login) login.classList.add('hidden');
+
             this.state.view = 'dashboard'; 
             
-        }, 300); // Match transition duration
+        }, 500); 
     },
 
     // --- PHASE 4: Global Event Bus Helper ---
@@ -273,7 +395,7 @@ const App = {
         // Fix: Properly remove opacity-0 to make it visible
         requestAnimationFrame(() => {
             shell.classList.remove('opacity-100');
-            // shell.classList.add('opacity-100');
+            shell.classList.add('opacity-100');
         });
     },
     
